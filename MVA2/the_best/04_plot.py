@@ -1,42 +1,68 @@
-import array
 import ROOT
+from plots.common.data_mc import data_mc_plot
+from plots.common.sample import Sample
+from plots.common.cuts import Weights, Cut, Cuts
+from plots.common.utils import PhysicsProcess, get_file_list
+import plots.common.plot_defs
 import MVA2.common
-import MVA2.plot_ROC
-import MVA2.plot_histo
-import plots.common.cuts
 
+cutlist = plots.common.plot_defs.cutlist
+varnames = plots.common.plot_defs.varnames
 
-f = ROOT.TFile("trained.root", "UPDATE")
-meta = MVA2.common.readTObject("meta", f)
-
-# plot trained method ROC curves
-s = {
-	f.Get("test/signal/T_t_ToLeptons") : plots.common.cross_sections.xs["T_t_ToLeptons"]/meta["initial_events"]["T_t_ToLeptons"],
-	f.Get("test/signal/Tbar_t_ToLeptons") : plots.common.cross_sections.xs["Tbar_t_ToLeptons"]/meta["initial_events"]["Tbar_t_ToLeptons"],
-}
-b = {
-	f.Get("test/background/W1Jets_exclusive") : plots.common.cross_sections.xs["W1Jets_exclusive"]/meta["initial_events"]["W1Jets_exclusive"],
-	f.Get("test/background/W2Jets_exclusive") : plots.common.cross_sections.xs["W2Jets_exclusive"]/meta["initial_events"]["W2Jets_exclusive"],
-	f.Get("test/background/W3Jets_exclusive") : plots.common.cross_sections.xs["W3Jets_exclusive"]/meta["initial_events"]["W3Jets_exclusive"],
-	f.Get("test/background/W4Jets_exclusive") : plots.common.cross_sections.xs["W4Jets_exclusive"]/meta["initial_events"]["W4Jets_exclusive"],
+lumis = {
+    "mu": 6784+6398+5277,
+    "ele":12410+6144
 }
 
-MVA2.plot_ROC.plot_ROC(s, b, ["mva_" + mva for mva in meta["mvas"]] + ["eta_lj"], name="plot", title="comparison of MVAs vs plain eta_lj cut")
+lepton_channel = "mu"
+lumi = lumis[lepton_channel]
+name = "AjaM"
 
-# plot histograms
-channelnames = MVA2.common.samples.signal + MVA2.common.samples.WJets + MVA2.common.samples.other
-files = {}
-for ch in channelnames:
-	files[ch] = ROOT.TFile("filled_trees/"+ch+".root")
+# plot definition
+plot_def={
+    'enabled': True,
+    'var': 'cos_theta',
+    'range': [20,-1,1],
+    'iso': True,
+    'estQcd': 'final_2j1t',
+    'gev': False,
+    'log': False,
+    'xlab': varnames["cos_theta"],
+    'labloc': 'top-left',
+    'elecut': cutlist['2j1t']*Cuts.lepton_veto*Cuts.pt_jet*Cuts.one_electron*Cuts.rms_lj*Cut('mva_BDT_AjaM>0.154'),
+    'mucut': cutlist['2j1t']*Cuts.lepton_veto*Cuts.pt_jet*Cuts.one_muon*Cuts.rms_lj*Cut('mva_BDT_AjaM>0.154')
+}
 
-dataname = "SingleMu" if meta["lept"] == "mu" else "SingleEle"
-datafile = ROOT.TFile("filled_trees/"+dataname+".root")
+weight = Weights.total(lepton_channel)*Weights.wjets_madgraph_shape_weight()*Weights.wjets_madgraph_flat_weight()
+physics_processes = PhysicsProcess.get_proc_dict(lepton_channel=lepton_channel)#Contains the information about merging samples and proper pretty names for samples
+merge_cmds = PhysicsProcess.get_merge_dict(physics_processes) #The actual merge dictionary
 
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.0)", lept = meta['lept'], nbins = 30, jobname="BDT_0.0")
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.1)", lept = meta['lept'], nbins = 30, jobname="BDT_0.1")
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.2)", lept = meta['lept'], nbins = 30, jobname="BDT_0.2")
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.3)", lept = meta['lept'], nbins = 30, jobname="BDT_0.3")
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.4)", lept = meta['lept'], nbins = 30, jobname="BDT_0.4")
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.5)", lept = meta['lept'], nbins = 30, jobname="BDT_0.5")
-MVA2.plot_histo.plot_histo(files, datafile, ["cos_theta"], cutstring = meta["cutstring"] + " && (mva_BDT > 0.6)", lept = meta['lept'], nbins = 30, jobname="BDT_0.6")
-MVA2.plot_histo.plot_histo(files, datafile, ["mva_BDT"], cutstring = meta["cutstring"], lept = meta['lept'], nbins = 30, jobname="mva_BDT")
+#Get the file lists
+flist = get_file_list(
+	merge_cmds,
+	"trees/%s/mc/iso/nominal/Jul15/" % lepton_channel
+)
+flist += get_file_list(
+	merge_cmds,
+	"trees/%s/data/iso/Jul15/" % lepton_channel
+)
+
+if len(flist)==0:
+	raise Exception("Couldn't open any files. Are you sure that %s exists and contains root files?" % args.indir)
+
+samples={}
+for f in flist:
+	samples[f] = Sample.fromFile(f, tree_name='Events')
+
+from plots.common.tdrstyle import tdrstyle
+tdrstyle()
+
+canv, merged_hists, htot, hist_data = data_mc_plot(samples, plot_def, name, lepton_channel, lumi, weight, physics_processes)
+
+img = ROOT.TImage.Create()
+img.FromPad(canv)
+img.WriteImage(name+".png")
+
+
+
+
