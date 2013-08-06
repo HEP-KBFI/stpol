@@ -13,9 +13,10 @@ def trainMVA(fName, jobname):
 	train.add_variable('eta_lj')
 	train.add_variable('top_mass')
 
-	train.book_method(mvatypes.kMLP, 'MLP', '!H:!V:VarTransform=N:HiddenLayers=2:TrainingMethod=BFGS:NCycles=2')
 	train.book_method(mvatypes.kBDT, 'naiveBDT', '')
-	train.book_method(mvatypes.kBDT, 'BDT', '!H:!V:NTrees=20:nEventsMin=20:MaxDepth=2:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=10:PruneMethod=NoPruning')
+	train.book_method(mvatypes.kLikelihood, "Likelihood", "!H:!V:")
+	#train.book_method(mvatypes.kBDT, 'BDT', '!H:!V:NTrees=20:nEventsMin=20:MaxDepth=2:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=10:PruneMethod=NoPruning')
+	#train.book_method(mvatypes.kMLP, 'MLP', '!H:!V:VarTransform=N:HiddenLayers=2:TrainingMethod=BFGS:NCycles=2')
 
 	train.get_factory().TrainAllMethods()
 	train.evaluate()
