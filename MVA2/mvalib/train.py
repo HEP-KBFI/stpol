@@ -174,9 +174,7 @@ class MVATrainer:
 
 	def _prepare(self):
 		"""Loads trees to the TMVA::Factory (used by __init__)."""
-		initEvs = self.metadata['initial_events']
 		channel = self.metadata['channel']
-		fract = self.metadata['fractions']
 
 		# Load trees
 		for (typekey,(kSigBg,kTrainTest)) in _treetypes.items():
@@ -184,11 +182,12 @@ class MVATrainer:
 			print typekey, kSigBg, kTrainTest
 			for key in keylist:
 				sName = key.GetName()
+				sMeta = self.metadata['samples'][sName]
 				sTree = key.ReadObj()
 				if sTree.GetEntries() == 0:
 					continue
-				actual_fraction = fract[sName] if kTrainTest==mvatypes.kTraining else (1-fract[sName])
-				sScaleFactor = mvalib.utils.scale_factor(channel, sName, initEvs[sName]) / actual_fraction
+				actual_fraction = sMeta['fraction'] if kTrainTest==mvatypes.kTraining else (1-sMeta['fraction'])
+				sScaleFactor = mvalib.utils.scale_factor(channel, sMeta['sample'], sMeta['initial_events']) / actual_fraction
 				print ' > ', sName, sScaleFactor
 				self.factory.AddTree(sTree, kSigBg, sScaleFactor, ROOT.TCut(''), kTrainTest)
 
@@ -277,7 +276,8 @@ class MVATrainer:
 			meta = {}
 			meta['varlist'] = self.variables
 			meta['method_tag'] = meth
-			meta['cutstring'] = self.metadata['cutstring']
+			meta['samples'] = self.metadata['samples']
+			meta['channel'] = self.metadata['channel']
 			
 			xmlfile = open('weights/%s_'%self.jobname+meth+'.weights.xml')
 			meta['xmlstring'] = xmlfile.read()
