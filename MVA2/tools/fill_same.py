@@ -16,6 +16,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('mva', help = 'output .root of mva trainer')
 	parser.add_argument('trees', nargs = '*', help = 'list of input root files')
+	parser.add_argument('-n', '--tree-name', default='MVA', type=str, help='name of the TTree')
 	args = parser.parse_args()
 
 	mvas = mvalib.fill.read_mvas(args.mva)
@@ -25,4 +26,4 @@ if __name__ == '__main__':
 		reader.book_method(name, mvameta)
 
 	for tree_ifname in args.trees:
-		mvalib.fill.fill_tree(reader, tree_ifname, None)
+		mvalib.fill.fill_tree(reader, tree_ifname, None, mvatree_name=args.tree_name)
