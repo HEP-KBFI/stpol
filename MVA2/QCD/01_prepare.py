@@ -25,7 +25,7 @@ shutil.rmtree('trees', ignore_errors=True); os.mkdir('trees')
 
 for lepton_channel in ['ele', 'mu']:
 
-	prep = MVAPreparer("../step3_latest")
+	prep = MVAPreparer("qcd_step3")
 
 	#signal
 	prep.add_train('signal', 'T_t', 'iso',              cut_iso[lepton_channel])
