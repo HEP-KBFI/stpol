@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 """Script that fills the MVA values to the same ROOT file."""
 
+import ROOT
+ROOT.gROOT.SetBatch(True)
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
 import array
 import pprint
 import os, os.path, shutil
-import ROOT; ROOT.PyConfig.IgnoreCommandLineOptions = True
 import mvalib.fill
 import mvalib.utils
 
