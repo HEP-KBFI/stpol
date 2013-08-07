@@ -62,12 +62,17 @@ class MVAReader:
 		"""Calls the TMVA::Reader.BookMVA for the MVA in mvameta dict."""
 		mva = {'name': name}
 		self._mvalist.append(name)
-		print 'Booking {0} from {1}'.format(name, '.temp.xml')
-		tempxml = open('.temp.xml', 'w')
+		
+		import tempfile, random, string
+		#tempxml_name = '.temp.xml'
+		tempxml_name = '/tmp/mvatmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(10))+'.xml'
+		print 'Booking {0} from {1}'.format(name, tempxml_name)
+		tempxml = open(tempxml_name, 'w')
 		tempxml.write(mvameta['xmlstring'])
 		tempxml.close()
-		self._reader.BookMVA(name, '.temp.xml')
-		os.unlink('.temp.xml')
+		self._reader.BookMVA(name, tempxml_name)
+		print 'Deleting `{0}`'.format(tempxml_name)
+		os.unlink(tempxml_name)
 
 	def set_trees(self, intree, outtree):
 		"""Set the input (events) and output (mva values) trees.
