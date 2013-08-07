@@ -8,30 +8,6 @@ import ROOT; ROOT.PyConfig.IgnoreCommandLineOptions = True
 import mvalib.fill
 import mvalib.utils
 
-def fill_tree(reader, tree_ifname, tree_ofname):
-	if tree_ifname == tree_ofname:
-		raise Exception('Input and output is the same!')
-	tfile_in  = ROOT.TFile(tree_ifname)
-	tfile_out = ROOT.TFile(tree_ofname, 'UPDATE')
-	tree_events = tfile_in.Get('trees/Events')
-
-	if not tfile_out.Get('trees'):
-		tfile_out.mkdir('trees')
-	if not tfile_out.Get('trees/MVA'):
-		tfile_out.Get('trees').cd()
-		tree_mva = ROOT.TTree('MVA', 'MVA')
-	else:
-		tree_mva = tfile_out.Get('trees/MVA')
-	reader.set_trees(tree_events, tree_mva)
-
-	reader.fill()
-
-	tfile_out.Get('trees').cd()
-	tree_mva.SetEntries()
-	tree_mva.Write('', ROOT.TObject.kOverwrite)
-	tfile_out.Close()
-	tfile_in.Close()
-
 if __name__ == '__main__':
 	import argparse
 	parser = argparse.ArgumentParser()
@@ -56,4 +32,4 @@ if __name__ == '__main__':
 		tree_ofname = os.path.join(odir, '{0}_{1}.root'.format(sample_name, args.suf))
 		[tree_ifname,tree_ofname] = map(os.path.abspath, [tree_ifname,tree_ofname])
 		print tree_ifname,'>',tree_ofname
-		fill_tree(reader, tree_ifname, tree_ofname)
+		mvalib.fill.fill_tree(reader, tree_ifname, tree_ofname)
