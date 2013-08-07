@@ -20,6 +20,9 @@ def read_TObject(name, directory):
 
 def scale_factor(channel, sample, eventcount, fraction=1.0):
 	"""Calculate the scalefactor to scale MC to luminosity."""
+	if sample.startswith('Single'): 
+		print 'Warning: using 1 as data scale factor'
+		return 1;
 	return (cross_sections.xs[sample]*cross_sections.lumi_iso[channel])/(fraction*eventcount)
 
 
