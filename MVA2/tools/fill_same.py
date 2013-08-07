@@ -13,8 +13,6 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('mva', help = 'output .root of mva trainer')
 	parser.add_argument('trees', nargs = '*', help = 'list of input root files')
-	parser.add_argument('-o', '--odir', default=None, help = 'output dir')
-	parser.add_argument('-s', '--suf', default='mva', help = 'filename suffix')
 	args = parser.parse_args()
 
 	mvas = mvalib.fill.read_mvas(args.mva)
