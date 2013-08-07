@@ -98,3 +98,38 @@ class MVAReader:
 				self._branches[mva].Fill()
 		if nentries%50e3 != 0: print
 		print nentries, 'filled!'
+
+
+def fill_tree(reader, tree_ifname, tree_ofname=None, mvatree_name='MVA'):
+	"""Fill a tree with corresponding MVA values.
+
+	It reads the events from the `tree_ifname` ROOT file (trees/Events TTree).
+	The MVA values are written to the file `tree_ofname`. If the output file
+	is `None` of the same string as the input file, the MVAs are written to
+	the same file. The TTree with MVA values is calles `trees/<mvatree_name>`.
+
+	"""
+	if tree_ofname is None or tree_ifname == tree_ofname:
+		tfile_in = tfile_out = ROOT.TFile(tree_ifname, 'UPDATE')
+	else:
+		tfile_in  = ROOT.TFile(tree_ifname)
+		tfile_out = ROOT.TFile(tree_ofname, 'UPDATE')
+	tree_events = tfile_in.Get('trees/Events')
+
+	if not tfile_out.Get('trees'):
+		tfile_out.mkdir('trees')
+
+	if not tfile_out.Get('trees/{0}'.format(mvatree_name)):
+		tfile_out.Get('trees').cd()
+		tree_mva = ROOT.TTree(mvatree_name, mvatree_name)
+	else:
+		tree_mva = tfile_out.Get('trees/{0}'.format(mvatree_name))
+
+	reader.set_trees(tree_events, tree_mva)
+	reader.fill()
+
+	tfile_out.Get('trees').cd()
+	tree_mva.SetEntries()
+	tree_mva.Write('', ROOT.TObject.kOverwrite)
+	tfile_out.Close()
+	tfile_in.Close()
