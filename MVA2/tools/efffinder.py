@@ -33,8 +33,9 @@ def main(argv):
 	trees = {}
 	samples = {}
 	for f in filenames: 
-		files[f] = ROOT.TFile(f);
+		files[f] = ROOT.TFile(f)
 		trees[f] = files[f].Get("trees/Events")
+		trees[f].AddFriend("trees/MVA")
 		samples[trees[f]] = 1;
 	
 	precut = str(cutlist['2j1t']*cutlist['presel_{0}'.format(lept)])
@@ -45,9 +46,9 @@ def main(argv):
 	print "cutstring = str({0})".format(args.cutstring)
 	cutstring = str(eval(args.cutstring))
 		
-	res = utils.find_efficiency(samples, precut, cutstring)
+	good, total = utils.find_efficiency(samples, precut, cutstring)
 	
-	print "With cut ({0})&&({1}) you get {2:.1f}% efficiency compared to just {0}".format(precut, cutstring, 100*res)
+	print "With cut ({0})&&({1}) you get {2:.1f}% ({4}/{5}) efficiency compared to just {0} in the following trees: {3}".format(precut, cutstring, 100.0*good/total, filenames, int(good), int(total))
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

@@ -34,8 +34,9 @@ def main(argv):
 	trees = {}
 	samples = {}
 	for f in filenames: 
-		files[f] = ROOT.TFile(f);
+		files[f] = ROOT.TFile(f)
 		trees[f] = files[f].Get("trees/Events")
+		trees[f].AddFriend("trees/MVA")
 		samples[trees[f]] = 1;
 	
 	cutstring = str(cutlist['2j1t']*cutlist['presel_{0}'.format(lept)])

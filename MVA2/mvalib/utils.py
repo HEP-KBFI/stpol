@@ -43,7 +43,7 @@ def find_efficiency(signals, cs1, cs2):
 	for tree, weight in signals.iteritems():
 		sum_tot += tree.GetEntries(cs1) * weight
 		sum_left += tree.GetEntries("(" + cs1 + ") && (" + cs2 + ")") * weight
-	return sum_left/sum_tot
+	return sum_left, sum_tot
 
 def find_cut_value(signals, var, efficiency, cs):
 	"""Find the cut value for var that gives efficiency, given cs"""
@@ -62,7 +62,8 @@ def find_cut_value(signals, var, efficiency, cs):
 		else:
 			cmax = cval
 		cval = (cmax+cmin)/2
-		ceff = find_efficiency(signals, cs, "{0} > {1}".format(var, cval))
+		good, total = find_efficiency(signals, cs, "{0} > {1}".format(var, cval))
+		ceff = float(good)/total
 		iters += 1
 	if iters == 30:
 		print "Warning: binary search of cut value for "+var+" did not converge"
