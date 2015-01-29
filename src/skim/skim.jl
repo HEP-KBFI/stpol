@@ -68,6 +68,10 @@ df = similar(#Data frame as big as the input
             lepton_type=Float32[],
             lepton_id=Int32[], lepton_charge=Int32[],
 
+#neutrino
+            nu_pz=Float32[], nu_eta=Float32[],
+            nu_pz_gen=Float32[], nu_eta_gen=Float32[],
+
 #jets associated with t-channel
             bjet_pt=Float32[], bjet_eta=Float32[], bjet_mass=Float32[], bjet_id=Float32[],
             #bjet_bd_a=Float32[],
@@ -153,6 +157,18 @@ df = similar(#Data frame as big as the input
             b_weight_tchpt__l__up=Float32[],
             b_weight_tchpt__l__down=Float32[],
 
+            me_weight__down=Float32[],
+            me_weight__up=Float32[],
+
+            alphas=Float32[],
+            alphas__down=Float32[],
+            alphas__up=Float32[],
+
+            pdf_weight=Float32[],
+            pdf_weight__down=Float32[],
+            pdf_weight__up=Float32[],
+            
+    
 #file-level metadata
             run=Int64[], lumi=Int64[], event=Int64[],
             fileindex=Int64[],
@@ -293,16 +309,28 @@ for i=1:maxev
     df[i, :b_weight_tchpt__l__up] = events[sources[weight(:btag, :tchpt, :l, :up)]]
     df[i, :b_weight_tchpt__l__down] = events[sources[weight(:btag, :tchpt, :l, :down)]]
 
-    df[i, :top_weight] = events[sources[weight(:top)]]
-    df[i, :top_weight__up] = df[i, :top_weight]^2
-    df[i, :top_weight__down] = 1.0
+    df[i, :top_weight] = 1.0
+    df[i, :top_weight__up] = events[sources[weight(:top)]]
+    df[i, :top_weight__down] = events[sources[weight(:top)]]
 
     df[i, :gen_weight] = events[sources[weight(:gen)]]
 
+    df[i, :me_weight__down] = events[sources[weight(:me, :down)]]|>ifpresent
+    df[i, :me_weight__up] = events[sources[weight(:me, :up)]]|>ifpresent
+
+    df[i, :alphas] = events[sources[weight(:alphas)]]|>ifpresent
+    df[i, :alphas__down] = events[sources[weight(:alphas, :down)]]|>ifpresent
+    df[i, :alphas__up] = events[sources[weight(:alphas, :up)]]|>ifpresent
+
+    df[i, :pdf_weight] = events[sources[weight(:pdf)]]|>ifpresent
+    df[i, :pdf_weight__down] = events[sources[weight(:pdf, :down)]]|>ifpresent
+    df[i, :pdf_weight__up] = events[sources[weight(:pdf, :up)]]|>ifpresent
+    
     cls = prfiles[findex, :cls]
     sample = cls[:sample]
 
     df[i, :subsample] = int(hash(string(sample)))
+    #println("SAMPLE ", sample, " ", get_process(sample), " ", string(get_process(sample)))
     df[i, :sample] = int(hash(string(get_process(sample))))
     df[i, :fname] = int(hash(fn))
     df[i, :xs] = haskey(cross_sections, sample) ? float32(cross_sections[sample]) : NA
@@ -504,6 +532,16 @@ for i=1:maxev
     
     for k in [:Pt, :Eta, :Phi, :Mass]
         for x in [:W]
+            p = part(x, k, :reco)
+            df[i, lowercase("$(x)_$(k)")|>symbol] = events[sources[p]] |> ifpresent
+            
+            p = part(x, k, :gen)
+            df[i, lowercase("$(x)_$(k)_gen")|>symbol] = events[sources[p]] |> ifpresent
+        end
+    end
+
+    for k in [:Pz, :Eta]
+        for x in [:nu]
             p = part(x, k, :reco)
             df[i, lowercase("$(x)_$(k)")|>symbol] = events[sources[p]] |> ifpresent
             
