@@ -309,9 +309,10 @@ for i=1:maxev
     df[i, :b_weight_tchpt__l__up] = events[sources[weight(:btag, :tchpt, :l, :up)]]
     df[i, :b_weight_tchpt__l__down] = events[sources[weight(:btag, :tchpt, :l, :down)]]
 
-    df[i, :top_weight] = 1.0
-    df[i, :top_weight__up] = events[sources[weight(:top)]]
-    df[i, :top_weight__down] = events[sources[weight(:top)]]
+    df[i, :top_weight] = events[sources[weight(:top)]]
+    df[i, :top_weight__up] = 2 * events[sources[weight(:top)]] - 1
+    df[i, :top_weight__down] = 2 - events[sources[weight(:top)]]
+
 
     df[i, :gen_weight] = events[sources[weight(:gen)]]
 
