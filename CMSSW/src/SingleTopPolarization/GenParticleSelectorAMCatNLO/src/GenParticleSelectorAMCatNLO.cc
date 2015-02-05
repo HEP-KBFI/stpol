@@ -101,8 +101,6 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
     Handle<GenParticleCollection> genParticles;
     iEvent.getByLabel(_srcTag, genParticles);
 
-    
-    //std::auto_ptr<std::vector<GenParticle> > outTops(new std::vector<GenParticle>());
     std::auto_ptr<std::vector<GenParticle> > outLightJets(new std::vector<GenParticle>());
     std::auto_ptr<std::vector<GenParticle> > outBJets(new std::vector<GenParticle>());
     std::auto_ptr<std::vector<GenParticle> > outLeptons(new std::vector<GenParticle>());
@@ -116,53 +114,164 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
     const GenParticle* neutrino = nullptr;
     const GenParticle* wBoson = nullptr;
     const GenParticle* top = nullptr;
-    cout << endl << endl << "event" << endl;
+    
     for(size_t iparticle = 0; iparticle < genParticles->size(); ++ iparticle) 
     {
         const GenParticle& p = (*genParticles)[iparticle];
-        
-        
         const GenParticle* mom = (GenParticle*)p.mother( 0 );
-                    
-        if (!lepton && ((abs(p.pdgId())==11) or (abs(p.pdgId())==13) or (abs(p.pdgId())==15)) && abs(mom->pdgId()) == 24)
+
+        /* debug
+        if ((abs(p.pdgId()) >= 11 and abs(p.pdgId()) <= 16) || abs(p.pdgId()) == 6 || abs(p.pdgId()) == 24 || abs(p.pdgId())<6)
         {
-            outLeptons->push_back(p);
-            lepton=&p;
+            LogDebug("part") << p.pdgId() << " " << p.status() << "\t" << mom->pdgId() << " " << mom->status();
+            
+            for(size_t mi = 0; mi < p.numberOfMothers(); ++ mi){
+                GenParticle* mp = (GenParticle*) p.mother(mi);
+                LogDebug("part") << "m " << mp->pdgId() << " " << mp->status();     
+            }
+            for(size_t mi = 0; mi < p.numberOfDaughters(); ++ mi){
+                GenParticle* mp = (GenParticle*) p.daughter(mi);
+                LogDebug("part") << "d " << mp->pdgId() << " " << mp->status();
+            }
+        }*/
+                 
+        if (((abs(p.pdgId())==11) or (abs(p.pdgId())==13)) && p.status() == 1)
+        {
+            if (abs(mom->pdgId()) == 24 && (mom->status() == 22 || mom->status() == 52))
+            {
+                outLeptons->push_back(p);
+                lepton=&p;
+            }
+            else if(mom->pdgId() == p.pdgId())
+            {   
+                //Go up the decay chain until you find a mother that is a W             
+                GenParticle* p1 = (GenParticle*)p.mother(0);
+                GenParticle* p_mom = (GenParticle*)p1->mother( 0 );
+                while(p_mom->pdgId() == p.pdgId())
+                {
+                    if(p_mom->numberOfMothers() > 0)
+                    {   
+                        p_mom = (GenParticle*)p_mom->mother( 0 );
+                        p1 = (GenParticle*)p1->mother(0);
+                    }
+                }
+                if(p_mom->pdgId() == 24 && (p_mom->status() == 22 || p_mom->status() == 52) && p1->status() == 23)
+                {
+                    outLeptons->push_back(p);
+                    lepton=&p;
+                }     
+            }
         }
         
-        if (!neutrino && ((abs(p.pdgId())==12) or (abs(p.pdgId())==14) or abs(p.pdgId())==16) && abs(mom->pdgId()) == 24)
+        if (((abs(p.pdgId())==12) or (abs(p.pdgId())==14)) && p.status() == 1)
+        {
+            const GenParticle* grandma = (GenParticle*)mom->mother( 0 );
+            //if  ((mom->pdgId() == p.pdgId() && mom->status() == 23) || (grandma->pdgId() == p.pdgId() && grandma->status() == 23))
+            if ((mom->pdgId() == p.pdgId() && mom->status() == 23) || (abs(mom->pdgId()) == 24 && mom->status() == 52) || (abs(grandma->pdgId()) == 24 && grandma->status() == 52) || (abs(mom->pdgId()) == 24 && mom->status() == 22 && abs(grandma->pdgId()) == 6 && grandma->status() == 62))
+            {
+                outNeutrinos->push_back(p);
+                neutrino=&p;
+            }
+        }
+        
+        if (abs(p.pdgId())==15 && p.status() == 2)
+        {
+            if( (abs(mom->pdgId()) == 24 && (mom->status() == 52 || mom->status() == 22)) || 
+                (mom->pdgId() == p.pdgId() && mom->status() == 23))
+            {
+                outLeptons->push_back(p);
+                lepton=&p;
+            }
+            else if(mom->numberOfMothers() > 0)
+            {
+                const GenParticle* grandma = (GenParticle*)mom->mother( 0 );
+                if(mom->pdgId() == p.pdgId() && mom->status() == 51 && grandma->pdgId() == p.pdgId() && grandma->status() == 23)
+                {
+                    outLeptons->push_back(p);
+                    lepton=&p;
+                }
+            }            
+        }
+        
+        if (abs(p.pdgId())==16 && p.status() == 1 && 
+            ((abs(mom->pdgId()) == 24 && (mom->status() == 52 || mom->status() == 22)) || 
+            (mom->pdgId() == p.pdgId() && mom->status() == 23 )))
         {
             outNeutrinos->push_back(p);
             neutrino=&p;
         }
         
-        if (!lightJet && (abs(p.pdgId())<5) && p.status() == 23 && p.numberOfMothers() == 2)
+        if ((abs(p.pdgId())<5) && p.status() == 23 && p.numberOfMothers() == 2)
         {
-            outLightJets->push_back(p);
-            lightJet=&p;
+            const GenParticle* mom2 = (GenParticle*)p.mother( 1 );
+            //This case for 2->2
+            if((abs(mom->pdgId()) == 2 && mom2->pdgId() == 21) || (mom->pdgId() == 21 && abs(mom2->pdgId()) == 2))
+            {
+                //cout << "jet " << p.pdgId() << " " << mom->pdgId() << " " << mom->status() << endl;
+                lightJet=&p;
+            }
+            else if(mom->numberOfDaughters() >= 3) //2->3
+            {
+                if(!lightJet)
+                {
+                    lightJet = &p;
+                    LogDebug("part") << "jet " << p.pdgId() << " " << mom->pdgId() << " " << mom->status();                
+                
+                }
+                if(abs(p.pdgId()) < abs(lightJet->pdgId()))
+                {
+                    lightJet = &p;
+                    LogDebug("part") << "jet " << p.pdgId() << " " << mom->pdgId() << " " << mom->status();                
+                }
+            }
         }
 
-        if (!bJet && (abs(p.pdgId()) == 5) && p.status() == 23 && p.numberOfMothers() == 1)
+        if ((abs(p.pdgId()) == 5) && p.status() == 23 && p.numberOfMothers() == 1)
         {
             outBJets->push_back(p);
             bJet=&p;
         }
         
-        if (!wBoson && (abs(p.pdgId()) == 24) && p.status() == 22 && p.numberOfMothers() == 1)
+        if ((abs(p.pdgId()) == 24))
         {
-            outWbosons->push_back(p);
-            wBoson=&p;
+            const GenParticle* dau = (GenParticle*)p.daughter( 0 );
+            //second case when status 22 W decays directly without status 52 W
+            if(dau->pdgId() != 24
+                && ((p.status() == 52 && p.numberOfMothers() == 1) 
+                    || (p.status() == 22 && abs(mom->pdgId()) == 6 && mom->status() == 62)))
+            {
+                outWbosons->push_back(p);
+                wBoson=&p;
+            }
         }
-        if (!top && (abs(p.pdgId()) == 6) && p.status() == 22 && p.numberOfMothers() == 2)
+        if (abs(p.pdgId()) == 6 && p.status() == 62 )
         {
             outTop->push_back(p);
             top=&p;
         }
         
     }
-    if (!lepton || !neutrino || !lightJet || !top || !wBoson || !bJet)
+                
+    if (!lightJet)
     {
-        LogWarning("lepton, neutrino, light quark, W, top or b-jet not found in current event");
+        LogWarning("light jet not found in current event");
+        iEvent.put(outLeptons, "trueLepton");
+        iEvent.put(outLightJets, "trueLightJet");
+        iEvent.put(outBJets, "trueBJet");
+        iEvent.put(outNeutrinos, "trueNeutrino");
+        iEvent.put(outWbosons, "trueWboson");
+        iEvent.put(outTop,"trueTop");
+        iEvent.put(std::auto_ptr<int>(new int(0)), "trueLeptonPdgId");
+        return;
+    }
+
+    outLightJets->push_back(*lightJet);
+    
+
+    if (!lepton || !neutrino || !top || !wBoson || !bJet)
+    {
+        LogWarning("lepton, neutrino, W, top or b-jet not found in current event");
+        cout << lepton << " " << neutrino << " " << " " << wBoson << " " << top << " " << bJet << endl;
         iEvent.put(outLeptons, "trueLepton");
         iEvent.put(outLightJets, "trueLightJet");
         iEvent.put(outBJets, "trueBJet");
@@ -175,14 +284,9 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
     
     LogDebug("part") << "lepton " << lepton->p4(); 
     LogDebug("part") << "neutrino " << neutrino->p4(); 
-    //GenParticle (Charge q, const LorentzVector &p4, const Point &vtx, int pdgId, int status, bool integerCharge)
     LogDebug("part") << "W " << wBoson->p4(); 
-    
-    
-    //GenParticle top(wboson.charge(),bJet->p4()+wBoson->p4(),reco::Candidate::Point(),6*wBoson->charge(),1,false);
     LogDebug("part") << "bJet " << bJet->p4(); 
     LogDebug("part") << "top " << top->p4() << " m=" << top->mass(); 
-    //outTop->push_back(top);
     
     iEvent.put(outLeptons, "trueLepton");
     iEvent.put(outLightJets, "trueLightJet");
