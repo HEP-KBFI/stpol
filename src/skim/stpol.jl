@@ -60,6 +60,11 @@ sources[:wjets_cls] = Source(:flavourAnalyzer, :simpleClass, :STPOLSEL2, Uint32)
 sources[part(:electron, :nu_soltype)] = Source(:recoNuProducerEle, :solType, :STPOLSEL2, Int32)
 sources[part(:muon, :nu_soltype)] = Source(:recoNuProducerMu, :solType, :STPOLSEL2, Int32)
 
+for s in [:Pz, :Eta]
+    sources[part(:nu, s, :reco)] = Source(:recoNuNTupleProducer, s, :STPOLSEL2)
+    sources[part(:nu, s, :gen)] = Source(:trueNuNTupleProducer, s, :STPOLSEL2)
+end
+
 weight(a...) = (:weight, a...)
 
 sources[weight(:pu)] = Source(:puWeightProducer, :PUWeightNtrue, :STPOLSEL2, Float64)
@@ -97,6 +102,19 @@ sources[weight(:muon, :trigger, :down)] = Source(:muonWeightsProducer, :muonTrig
 
 sources[weight(:gen)] = Source(:genWeightProducer, :w, :STPOLSEL2, Float64)
 sources[weight(:top)] = Source(:ttbarTopWeight, :weight, :STPOLSEL2, Float64)
+
+sources[weight(:me, :down)] = Source(:meWeightProducer, :meWeightDown, :STPOLSEL2, Float64)
+sources[weight(:me, :up)] = Source(:meWeightProducer, :meWeightUp, :STPOLSEL2, Float64)
+
+sources[:nextrapartons] = Source(:extraPartons, :nExtraPartons, :STPOLSEL2, Int32)
+
+sources[weight(:alphas)] = Source(:meWeightProducer, :alphasNominal, :STPOLSEL2, Float64)
+sources[weight(:alphas, :down)] = Source(:meWeightProducer, :alphasDown, :STPOLSEL2, Float64)
+sources[weight(:alphas, :up)] = Source(:meWeightProducer, :alphasUp, :STPOLSEL2, Float64)
+
+sources[weight(:pdf)] = Source(:meWeightProducer, :pdfNominal, :STPOLSEL2, Float64)
+sources[weight(:pdf, :down)] = Source(:meWeightProducer, :pdfDown, :STPOLSEL2, Float64)
+sources[weight(:pdf, :up)] = Source(:meWeightProducer, :pdfUp, :STPOLSEL2, Float64)
 
 vetolepton(s) = symbol("n_veto_lepton_$s")
 sources[vetolepton(:mu)] = Source(:looseVetoMuCount, symbol(""), :STPOLSEL2, Int32)
