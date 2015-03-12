@@ -12,7 +12,8 @@ import json
 import sys
 
 def sample_name(fn):
-    return fn.split("/")[-3]
+    #return fn.split("/")[-3] #Joosep's structure
+    return fn.split("/")[-2]
 
 #inputs
 inpdir = sys.argv[1]
@@ -67,6 +68,7 @@ for fn in sigfiles + bgfiles:
         return tree1.GetEntries("((%s) || (%s)) && (njets==%d) && (ntags==%d)" % (cuts["mu"], cuts["ele"], nj, nt))
 
     for (nj, nt) in [(2,1), (2, 0), (3, 2)]:
+        if (nj, nt) != (2,1) and fn in sigfiles: continue
         c = "((%s) || (%s)) && (njets==%d) && (ntags==%d)" % (cuts["mu"], cuts["ele"], nj, nt)
         tree = tree1.CopyTree(c, "", getentries(2,1))
         tree.SetName("%s/%dJ/%dT" % (fn, nj, nt))
@@ -79,16 +81,20 @@ for fn in sigfiles + bgfiles:
         tree.Write()
 
         flist.append(tf)
+        print xsweights
+        print fn, sample_name(fn)
         xsweight = xsweights[sample_name(fn)]
 
         print sample_name(fn), xsweight, (nj, nt), tree.GetEntries()
-
+        wweight = xsweight
+        #if not(nj == 2 and nt == 1):
+        #    wweight = wweight * 0.25
         if fn in bgfiles:
             print "background type =", file_type(fn)
-            factory.AddBackgroundTree(tree, xsweight, file_type(fn))
+            factory.AddBackgroundTree(tree, wweight, file_type(fn))
         elif fn in sigfiles:
             print "signal type =", file_type(fn)
-            factory.AddSignalTree(tree, xsweight, file_type(fn))
+            factory.AddSignalTree(tree, wweight, file_type(fn))
         else:
             raise Exception("%s not in signal or background" % fn)
     tf.Close()
