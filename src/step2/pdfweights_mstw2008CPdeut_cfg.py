@@ -3,9 +3,6 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 import os
-print "LHAPATH=",os.environ['LHAPATH']
-os.environ['LHAPATH'] = '/home/andres/single_top/stpol_current/stpol/src/step2/pdfsets'
-print "LHAPATH=",os.environ['LHAPATH']
 
 process = cms.Process("STPOLPDF")
 
