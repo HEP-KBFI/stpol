@@ -2,6 +2,8 @@ TToBENu_t-channel                       mc    T_t               tchan    signal 
 TToBMuNu_t-channel                      mc    T_t               tchan    signal     comphep   syst      sig_gen__comphep
 TToBTauNu_t-channel                     mc    T_t               tchan    signal     comphep   syst      sig_gen__comphep
 
+TToLeptons_t-channel_aMCatNLO           mc    T_t_ToLeptons     tchan    signal     mcatnlo   syst      sig_gen__mcatnlo
+
 Tbar_t_ToLeptons_mass178_5              mc    Tbar_t_ToLeptons  tchan    signal     powheg    syst      mass__up
 Tbar_t_ToLeptons_mass166_5              mc    Tbar_t_ToLeptons  tchan    signal     powheg    syst      mass__down
 

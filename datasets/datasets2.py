@@ -12,10 +12,11 @@ EMAIL = os.environ["USER"] + "@kbfi.ee"
 
 #INput files for step1 (AODSIM/DATA)
 step1_files = [
-    "/data/22Jan_ReReco_Runs2012ABCD",
-    "/mc/nominal_Summer12_DR53X",
-    "/mc/systematic_Summer12_DR53X",
-    "/mc/wjets_FSIM_Summer12"
+    #"/data/22Jan_ReReco_Runs2012ABCD",
+    #"/mc/nominal_Summer12_DR53X",
+    #"/mc/systematic_Summer12_DR53X",
+    #"/mc/wjets_FSIM_Summer12"
+    "/mc/t-channel_aMCatNLO"
 ]
 
 #Input files for step2 (USER)
@@ -23,6 +24,7 @@ step2_mc_files = [
 #    "/mc/Apr19", #Signal+bkg
 #    "/mc/Jul15",
     "/mc/Sep8"
+#    "/mc/Dec17_wjets"
 ]
 
 step2_mc_files_qcd = [
@@ -38,13 +40,14 @@ step2_mc_syst_files = [
 #    "/mc_syst/merged", #this should contain all systematics, copy-pasted and curated from other files
 #     "/mc_syst/Jun16_2014",
     "/mc_syst/Sep8"
+#    "/mc_syst/Dec17_wjets"
 ]
 
 step2_data_files = [
 #    "/data/May20"
 #    "/data/Jul15",
 #    "/data/Aug1",
-    "/data/Sep8"
+    "/data/Jan22_2015"
 ]
 
 def is_fastsim(name):
