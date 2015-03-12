@@ -120,11 +120,20 @@
         "T_s",
         "Tbar_s"
     ],
+    
     "wjets": [
         "W1Jets_exclusive",
         "W2Jets_exclusive",
         "W3Jets_exclusive",
         "W4Jets_exclusive",
+        "W1Jets_exclusive_light",
+        "W2Jets_exclusive_light",
+        "W3Jets_exclusive_light",
+        "W4Jets_exclusive_light",
+        "W1Jets_exclusive_heavy",
+        "W2Jets_exclusive_heavy",
+        "W3Jets_exclusive_heavy",
+        "W4Jets_exclusive_heavy",
         "W1JetsToLNu_light",
         "W1JetsToLNu_heavy",
         "W1JetsToLNu_matchingdown",
@@ -150,12 +159,14 @@
         "W4JetsToLNu_scaleup",
         "W4JetsToLNu_scaledown"
     ],
+        
     "wjets_fsim": [
         "W1Jets_exclusive_FSIM",
         "W2Jets_exclusive_FSIM",
         "W3Jets_exclusive_FSIM",
         "W4Jets_exclusive_FSIM"
-    ]
+    ],
+
     "data_mu": [
         "SingleMu",
         "SingleMu1",
