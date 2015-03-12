@@ -16,7 +16,10 @@ def histname(hn):
 
     if spl[1] in [
             "W1Jets_exclusive", "W2Jets_exclusive", "W3Jets_exclusive", "W4Jets_exclusive",
-            "W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4JetsToLNu",
+            "W1JetsToLNu_scaleup", "W2JetsToLNu_scaleup", "W3JetsToLNu_scaleup", "W4JetsToLNu_scaleup",
+            "W1JetsToLNu_scaledown", "W2JetsToLNu_scaledown", "W3JetsToLNu_scaledown", "W4JetsToLNu_scaledown",
+            "W1JetsToLNu_matchingup", "W2JetsToLNu_matchingup", "W3JetsToLNu_matchingup", "W4JetsToLNu_matchingup",
+            "W1JetsToLNu_matchingdown", "W2JetsToLNu_matchingdown", "W3JetsToLNu_matchingdown", "W4JetsToLNu_matchingdown",
             ]:
         return {}
 
@@ -59,7 +62,10 @@ merges = from_json("merges.json")
 
 systs_to_split = {
     "scale": ["ttjets", "tchan", "wzjets"],
-    "matching": ["ttjets", "wzjets"]
+    "matching": ["ttjets", "wzjets"],
+    #"scale": ["ttjets", "tchan", "wzjets", "wjets_light"],
+    #"matching": ["ttjets", "wzjets", "wjets_light"],
+    "qscale_me_weight": ["ttjets", "tchan", "wzjets"]
 }
 
 
@@ -67,6 +73,8 @@ f = ROOT.TFile(sys.argv[1])
 dn = os.path.dirname(sys.argv[2])
 if not os.path.exists(dn):
     os.makedirs(dn)
+if not os.path.exists(dn.replace("mu", "combined")):
+    os.makedirs(dn.replace("mu", "combined"))
 of = ROOT.TFile(sys.argv[2], "RECREATE")
 
 lepton = sys.argv[3]
@@ -80,6 +88,8 @@ if grouping=="fit":
         "tchan":["tchan"],
         "ttjets": ["ttjets", "twchan", "schan"],
         "wzjets": ["wjets", "diboson", "dyjets"],# "gjets"],
+        #"wzjets": ["wjets_heavy", "diboson", "dyjets"],# "gjets"],
+        #"wjets_light": ["wjets_light"]
         #"qcd": ["qcd"],
     }
 elif grouping=="plot":
@@ -114,7 +124,6 @@ for (iso, hists) in isosplit.items():
     for (k, subsamples) in merges.items():
         if k in ["tchan_inc", "wjets_inc"]:
             continue
-        print "\t", k
         hns = sum(map(lambda subsample: filter(lambda x: subsample in x, hists), subsamples), [])
         for hn in hns:
             parsed_hn = histname(hn)
@@ -287,7 +296,7 @@ for (gn, gs) in final_groups.items():
         h1.Scale(lumi)
         nomh = of.Get("__".join(h1.GetName().split("__")[0:2]))
 
-        if h1.GetEntries() == nomh.GetEntries() and h1.Integral()==nomh.Integral() and (get_bins(h1) == get_bins(nomh)).all():
+        if h1.GetEntries() == nomh.GetEntries() and h1.Integral()==nomh.Integral() and (get_bins(h1) == get_bins(nomh)).all() and "lepton" not in h1.GetName():
             print h1.GetName(), " is same as nominal, not writing"
         else:
             h1.Write("", ROOT.TObject.kOverwrite)
