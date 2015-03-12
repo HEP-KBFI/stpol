@@ -13,8 +13,8 @@ from colors import *
 def get_histos(fname, channel, isovar=None):
     f = TFile(fname)
     histos = {}
-    for cut in ["qcdcut", "nocut", "reversecut"]:
-        for var in ["qcd_mva", "met", "mtw"]:
+    for cut in ["nocut", "reversecut"]:
+        for var in ["qcd_mva"]:#, "met", "mtw"]:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
                 for iso in ["iso", "antiiso"]:
                     for dataset in all_datasets_reproc:
@@ -23,9 +23,12 @@ def get_histos(fname, channel, isovar=None):
                         if not isovar==None and iso == "antiiso":
                             name += "__isovar__%s" % isovar
                             #print "ISOVAR"
-                        print fname, name, cut+var+jt+iso+dataset
+                        #print fname, name, cut+var+jt+iso+dataset
                         histos[cut+var+jt+iso+dataset] = f.Get(name)
+                        #print sample_colors_same
                         histos[cut+var+jt+iso+dataset].SetLineColor(sample_colors_same[dataset])
+                        if "Single" in dataset and "antiiso" in iso:
+                            histos[cut+var+jt+iso+dataset].SetLineColor(ROOT.kGray)
                         #histos[cut+var+jt+iso+dataset].Rebin()
     return histos
 
@@ -61,67 +64,70 @@ def subtract_MC_with_stack(hQCD, stack, variation=None):
             hQCD.SetBinContent(bin, 0)
             hQCD.SetBinError(bin, 1.)
 
-def add_other_components(histos, cut, var, jt, components = "regular"):
+def get_other_components(histos, cut, var, jt, components = "regular"):
     others = []
-    for (comp, datasets) in fit_components_reproc[components].items():
+    for (comp, datasets) in components.items():
         hist = histos[cut+var+jt+"iso"+datasets[0]].Clone()
         name = hist.GetName().split("__")
         new_name = "__".join([var, comp])
         hist.SetNameTitle(new_name, new_name)
-        print datasets[0], hist.Integral()
+        #print datasets[0], hist.Integral()
         for i in range(1, len(datasets)):
             h = histos[cut+var+jt+"iso"+datasets[i]].Clone()
             hist.Add(h)
             print datasets[i], h.GetEntries(), h.Integral()
         others.append(hist)
     return others
-        
-    
 
-def make_histos(histos, channel, var, jt, cut, components, isovar=None, variateMC=None):
+
+def make_template_histos(histos, channel, var, jt, cut, components, isovar=None, variateMC=None):
     hData = histos[cut+var+jt+"iso"+"data"]
-    print "data", isovar, hData.GetEntries(), hData.Integral()
     hData.SetNameTitle("%s__DATA" % var, "%s__DATA" % var)
-    if variateMC == "QCDMC":
-        hQCD = histos[cut+var+jt+"iso"+"QCD"]
-    elif variateMC == "QCDMC2J0T":
-        hQCD = histos[cut+var+"2j0t"+"iso"+"QCD"]
-    else:
-        hQCD = histos[cut+var+jt+"antiiso"+"data"]
-        print "qcd", isovar, hQCD.GetEntries(), hQCD.Integral()
-        subtract_MC(hQCD, histos, cut, var, jt, variateMC)
-        print "qcd_sub", isovar, hQCD.GetEntries(), hQCD.Integral()
+    
+    hQCD = histos[cut+var+jt+"antiiso"+"data"]
+    print "qcd", isovar, hQCD.GetEntries(), hQCD.Integral()
+    subtract_MC(hQCD, histos, cut, var, jt, variateMC)
+    print "qcd_sub", isovar, hQCD.GetEntries(), hQCD.Integral()
         
     hQCD.SetNameTitle("%s__QCD" % var, "%s__QCD" % var)
     print hQCD.GetEntries(), hData.Integral()
-    others = add_other_components(histos, cut, var, jt, components)
+    others = get_other_components(histos, cut, var, jt, components)
     return (hData, hQCD, others)
 
-def plot_templates(channel, var, hData, hQCD, others):
+def plot_templates(channel, var, jt, cut, hData, hQCD, others):
     canv1 = TCanvas("canvas", "canvas", 800,800)
-    hQCD.SetAxisRange(0, 0.25, "Y")
     #h.GetXaxis().SetTitle(varname)                                       
-    hQCD.SetLineWidth(2)
-    leg = ROOT.TLegend(0.65,0.6,0.9,0.90)
+    hQCD.SetLineWidth(3)
+    leg = ROOT.TLegend(0.5,0.5,0.9,0.90)
     #leg.SetTextSize(0.037)
     leg.SetBorderSize(0)
     leg.SetLineStyle(0)
-    leg.SetTextSize(0.015)
+    leg.SetTextSize(0.04)
     leg.SetFillColor(0)
+    hQCD.SetTitle("")
+    hQCD.Scale(1/hQCD.Integral())
+    hQCD.SetAxisRange(0, 0.2, "Y")
+    hQCD.Draw("hist")
+    hData.Scale(1/hData.Integral())
+    hData.SetMarkerStyle(20)
+    hData.Draw("e1 same")
     
-    leg.AddEntry(hData,"Data","pl")
+    other_int = 0.
     #leghistos.items()[1].Draw("hist")
     for h in others:
-        print h.GetName()
-        h.Draw()
+        #print h.GetName()
+        h.Scale(1/h.Integral())
+        h.SetLineWidth(2)
+        h.Draw("hist same")
         leg.AddEntry(h, h.GetTitle().split("__")[1],"l")
     leg.AddEntry(hQCD,"QCD","l")
+    leg.AddEntry(hData,"Data","pl")
     leg.Draw()
 
     #print "normQCD", normQCD.Integral()
     #normQCD.Draw("same hist")        
-    canv1.SaveAs("template_plots_reproc/"+varname+"_shapes_"+channel+"_"+var+".pdf")
-    canv1.SaveAs("template_plots_reproc/"+varname+"_shapes_"+channel+"_"+var+".png")
+    canv1.SaveAs("template_plots/"+var+"_shapes_"+channel+"_"+jt+"_"+cut+".pdf")
+    canv1.SaveAs("template_plots/"+var+"_shapes_"+channel+"_"+jt+"_"+cut+".png")
                         
 
 if __name__=="__main__":
@@ -129,42 +135,22 @@ if __name__=="__main__":
     #parser.add_argument('--path', dest='path', default="/".join([os.environ["STPOL_DIR"], "src", "qcd_ntuples", "histos"]))
     #parser.add_argument('--channel', dest='channel' , default='mu')
     #args = parser.parse_args()
-    components = "regular"
-    #components = "4comp"
+    components = fit_components_datasets
 
     ROOT.TH1.AddDirectory(False)
     ROOT.gROOT.SetStyle("Plain")
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch()
     for channel in ["mu", "ele"]:
-        myvars = ["qcd_mva", "met"]
+        myvars = ["qcd_mva"]#, "met"]
         #if channel == "mu":
-        myvars.append("mtw")
+        #myvars.append("mtw")
         added = "Mar5" ##Nov_reproc"
     	for varname in myvars:
-            for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
-                for cut in ["reversecut", "nocut"]:#, "qcdcut"]:
-                    for variateMC in [None, "up", "down"]:#, "QCDMC", "QCDMC2J0T"]:
-                        for isovar in [None, "up", "down"]:
-                            histos = get_histos("input_histos/%s/%s.root" % (added, channel), channel, isovar)  
-                            if not variateMC and not isovar:
-                                outfile = TFile("templates/%s__%s__%s__%s__%s.root" % (varname, jt, channel, cut, added), "recreate")
-                            else:
-                                if not isovar:
-                                    outfile = TFile("templates/%s__%s__%s__%s__%s__%s.root" % (varname, jt, channel, cut, added, "varMC_"+variateMC), "recreate")
-                                else:
-                                    outfile = TFile("templates/%s__%s__%s__%s__%s__%s.root" % (varname, jt, channel, cut, added, "isovar_"+isovar), "recreate")
-        
-                            #print "OUTFILE", "templates/"+varname+"__"+jt+"__"+channel+"__"+cut+"__"+added+".root"
-                            (hData, hQCD, others) = make_histos(histos, channel, varname, jt, cut, components, isovar, variateMC)
-                            #if not variateMC and not isovar:
-                            #    plot_QCD_template(hQCD, channel, varname, jt, cut)
-                            outfile.cd()
-                            hData.Write()
-                            print "write", outfile.GetName(), isovar, hQCD.Integral()
-                            hQCD.Write()
-                            for h in others:
-                                h.Write()
-                            if "nocut" in cut and "2j1t" in jt and isovar == None and variateMC == None:
-                                plot_templates(channel, varname, hData, hQCD, others)    
-                            outfile.Close()            
+            for jt in ["2j1t"]:#, "2j0t", "3j1t", "3j2t"]:
+                for cut in ["nocut", "reversecut"]:#, "qcdcut"]:
+                    histos = get_histos("input_histos/%s/%s.root" % (added, channel), channel)  
+                    #print "OUTFILE", "templates/"+varname+"__"+jt+"__"+channel+"__"+cut+"__"+added+".root"
+                    (hData, hQCD, others) = make_template_histos(histos, channel, varname, jt, cut, components)
+                    plot_templates(channel, varname, jt, cut, hData, hQCD, others)    
+                    

@@ -303,7 +303,7 @@ def plot_fit2(fit_templates_file, qcd_result, other_results, priors, extra = {})
         logging.warning(str(e))
 
     outfile_name = "fit_plots/"+var+"_Fit_"+jt+"_"+channel+"_"+reg+"_"+added+"_"+extra_id#+"_"+cutid
-
+    outfile_name = outfile_name.replace(".root_","")
 
     hData = TH1D(f.Get(var+"__DATA"))
     hQCD = TH1D(f.Get(var+"__QCD"))

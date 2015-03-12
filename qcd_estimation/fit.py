@@ -8,9 +8,10 @@ from ROOT import TH1D, TFile
 
 sys.path.append("/".join([os.environ["STPOL_DIR"], "qcd_estimation"]))
 from analyze_fit import *
-from results_tables import make_results_tables_old
+from results_tables import *
 from fit_components import *
 from plot_fit import plot_fit2
+from QCDFit import QCDFit
 
 init_val = 1.2
 step = 0.0001
@@ -89,7 +90,7 @@ def fit_qcd(identifier, components, extra = {}):
             #print "_____"
             #print "res_"+identifier+".res="+str(result)
             #fit.result=result
-            result_tex = analyze_fit(infile, res_qcd, res_nonqcd, priors, extra=extra)
+            fit = analyze_fit(infile, res_qcd, res_nonqcd, priors, extra=extra)
             plot_fit2(infile, res_qcd, res_nonqcd, priors, extra=extra)
             #print result_tex
             values = {}
@@ -135,7 +136,7 @@ def fit_qcd(identifier, components, extra = {}):
             results_file.write("\n")
             write_histograms_to_rootfile(t, outfilename) 
             """
-            return result_tex
+            return fit
             # (qcd_yield, uncert)
         except IOError as e:
             print e.strerror
@@ -147,12 +148,14 @@ def fit_qcd(identifier, components, extra = {}):
 
 
 if __name__ == "__main__":
-    components = fit_components_regular_reproc  
+    components = fit_components_regular_reproc
+    #components = fit_components_4   
 
     fitvars = []
     fitvars.append("qcd_mva")
     fitvars.append("mtw")
     fitvars.append("met")
+    #fitvars.append("qcd_mva_deltaR")
     #fitvars.append(Variable("qcd_mva", -1, 1, bins=20, shortName="qcd_mva", displayName="BDT"))
     #fitvars.append(Variable("met", 0, 200, bins=40, shortName="met", displayName="MET"))
     #fitvars.append(Variable("mtw", 0, 200, bins=20, shortName="mtw", displayName="MTW"))
@@ -161,43 +164,41 @@ if __name__ == "__main__":
     channels = ["mu","ele"]
     #channels = ["mu"]
     #lumi = 19700
-    results = {}    
-    nonqcdresults = {}
-    qcdfactors = {}
-    nonqcdfactors = {}
-    results_tex = {}
+    results = {}   
+    
     for channel in channels:
         for jt in jtset:
             for var in fitvars:
                 #if var == "mtw" and channel == "ele": continue
-                for cuttype in ["reversecut", ]:#"nocut", "qcdcut"]:
-                    for added in ["11Jan_deltaR"]:
+                for cuttype in ["reversecut", "nocut"]:#"nocut", "qcdcut"]:
+                    for added in ["Mar5"]:
                         print "\n"
-                        print "AAA", channel, jt, var, cuttype, added
+                        #print "AAA", channel, jt, var, cuttype, added
                         identifier = "%s__%s__%s__%s__%s" % (var, jt, channel, cuttype, added)
                         #fit = Fit()
-                        result_tex = fit_qcd(identifier, components)
-                        results_tex[channel+jt+var+cuttype] = result_tex
+                        fit = fit_qcd(identifier, components)
+                        results[jt+channel+var+cuttype] = fit
                         for isovar in ["up", "down"]:
                             print "\n"
                             print var, channel, jt, cuttype, added, "isovar=%s" %isovar
                             identifier = "%s__%s__%s__%s__%s__isovar_%s" % (var, jt, channel, cuttype, added, isovar)
-                            result_tex = fit_qcd(identifier, components, extra = {"isovar": isovar})
-                            results_tex[channel+jt+var+cuttype+"isovar"+isovar] = result_tex
+                            fit = fit_qcd(identifier, components, extra = {"isovar": isovar})
+                            results[jt+channel+var+cuttype+"isovar"+isovar] = fit
                         #(cst, retval,  nonqcdval) = plot_fit2(channel, var, fit, fit, lumi, jt, cuttype+"_"+added)
-                        #for varmc in [" ", "varMC_up", "varMC_down", "varMC_QCDMC"]:
-                        """for varmc in ["varMC_QCDMC", "varMC_QCDMC2J0T"]:
+                        for varmc in ["up", "down"]:#, "varMC_QCDMC"]:
+                            #for varmc in ["varMC_QCDMC", "varMC_QCDMC2J0T"]:
                             print "\n"
-                            print var, channel, jt, cuttype, added
-                            identifier = "%s__%s__%s__%s__%s" % (var, jt, channel, cuttype, added)
-                            if len(varmc) > 1:
-                                identifier += "__"+varmc
-                            #fit = Fit()
-                            result_tex = fit_qcd(identifier, extra = varmc)
-                            results_tex[channel+jt+var+cuttype+varmc] = result_tex"""
+                            print var, channel, jt, cuttype, added, "varMC=%s" %varmc
+                            identifier = "%s__%s__%s__%s__%s__varMC_%s" % (var, jt, channel, cuttype, added, varmc)
+                            fit = fit_qcd(identifier, components, extra = {"varMC": varmc})
+                            results[jt+channel+var+cuttype+"varMC"+varmc] = fit
     print "\n\n\n\n\n"
     #make_results_tables_old(results_tex, channels, jtset, fitvars, ["reversecut", "nocut", ], ["isovar"])
-    make_results_tables_old(results_tex, channels, jtset, ["mtw"], ["reversecut"])
+    #make_results_tables(results, ["nominal", "isovar", "nocut", "metmtw"])
+    #make_results_tables(results, ["varMC"])
+    #make_results_tables(results, ["nominal", "metmtw"])
+    make_results_tables(results, ["isovar", "nocut", "metmtw", "varMC"])
+    #make_results_tables(results, ["nominal"])
 
 
 

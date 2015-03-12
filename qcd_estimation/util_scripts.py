@@ -4,6 +4,31 @@ from ROOT import *
 from copy import copy
 import os
 
+def pretty_name(title):
+    title = title.replace("diboson", "Dibosons").replace("T_s", "s-channel").replace("T_t_ToLeptons", "t-channel").replace("WJets", "W+jets")\
+        .replace("DYJets", "DY+jets").replace("T_tW", "tW-channel").replace("TTJets", "ttbar")
+    return title
+
+def order_stack(st):
+    stack = THStack()
+    number = 0 
+    while number < 7:
+        for h in st.GetHists():
+            title = h.GetTitle().split("__")[1]
+            print h.GetTitle(), number
+            if (number == 0 and title == "T_t_ToLeptons") or\
+                (number == 1 and title == "T_s") or\
+                (number == 2 and title == "T_tW") or\
+                (number == 3 and title == "TTJets") or\
+                (number == 4 and title == "diboson") or\
+                (number == 5 and title == "DYJets") or\
+                (number == 6 and title == "WJets"):
+                    stack.Add(h)
+                    number += 1
+
+    return stack
+                    
+
 def open_all_data_files(data_group, mc_groups, QCD_group, paths):
     files = {}
     #all_groups = copy(mc_groups)
