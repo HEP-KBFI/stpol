@@ -160,6 +160,8 @@ df = similar(#Data frame as big as the input
             me_weight__down=Float32[],
             me_weight__up=Float32[],
 
+            nExtraPartons=Int32[],    
+
             alphas=Float32[],
             alphas__down=Float32[],
             alphas__up=Float32[],
@@ -318,6 +320,8 @@ for i=1:maxev
 
     df[i, :me_weight__down] = events[sources[weight(:me, :down)]]|>ifpresent
     df[i, :me_weight__up] = events[sources[weight(:me, :up)]]|>ifpresent
+
+    df[i, :nExtraPartons] = events[sources[:nextrapartons]]|>ifpresent
 
     df[i, :alphas] = events[sources[weight(:alphas)]]|>ifpresent
     df[i, :alphas__down] = events[sources[weight(:alphas, :down)]]|>ifpresent
