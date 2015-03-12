@@ -29,7 +29,7 @@ class ExtraPartonCounter : public edm::EDProducer{
 
 
    private:
-
+      const bool isTTJets;
 
       virtual void beginJob() ;
       virtual void produce(edm::Event&, const edm::EventSetup&);
@@ -47,8 +47,9 @@ class ExtraPartonCounter : public edm::EDProducer{
 // constructors and destructor
 //
 ExtraPartonCounter::ExtraPartonCounter(const edm::ParameterSet& iConfig)
+    : isTTJets(iConfig.getParameter<bool>("isTTJets"))
 {
-  produces<std::vector<double> >("nExtraPartons");
+  produces<int>("nExtraPartons");
 }
 
 
@@ -65,15 +66,16 @@ ExtraPartonCounter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace std;
   using namespace reco;
   
+  //bool subChannel = iConfig.getParameter<bool>("subChannelTTJets");
   
-  
-  std::auto_ptr<std::vector<double>>  nExtraPartons(new std::vector<double>(1));
-  
+  //std::auto_ptr<std::vector<double>>  nExtraPartons(new std::vector<double>(1));
+  int nExtraPartons = 0;
+    //std::auto_ptr<int>(new int(lepton->pdgId()))
  
   
   edm::Handle<GenParticleCollection> genPart;
   iEvent.getByLabel("genParticles", genPart);
-  
+  //iConfig.getParameter<cms.string>("su
 
     for(size_t i = 0; i < genPart->size(); ++ i) 
     {
@@ -102,11 +104,13 @@ ExtraPartonCounter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
             
             if (is_final && is_extra)
             {
-                ++(*nExtraPartons)[0];
+                ++nExtraPartons;
             }
         }
     }
-  iEvent.put(nExtraPartons, "nExtraPartons");
+    if (isTTJets == true)
+        nExtraPartons += 2;
+    iEvent.put(std::auto_ptr<int>(new int(nExtraPartons)), "nExtraPartons");
 }
 
 // ------------ method called once each job just before starting event loop  ------------
