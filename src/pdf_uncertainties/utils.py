@@ -1,7 +1,8 @@
 pdfs = ["CT10LHgrid", "CT10asLHgrid", "NNPDF23nloas0119LHgrid", "NNPDF23nloas0116LHgrid", "NNPDF23nloas0117LHgrid", "NNPDF23nloas0118LHgrid", "NNPDF23nloas0120LHgrid", "NNPDF23nloas0121LHgrid", "NNPDF23nloas0122LHgrid", "MSTW2008CPdeutnlo68clLHgrid"]
 
 #pdfs = ["NNPDF23nloas0119LHgrid", "NNPDF22nlo100LHgrid", "NNPDF21100LHgrid"]
-pdfs = ["NNPDF30nloas0118LHgrid"]
+#pdfs = ["NNPDF30nloas0118LHgrid"]
+#pdfs = ["CT10LHgrid", "CT10asLHgrid", "NNPDF23nlo", "MSTW2008CPdeutnlo68clLHgrid"]
 
 
 sizes = {}

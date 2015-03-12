@@ -24,10 +24,10 @@ import numpy
 
 
 def get_file_list(file_list_file):
-    lines = [line.strip() for line in open(file_list_file)]
+    lines = ["/hdfs/cms/"+line.strip() for line in open(file_list_file)]
     return lines
 
-def get_weights(dataset, thispdf, channel, filecounter):
+def get_weights(dataset, thispdf, channel, filecounter, dont_skim = False):
     maxscale = 200
     minscale = 170
     maxid = 0
@@ -43,7 +43,7 @@ def get_weights(dataset, thispdf, channel, filecounter):
     #pdfs_ct66 = ["cteq66", "cteq66alphas"]
     #pdfs["nnpdf"] = ["NNPDF23nloas0119LHgrid", "NNPDF22nlo100LHgrid", "NNPDF21100LHgrid"]
     #pdfs["nnpdf"] = ["NNPDF23"]
-    pdfs["nnpdf"] = ["NNPDF30nloas0118LHgrid"]
+    pdfs["nnpdf"] = ["NNPDF23nloas0119LHgrid"]
     pdfs["nnpdf_down"] = ["NNPDF23nloas0116LHgrid", "NNPDF23nloas0117LHgrid", "NNPDF23nloas0118LHgrid"]
     pdfs["nnpdf_up"] = ["NNPDF23nloas0120LHgrid", "NNPDF23nloas0121LHgrid", "NNPDF23nloas0122LHgrid"]
 
@@ -55,7 +55,7 @@ def get_weights(dataset, thispdf, channel, filecounter):
         print pdfs[p], thispdf
         if not (thispdf in pdfs[p]): continue
         print "AAA"
-        file_list_file = os.path.join(os.environ["STPOL_DIR"], "filelists", "pdf", p, dataset+".txt")
+        file_list_file = os.path.join(os.environ["STPOL_DIR"], "filelists", "pdf_Jan11_deltaR", p, dataset+".files.txt")
         file_list = get_file_list(file_list_file)
         print file_list
         events[p] = Events(file_list)
@@ -85,10 +85,11 @@ def get_weights(dataset, thispdf, channel, filecounter):
             lumi = event._event.eventAuxiliary().luminosityBlock()
             eventid = event._event.eventAuxiliary().id().event()
             
-            if not run in outdata[channel]: continue
-            if not lumi in outdata[channel][run]: continue
-            if not eventid in outdata[channel][run][lumi]: continue
-            if not outdata[channel][run][lumi][eventid] == True: continue
+            if not dont_skim:
+                if not run in outdata[channel]: continue
+                if not lumi in outdata[channel][run]: continue
+                if not eventid in outdata[channel][run][lumi]: continue
+                if not outdata[channel][run][lumi][eventid] == True: continue
 
             if first:
                 if run not in weights:
@@ -147,11 +148,16 @@ def get_weights(dataset, thispdf, channel, filecounter):
 
     
     print "got weights"
-    print "minmax1", maxscale, minscale, maxid, minid, maxx, minx
+    #print "minmax1", maxscale, minscale, maxid, minid, maxx, minx
     #assert n_events == n_events2
     for pdfset, wsums in weight_sum.items():
         for k in range(len(wsums)):
-            wsums[k] = wsums[k] / n_events
+            if n_events == 0:
+                if wsums[k] > 0.:
+                    print "strange error", wsums[k]
+                wsums[k] = 0.
+            else:
+                wsums[k] = wsums[k] / n_events
             print pdfset, k, wsums[k], weight_sum[pdfset][k]
     return weights, weight_sum, others
 

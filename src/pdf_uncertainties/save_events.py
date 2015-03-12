@@ -42,7 +42,7 @@ extra_data = {}
 i=-1
 for event in events2:
     i+=1
-    if event.bdt_qcd <= 0.4: continue
+    if event.bdt_qcd <= -0.15: continue
     extra_data[i] = [event.bdt_qcd, event.bdt_sig_bg, event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight]
 
 i=-1
@@ -76,11 +76,12 @@ for event in events:
     elif event.njets == 3:
         if event.ntags > 2: continue
         if event.ntags < 1: continue
+    else: continue
     jt = "%sj%st" % (event.njets, event.ntags)    
 
-    if event.n_signal_mu == 1:
+    if event.n_signal_mu == 1 and abs(event.lepton_type) == 13:
         channel = "mu"
-    elif event.n_signal_ele == 1:
+    elif event.n_signal_ele == 1 and abs(event.lepton_type) == 11:
         channel = "ele"
     else: continue
 
@@ -93,9 +94,9 @@ for event in events:
     if channel == "mu" and event.hlt_mu != 1: continue
     if channel == "ele" and event.hlt_ele != 1: continue
     if event.bjet_dr <= 0.3 or event.ljet_pt <= 0.3: continue
-    qcd_mva_cut = 0.4
+    qcd_mva_cut = -0.15
     if channel == "ele":
-        qcd_mva_cut = 0.55
+        qcd_mva_cut = 0.15
     
 
     qcd_bdt = extra_data[i][0]
@@ -107,7 +108,7 @@ for event in events:
     if math.isnan(event.lepton_weight__id): continue
     if math.isnan(event.lepton_weight__iso): continue
     if math.isnan(event.lepton_weight__trigger): continue
-    #if math.isnan(event.b_weight): continue
+    if math.isnan(event.b_weight): continue
     outdatai[channel][i] = True
     if run not in outdata[channel]:
         outdata[channel][run] = dict()
