@@ -27,7 +27,6 @@ print("loading keys from ", inf)
 keylist = {k.GetName(): k for k in tf.GetListOfKeys()}
 keydicts = {k: to_dict(k) for k in keylist.keys()}
 print("loaded keys: ", len(keylist))
-#sys.exit(1)
 mc_samples = [
     "tchan", "wjets", "ttjets",
     "twchan", "schan", "diboson", #"gjets", 
@@ -72,17 +71,15 @@ def select_hist(k, histname, lepton, selection_major, selection_minor, njets, nt
 
     if d["iso"] != iso:
         return None
-
+    
     #is double variated MC
     #Hacky parsing
     if d["systematic"]!="nominal" and d["scenario"]!="nominal" and d["systematic"]!="" and ("wjets" in d["scenario"] or "qcd" in d["scenario"]) and "FSIM" not in k:
         return None
-
     
     #hacky parsing of (systematic variation at generation, weight scenario) tuple
     if d["systematic"]!="" and d["systematic"]!="data":
         s2 = d["scenario"]
-
         #weight was not nominal
         if s2 != "nominal":
             s2 = syst_tables["systematics_table"].get(s2, s2)
@@ -128,6 +125,10 @@ def select_hist(k, histname, lepton, selection_major, selection_minor, njets, nt
         syst = syst_tables["systematics_table"][d["systematic"]]
         syst_dir = "none"
 
+    if "aMCatNLO" in d["systematic"] and d["scenario"] == "nominal":
+        syst = syst_tables["systematics_table"][d["systematic"]]
+        syst_dir = "none"
+
     if syst=="nominal":
         hk = "%s__%s" % (d["object"], d["sample"])
     elif syst_dir=="none":
@@ -135,6 +136,7 @@ def select_hist(k, histname, lepton, selection_major, selection_minor, njets, nt
     else:
         hk = "%s__%s__%s__%s" % (d["object"], d["sample"], syst, syst_dir)
     hk = hk.replace("comphep_nominal", "comphep__nominal")
+    hk = hk.replace("aMCatNLO_nominal", "aMCatNLO__nominal")
     return hk, d
 
 def set_zero(h):
@@ -155,6 +157,7 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
     ret = {}
     for iso in ["iso", "antiiso"]:
         for k in keylist.keys():
+    
             hk = select_hist(k, histname, lepton, selection_major, selection_minor, njets, ntags, iso)
 
             if not hk:
@@ -164,6 +167,7 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
             h = keylist[k].ReadObj()
             set_neg_zero(h)
 
+            int_sum = h.Integral()
             for i in range(0, h.GetNbinsX() + 2):
                 x, y = h.GetBinContent(i), h.GetBinError(i)
 
@@ -172,36 +176,77 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
                 raise Exception("Already exists: %s" % kn)
             ret[kn] = h
     
-            if "JetsToLNu_matching" in k or "JetsToLNu_scale" in k:
+            """if "JetsToLNu_matching" in k or "JetsToLNu_scale" in k:
                 try:
                     #get corresponding nominal fullsim and fastsim histograms and scale accordingly
-                    fullsim_k = k.replace("JetsToLNu_scaleup", "Jets_exclusive").replace("JetsToLNu_scaledown", "Jets_exclusive").replace("JetsToLNu_matchingup", "Jets_exclusive").replace("JetsToLNu_matchingdown", "Jets_exclusive").replace("systematic=scaleup", "systematic=nominal").replace("systematic=scaledown", "systematic=nominal").replace("systematic=matchingup", "systematic=nominal").replace("systematic=matchingdown", "systematic=nominal").replace("_light","").replace("_heavy","")
+                    fullsim_k = k.replace("JetsToLNu_scaleup", "Jets_exclusive").replace("JetsToLNu_scaledown", "Jets_exclusive").replace("JetsToLNu_matchingup", "Jets_exclusive").replace("JetsToLNu_matchingdown", "Jets_exclusive").replace("_light","").replace("_heavy","")
 
+                    comps = fullsim_k.split(";")
+                    comps[3] = "systematic=nominal"
+                    if not "preqcd" in comps[5]:
+                        comps[5] = "selection_major=preselection"
+                    comps[6] = "selection_minor=nothing"
+                    fullsim_k = ";".join(comps)
+                    
                     h_fullsim = keylist[fullsim_k].ReadObj()
                     set_neg_zero(h_fullsim)
-                    fastsim_k = k.replace("JetsToLNu_scaleup", "Jets_exclusive_FSIM").replace("JetsToLNu_scaledown", "Jets_exclusive_FSIM").replace("JetsToLNu_matchingup", "Jets_exclusive_FSIM").replace("JetsToLNu_matchingdown", "Jets_exclusive_FSIM").replace("systematic=scaleup", "systematic=wjets_fsim_nominal").replace("systematic=scaledown", "systematic=wjets_fsim_nominal").replace("systematic=matchingup", "systematic=wjets_fsim_nominal").replace("systematic=matchingdown", "systematic=wjets_fsim_nominal").replace("_light","").replace("_heavy","")
+                    fastsim_k = k.replace("JetsToLNu_scaleup", "Jets_exclusive_FSIM").replace("JetsToLNu_scaledown", "Jets_exclusive_FSIM").replace("JetsToLNu_matchingup", "Jets_exclusive_FSIM").replace("JetsToLNu_matchingdown", "Jets_exclusive_FSIM").replace("_light","").replace("_heavy","")
+                    comps = fastsim_k.split(";")
+                    comps[3] = "systematic=wjets_fsim_nominal"
+                    if not "preqcd" in comps[5]:
+                        comps[5] = "selection_major=preselection"
+                    comps[6] = "selection_minor=nothing"
+                    fastsim_k = ";".join(comps)
                     
-                    
+                    print k
                     h_fastsim = keylist[fastsim_k].ReadObj()
+
+                    if "JetsToLNu_matchingdown" in k and "iso=iso" in k:
+                        chi2 = h_fastsim.Chi2Test(h_fullsim, "WW CHI2/NDF")
+                        pval = h_fastsim.Chi2Test(h_fullsim, "WW")
+                        kolmo = h_fastsim.KolmogorovTest(h_fullsim)
+                        var = comps[0].split("=")[1]
+                        lepton = comps[7].split("=")[1]
+                        sample = fullsim_k.split(";")[1].split("=")[1]
+                        if (var == "bdt_sig_bg" and "preselection" in k) or (var == "cos_theta_lj" and "selection_major=bdt" in k):
+                            print "ZZZ", var, lepton, sample, comps[8], comps[9], comps[5], comps[6], chi2, pval, kolmo
+                            #asd
+                    
                     set_neg_zero(h_fastsim)
                     for i in range(0, h.GetNbinsX() + 2):
                         if h_fastsim.GetBinContent(i) > 0:
                             scaleby = h_fullsim.GetBinContent(i) / h_fastsim.GetBinContent(i)
                             
                             #Otherwise introduces statistical anomalies
-                            if h_fullsim.GetBinContent(i) > 0.1 and h_fastsim.GetBinContent(i) > 0.1 and (scaleby > 3 or scaleby < 0.33): 
-                                #if scaleby>2 or scaleby < 0.5: 
-                                #    print "scaled bin", i, "by", scaleby, "from", h.GetBinContent(i), "to", h.GetBinContent(i) *scaleby, h_fullsim.GetBinContent(i), h_fastsim.GetBinContent(i)
-                                h.SetBinContent(i, h.GetBinContent(i) * scaleby)
-                            
+                            #if (not ((h_fullsim.GetBinContent(i) < 0.0001 or h_fastsim.GetBinContent(i) < 0.0001) and (scaleby > 4 or scaleby < 0.25))) and not (scaleby > 8 or scaleby < 0.25): 
+                            if (scaleby>5 or scaleby < 0.2) and h.GetBinContent(i)>0:
+                                    sb_old = scaleby
+                                    if i > 0 and i < h.GetNbinsX() + 1:
+                                        scaleby = (h_fullsim.GetBinContent(i) + h_fullsim.GetBinContent(i-1) + h_fullsim.GetBinContent(i+1)) / (h_fastsim.GetBinContent(i) + h_fastsim.GetBinContent(i-1) + h_fastsim.GetBinContent(i+1))
+                                    elif i>0:
+                                        scaleby = (h_fullsim.GetBinContent(i) + h_fullsim.GetBinContent(i-1)) / (h_fastsim.GetBinContent(i) + h_fastsim.GetBinContent(i-1))
+                                    elif i <h.GetNbinsX() + 1:
+                                        scaleby = (h_fullsim.GetBinContent(i) + h_fullsim.GetBinContent(i+1)) / (h_fastsim.GetBinContent(i) + h_fastsim.GetBinContent(i+1))
+                                    if scaleby > 5:# and scaleby > sb_old:
+                                        scaleby = 5#sb_old
+                                    if scaleby < 0.2:# and scaleby < sb_old:
+                                        scaleby = 0.2#sb_old
+                                    #print "scaled bin", i, "by", sb_old , "->", scaleby, "from", h.GetBinContent(i), "to", h.GetBinContent(i) *scaleby, h_fullsim.GetBinContent(i), h_fastsim.GetBinContent(i)
+                            print "scaled bin", i, "by", scaleby, "from", h.GetBinContent(i)*20000, "to", h.GetBinContent(i) *scaleby*20000, h_fullsim.GetBinContent(i)*20000, h_fastsim.GetBinContent(i)*20000
+                            #print "ENTRIES", lepton, h_fullsim.GetEntries(), h_fastsim.GetEntries()        
+                            h.SetBinContent(i, h.GetBinContent(i) * scaleby)
+                            #if (scaleby>12 or scaleby < 0.1) and h.GetBinContent(i)>0 and "W1" not in k and "scale" in k:
+                            #    print "IIK"
+                            #    sys.exit(1)
                 except KeyError:
                     print "KEYERROR", fullsim_k#, "or", fastsim_k
                     #happens only rarely for unnecessary case, just ignore and don't rescale
-                    continue
+                    #continue
+                """
                     
     if len(ret)==0:
         raise Exception("no histograms produced for %s:%s:%s:%s:%s:%s" % (histname, lepton, selection_major, selection_minor, njets, ntags))
-
+    #print "%dj%dt_%s" % (njets, ntags, k):v for (k, v) in ret.items()
     return {"%dj%dt_%s" % (njets, ntags, k):v for (k, v) in ret.items()}
 
 def select_transfermatrix(gen_lepton, reco_lepton, selection_major, selection_minor, njets, ntags):
@@ -350,6 +395,10 @@ def merge_hists(vname, hd):
     merge_into(vname, hd, out, "wzjets", "diboson")
     merge_into(vname, hd, out, "wzjets", "dyjets")
 
+    #merge_into(vname, hd, out, "wzjets", "wjets_heavy")
+    #merge_into(vname, hd, out, "wjets_light", "wjets_light")
+    
+    
     merge_into(vname, hd, out, "qcd", "qcd")
 
     merge_into(vname, hd, out, "tchan", "tchan")
@@ -369,21 +418,22 @@ for lep in ["mu", "ele"]:
                 "bdt_qcd",
                 "met", "mtw",
                 ]:
+            print variable
             x = select_hists(variable, lep, "preqcd", "nothing", nj, nt)
             write_hists("%s/%s.root" % (d, variable), x)
-sys.exit(1)
+
 
 print("preselection")
 for lep in ["mu", "ele"]:
     for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
-        print(nj, nt)
+        print(lep, nj, nt)
 
         d = "%s/bdt_scan/hists/preselection/%dj_%dt/%s" % (output_dir, nj, nt, lep)
         os.makedirs(d)
 
         for variable in [
                 "bdt_sig_bg",
-                "bdt_sig_bg_top_13_001",
+                #"bdt_sig_bg_top_13_001",
                 #"bdt_sig_bg_before_reproc",
                 #"ljet_eta",
                 "abs_ljet_eta",
@@ -395,12 +445,10 @@ for lep in ["mu", "ele"]:
             x = select_hists(variable, lep, "preselection", "nothing", nj, nt)
             write_hists("%s/%s.root" % (d, variable), x)
 
-
 print("reverse BDT cut for fit")
 #for bdt_cut in [-0.20, -0.15, -0.10, -0.05, 0.0, 0.05, 0.06, 0.10, 0.13, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]:
 for bdt_cut in [0.6]:
     bdts = "%.5f" % bdt_cut
-    print(bdts)
     for lep in ["mu", "ele"]:
         for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
             print(nj, nt)
@@ -410,7 +458,7 @@ for bdt_cut in [0.6]:
 
             for variable in [
                     "bdt_sig_bg",
-                    "bdt_sig_bg_top_13_001",
+                    #"bdt_sig_bg_top_13_001",
                     #"bdt_sig_bg_before_reproc",
                     #"ljet_eta",
                     "abs_ljet_eta",
