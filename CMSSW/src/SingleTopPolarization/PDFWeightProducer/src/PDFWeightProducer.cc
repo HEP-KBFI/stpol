@@ -84,10 +84,10 @@ PDFWeightProducer::PDFWeightProducer(const edm::ParameterSet& iConfig) :
     genParticlesSrc("genParticles"),
     PDFSets(iConfig.getParameter<std::vector<std::string>>("PDFSets")),
     do_powheg_topmass_fix(iConfig.getParameter<bool>("doPowhegTopMassFix"))
+    
 {
-    LHAPDF::setPDFPath("/home/andres/single_top/stpol_current/stpol/src/step2/pdfsets");
     for( unsigned int i = 0; i < PDFSets.size(); i++ ) {
-        
+        LHAPDF::setPDFPath("/home/andres/single_top/stpol_pdf/src/step2/pdfsets");    
         // make names of PDF sets to be saved
         std::string name = PDFSets[i];
         size_t pos = name.find_first_not_of("ZXCVBNMASDFGHJKLQWERTYUIOPabcdefghijklmnopqrstuvwxyz1234567890");
@@ -109,7 +109,7 @@ PDFWeightProducer::PDFWeightProducer(const edm::ParameterSet& iConfig) :
         std::cout << LHAPDF::pdfsetsPath() << std::endl;
         std::cout << LHAPDF::pdfsetsIndexPath() << std::endl;
         std::cout << "Initializing PDF set " << i << std::endl;
-        LHAPDF::setPDFPath("/home/andres/single_top/stpol_current/stpol/src/step2/pdfsets");
+        LHAPDF::setPDFPath("/home/andres/single_top/stpol_pdf/src/step2/pdfsets");
         std::cout << LHAPDF::pdfsetsPath() << std::endl;
         std::cout << LHAPDF::pdfsetsIndexPath() << std::endl;
         LHAPDF::initPDFSet(i+1, PDFSets[i]);
