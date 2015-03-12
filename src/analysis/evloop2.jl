@@ -78,8 +78,8 @@ const BDT_REVERSE_SYMBOLS = {bdt=>symbol(@sprintf("LESSTHAN_%.5f", bdt)) for bdt
 const LEPTON_SYMBOLS = {13=>:mu, 11=>:ele, -13=>:mu, -11=>:ele, 15=>:tau, -15=>:tau, NA=>NA}
 
 const DO_TRANSFER_MATRIX = true
-const HISTS_NOMINAL_ONLY = true
-const TM_NOMINAL_ONLY = true
+const HISTS_NOMINAL_ONLY = false
+const TM_NOMINAL_ONLY = false
 const JET_TAGS = [(2, 0), (2, 2), (2, 1), (3, 0), (3, 1), (3, 2), (3, 3)]
 #const JET_TAGS = [(2,1)]
 
@@ -106,7 +106,7 @@ if VARS_TO_USE == :all_crosscheck
     crosscheck_vars = [
         :bdt_sig_bg,
         :bdt_sig_bg_old,
-        :bdt_qcd_before_reproc,
+        :bdt_qcd,
         :bdt_sig_bg_top_13_001,
 
 #        (:abs_ljet_eta, row::DataFrameRow -> abs(row[:ljet_eta])),
@@ -208,7 +208,12 @@ function fill_histogram(
 
     #loop over all the systematic scenarios
     for (scname, scenario::Scenario) in scenarios
-
+        #println(scname)
+        if (iso == :antiiso && (scname == (:qscale_me_weight__up,:tchan) || scname == (:qscale_me_weight__down,:tchan) || scname == (:qscale_me_weight__up,:ttjets) || scname == (:qscale_me_weight__down,:ttjets) || scname == (:qscale_me_weight__up,:wjets) || scname == (:qscale_me_weight__down,:wjets)))
+            #println(scname)
+            #not there in antiiso
+            continue
+        end
         #get the type of weighting to be applied
         const w_scenario = scenario.weight_scenario
 
@@ -235,6 +240,11 @@ function fill_histogram(
             const wname = SingleTopBase.SYSTEMATICS_TABLE[w_scenario]
         else
             const wname = w_scenario
+        end
+
+        if !((sample == scenario.sample) || get_process(sample)::Symbol==scenario.sample::Symbol)
+            VERBOSE && println("skipping sample=$sample scenario.sample=$(scenario.sample) process=$(get_process(sample))")
+            continue
         end
         
         const kk = HistKey(
@@ -388,8 +398,14 @@ function process_df(rows::AbstractVector{Int64})
 
         const sample = hmap_symb_from[row[:sample]::Int64]
         const subsample = hmap_symb_from[row[:subsample]::Int64]
-        const systematic = hmap_symb_from[row[:systematic]::Int64]
+        if hmap_symb_from[row[:systematic]::Int64] == :nominal_scaleweight_fixed
+            const systematic = :nominal
+        else
+            const systematic = hmap_symb_from[row[:systematic]::Int64]
+        end
         const iso = hmap_symb_from[row[:isolation]::Int64]
+    
+                               
 
         true_lep = sample==:tchan ? row[:gen_lepton_id] : int64(0)
         if isna(true_lep) || true_lep==0
@@ -443,10 +459,8 @@ function process_df(rows::AbstractVector{Int64})
                VERBOSE && println("$reco $x $y")
 
                const lep_symb = symbol("gen_$(get(LEPTON_SYMBOLS, true_lep, NA))__reco_$(reco_lep)")
-
                for (scen_name::(Symbol, Symbol), scen::Scenario) in scens_gr[systematic]
                    (TM_NOMINAL_ONLY && scen_name[1]!=:nominal) && continue
-
                    const w = scen.weight(nw, row)::Float64
                    (isnan(w) || isna(w)) && error("$k2: w=$w $(df[row.row, :])")
 
@@ -553,7 +567,7 @@ function process_df(rows::AbstractVector{Int64})
            const _reco = sel(row, nj, nt)::Bool
            _reco || continue
            for var in [
-               :bdt_qcd_before_reproc,
+               :bdt_qcd,
                :mtw, :met,
           #     :met_phi
            ]
