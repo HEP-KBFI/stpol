@@ -114,7 +114,8 @@ def getEffFiles(channel):
     if  (channel in ["T_t", "Tbar_t"] or
         re.match("T_t_.*", channel) or
         re.match("Tbar_t_.*", channel) or
-        re.match("TToB.*Nu_.*", channel)):
+        re.match("TToB.*Nu_.*", channel) or
+        re.match("TToLeptons*", channel)):
         return fnames["T_t"], fnames["WJets"], fnames["T_t"]
 
     elif    (re.match("W[0-9]*Jets", channel) or
@@ -147,7 +148,8 @@ def getEffValues(channel, nj):
     if  (channel in ["T_t", "Tbar_t"] or
         re.match("T_t_.*", channel) or
         re.match("Tbar_t_.*", channel) or
-        re.match("TToB.*Nu_.*", channel)):
+        re.match("TToB.*Nu_.*", channel) or
+        re.match("TToLeptons*", channel)):
         return tchan[nj][0], wjets[nj][1], tchan[nj][2]
     elif    (re.match("W[0-9]*Jets", channel) or
             re.match("WJets.*", channel) or
