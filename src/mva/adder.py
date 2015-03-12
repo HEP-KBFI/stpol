@@ -9,7 +9,7 @@ import numpy as np
 import time, os
 from xml.dom import minidom
 from path import STPOL_DIR
-
+import math
 treename = "dataframe"
 
 def main():
@@ -57,6 +57,8 @@ def main():
 
             for var in varbuffers.keys():
                 v, isna = rv(event, var)
+                if math.isnan(v):
+                    isna = True
                 if isna:
                     if not var in counters.keys():
                         counters[var] = 0
@@ -64,7 +66,7 @@ def main():
                     break #one variable was NA, lets stop
                 varbuffers[var][0] = v
 
-            if (isna) or not event.passes:
+            if (isna) or not event.passes: 
                 x = "NA" #MVA(..., NA, ...) -> NA
             else:
                 #print [(x, y[0]) for x,y in varbuffers.items()]
@@ -201,9 +203,16 @@ def mva_loop_lepton_separate(mvaname, infiles, mvas, varmaps):
                         break
                 if not isna:
                     x = mvareader.EvaluateMVA(mvaname)
+                    if event.njets == 2 and event.ntags == 1 and not x>=-1:
+                        print x, event.njets, event.ntags, "___", varbuffers
+                else:
+                    if event.njets == 2 and event.ntags == 1:
+                        pass
             if isna:
+                if event.njets == 2 and event.ntags == 1:
+                    pass
                 x = "NA" #MVA(..., NA, ...) -> NA
-
+                
             ofile.write(str(x) + "\n")
             nproc += 1
         ofile.write("# ntree=%d nproc=%d\n" % (tree.GetEntries(), nproc))

@@ -5,15 +5,15 @@ import numpy as np
 
 from adder import setup_mva, rv, zero_buffers, treename, mva_loop_lepton_separate, STPOL_DIR
 
-mvaname = "bdt_qcd"
-
 def main():
-    infiles = sys.argv[1:]
+    mvaname = sys.argv[1]
+    weightname = sys.argv[2]
+    infiles = sys.argv[3:]
     print infiles
 
     mvas = dict()
-    mvas[13] = setup_mva(mvaname, STPOL_DIR + "/src/qcd_mva/weights/anti_QCD_MVA_07_04_final2_mu.weights.xml")
-    mvas[11] = setup_mva(mvaname, STPOL_DIR + "/src/qcd_mva/weights/anti_QCD_MVA_07_04_final2_ele.weights.xml")
+    mvas[13] = setup_mva(mvaname, STPOL_DIR + "/src/qcd_mva/weights/%s_mu.weights.xml" % weightname)
+    mvas[11] = setup_mva(mvaname, STPOL_DIR + "/src/qcd_mva/weights/%s_ele.weights.xml" % weightname)
 
     varmaps = dict()
     varmaps[13] = {"mu_mtw":"mtw", "c":"C"}
