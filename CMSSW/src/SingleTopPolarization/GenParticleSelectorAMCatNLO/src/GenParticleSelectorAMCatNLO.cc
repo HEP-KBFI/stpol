@@ -115,25 +115,26 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
     const GenParticle* wBoson = nullptr;
     const GenParticle* top = nullptr;
     
+    //cout << "event" << endl;
     for(size_t iparticle = 0; iparticle < genParticles->size(); ++ iparticle) 
     {
         const GenParticle& p = (*genParticles)[iparticle];
         const GenParticle* mom = (GenParticle*)p.mother( 0 );
 
-        /* debug
+        //debug
         if ((abs(p.pdgId()) >= 11 and abs(p.pdgId()) <= 16) || abs(p.pdgId()) == 6 || abs(p.pdgId()) == 24 || abs(p.pdgId())<6)
         {
-            LogDebug("part") << p.pdgId() << " " << p.status() << "\t" << mom->pdgId() << " " << mom->status();
+            //cout << p.pdgId() << " " << p.status() << "\t" << mom->pdgId() << " " << mom->status() <<endl;
             
-            for(size_t mi = 0; mi < p.numberOfMothers(); ++ mi){
+            /*for(size_t mi = 0; mi < p.numberOfMothers(); ++ mi){
                 GenParticle* mp = (GenParticle*) p.mother(mi);
-                LogDebug("part") << "m " << mp->pdgId() << " " << mp->status();     
+                cout << "m " << mp->pdgId() << " " << mp->status() << endl;     
             }
             for(size_t mi = 0; mi < p.numberOfDaughters(); ++ mi){
                 GenParticle* mp = (GenParticle*) p.daughter(mi);
-                LogDebug("part") << "d " << mp->pdgId() << " " << mp->status();
-            }
-        }*/
+                cout << "d " << mp->pdgId() << " " << mp->status() << endl;
+            }*/
+        }
                  
         if (((abs(p.pdgId())==11) or (abs(p.pdgId())==13)) && p.status() == 1)
         {
@@ -155,7 +156,7 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
                         p1 = (GenParticle*)p1->mother(0);
                     }
                 }
-                if(p_mom->pdgId() == 24 && (p_mom->status() == 22 || p_mom->status() == 52) && p1->status() == 23)
+                if(abs(p_mom->pdgId()) == 24 && (p_mom->status() == 22 || p_mom->status() == 52) && p1->status() == 23)
                 {
                     outLeptons->push_back(p);
                     lepton=&p;
@@ -182,15 +183,25 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
                 outLeptons->push_back(p);
                 lepton=&p;
             }
-            else if(mom->numberOfMothers() > 0)
-            {
-                const GenParticle* grandma = (GenParticle*)mom->mother( 0 );
-                if(mom->pdgId() == p.pdgId() && mom->status() == 51 && grandma->pdgId() == p.pdgId() && grandma->status() == 23)
+            else if(mom->pdgId() == p.pdgId())
+            {   
+                //Go up the decay chain until you find a mother that is a W             
+                GenParticle* p1 = (GenParticle*)p.mother(0);
+                GenParticle* p_mom = (GenParticle*)p1->mother( 0 );
+                while(p_mom->pdgId() == p.pdgId())
+                {
+                    if(p_mom->numberOfMothers() > 0)
+                    {   
+                        p_mom = (GenParticle*)p_mom->mother( 0 );
+                        p1 = (GenParticle*)p1->mother(0);
+                    }
+                }
+                if(abs(p_mom->pdgId()) == 24 && (p_mom->status() == 22 || p_mom->status() == 52) && p1->status() == 23)
                 {
                     outLeptons->push_back(p);
                     lepton=&p;
-                }
-            }            
+                }     
+            }         
         }
         
         if (abs(p.pdgId())==16 && p.status() == 1 && 
@@ -236,12 +247,13 @@ GenParticleSelectorAMCatNLO::produce(edm::Event& iEvent, const edm::EventSetup& 
         {
             const GenParticle* dau = (GenParticle*)p.daughter( 0 );
             //second case when status 22 W decays directly without status 52 W
-            if(dau->pdgId() != 24
+            if(abs(dau->pdgId()) != 24
                 && ((p.status() == 52 && p.numberOfMothers() == 1) 
                     || (p.status() == 22 && abs(mom->pdgId()) == 6 && mom->status() == 62)))
             {
                 outWbosons->push_back(p);
                 wBoson=&p;
+                //cout << "added W" << endl;
             }
         }
         if (abs(p.pdgId()) == 6 && p.status() == 62 )
