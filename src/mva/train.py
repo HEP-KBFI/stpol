@@ -12,7 +12,8 @@ import json
 import sys
 
 def sample_name(fn):
-    return fn.split("/")[-3]
+    #return fn.split("/")[-3] #Joosep's structure
+    return fn.split("/")[-2]
 
 #inputs
 inpdir = sys.argv[1]
