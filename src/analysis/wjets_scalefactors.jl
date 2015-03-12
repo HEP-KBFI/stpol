@@ -7,8 +7,8 @@ include("../fraction_fit/hists.jl")
 using ROOT, ROOTDataFrames
 
 using PyCall
-pygui(:wx)
-using PyPlot
+#pygui(:wx)
+#using PyPlot
 
 include("hplot.jl")
 
@@ -66,10 +66,10 @@ for i=1:length(df)
     #select 2J, 0T
     nj == 2 || continue
     nt == 0 || continue
-
+    
     #select events where cos theta is calculated
     isna(df[i, :cos_theta_lj]) && continue
-   
+    #((df[i, :n_signal_mu] == 1 && df2[i, :bdt_qcd] > -0.15) || (df[i, :n_signal_ele] == 1 && df2[i, :bdt_qcd] > 0.15)) || continue 
     #event successfully selected
     n += 1
     d[n, :sample] = symbol(hmap[:from][s]);
@@ -77,7 +77,7 @@ for i=1:length(df)
     d[n, :jet_cls_1] = jet_cls_from_number(df[i, :jet_cls])
     d[n, :jet_cls_2] = jet_cls_heavy_light(d[n, :jet_cls_1])
     
-    d[n, :weight] = df2[i, :xsweight] * df[i, :gen_weight]
+    d[n, :weight] = df2[i, :xsweight] * df[i, :gen_weight] * df[i,:b_weight] * df[i, :pu_weight] * df[i, :lepton_weight__id] * df[i, :lepton_weight__iso] * df[i, :lepton_weight__trigger] 
 
     n%1000000 == 0 && println(n)
 end
@@ -93,9 +93,11 @@ import SingleTopBase: makehist_1d, VARS
 
 #store costheta histograms here
 hd = Dict()
+yields = Dict()
 
 for k in jet_classifications
     hd[k] = Dict()
+	yields[k] = Dict()
     c = d[:jet_cls_1] .== k
 
     #project sherpa cos-theta distribution
@@ -103,6 +105,23 @@ for k in jet_classifications
     
     #project madgraph cos-theta distribution
     hd[k][:madgraph] = makehist_1d(sub(d, !SH & c), :ct, infb(linspace(-1, 1, 30)), r -> r[:weight]);
+
+
+	yields[k][:sherpa] = makehist_1d(sub(d, SH & c), :ct, infb(linspace(-1, 1, 1)), r -> r[:weight]);
+    #project madgraph cos-theta distribution
+    yields[k][:madgraph] = makehist_1d(sub(d, !SH & c), :ct, infb(linspace(-1, 1, 1)), r -> r[:weight]);
+end
+
+println("III")
+println(yields[:XX][:madgraph])
+println(yields[:XX][:sherpa])
+ratios_sherpa = {x => yields[x][:madgraph] / yields[x][:sherpa] for x in jet_classifications};
+println(ratios_sherpa[:XX])
+#save ratios to csv
+for (k, v) in ratios_sherpa
+    p = "$BASE/results/wjets_shape_weight_feb25/sherpa_$k.csv"
+    mkpath(dirname(p))
+    writetable(p, htodf(v))
 end
       
 fig = figure(figsize=(15, 15))
@@ -111,25 +130,26 @@ for x in jet_classifications
     ax = subplot(3, 3, n)
     eplot(ax, normed(hd[x][:sherpa]), label="sherpa", drawstyle="steps-mid")
     eplot(ax, normed(hd[x][:madgraph]), label="madgraph", drawstyle="steps-mid")
+    legend()
     ax[:set_ylim](bottom=0)
     ax[:set_ylim](top=0.08)
     grid(true, which="both")
     title("$x")
     xlabel(VARS[:cos_theta_lj])
     ylabel("normalized event yield")
-    legend()
     n += 1
 end
 suptitle("W+jets angular modelling, split by jet parton flavour in 2J0T", y=0.95)
-savefig("costheta.pdf")
+savefig("$BASE/results/wjets_shape_weight_feb25/costheta.pdf")
 close()
+
 
 #calculate ratios between normalized distributions (shapes)
 ratios = {x => normed(hd[x][:sherpa]) / normed(hd[x][:madgraph]) for x in jet_classifications};
 
 #save ratios to csv
 for (k, v) in ratios
-    p = "$BASE/results/wjets_shape_weight_jan13_deltaR/$k.csv"
+    p = "$BASE/results/wjets_shape_weight_feb25/$k.csv"
     mkpath(dirname(p))
     writetable(p, htodf(v))
 end
@@ -147,8 +167,11 @@ for x in jet_classifications
     title("$x")
     xlabel(VARS[:cos_theta_lj])
     ylabel("ratio sherpa / madgraph")
-    legend()
+    #legend()
     n += 1
 end
-savefig("ratios.pdf")
-close()
+savefig("$BASE/results/wjets_shape_weight_feb25/ratios.pdf")
+    close()
+
+
+
