@@ -78,10 +78,16 @@ const SYSTEMATICS_TABLE = {
     :lepton_weight__up => :lepton_weight__up,
     :lepton_weight__down => :lepton_weight__down,
 
+    :qscale_me_weight__down => :qscale_me_weight__down,
+    :qscale_me_weight__up => :qscale_me_weight__up,
+
+    symbol("signal_aMCatNLO__nominal") => :aMCatNLO_nominal,
+
 }
 
 const systematic_processings = collect(keys(SYSTEMATICS_TABLE))
 const comphep_processings = filter(x->contains(string(x), "comphep"), systematic_processings)
+const aMCatNLO_processings = filter(x->contains(string(x), "aMCatNLO"), systematic_processings)
 
 const REV_SYSTEMATICS_TABLE = {v=>k for (k, v) in SYSTEMATICS_TABLE};
 
@@ -342,6 +348,23 @@ scenarios[(:wjets_shape__down, :wjets)] = Scenario(
     :wjets_shape__down
 )
 
+
+for samp in [:ttjets, :tchan, :wjets]
+    scenarios[(:qscale_me_weight__down, samp)] = Scenario(
+        :nominal,
+        samp,
+        (nw::Float64, row::DataFrameRow) -> nw * row[:me_weight__down],
+        :qscale_me_weight__down
+    )
+
+    scenarios[(:qscale_me_weight__up, samp)] = Scenario(
+        :nominal,
+        samp,
+        (nw::Float64, row::DataFrameRow) -> nw * row[:me_weight__up],
+        :qscale_me_weight__up
+    )
+end
+
 #remove unnecessary scenarios
 pop!(scenarios, (:mass__up, :wjets))
 pop!(scenarios, (:mass__down, :wjets))
@@ -373,6 +396,10 @@ scenarios[(:asym_000, :tchan)] =
 )
 
 for k in SingleTopBase.comphep_processings
+    scenarios[(SYSTEMATICS_TABLE[k], :tchan)] = Scenario(k, :tchan, (nw::Float64, row::DataFrameRow)->nw, :nominal)
+end
+
+for k in SingleTopBase.aMCatNLO_processings
     scenarios[(SYSTEMATICS_TABLE[k], :tchan)] = Scenario(k, :tchan, (nw::Float64, row::DataFrameRow)->nw, :nominal)
 end
 
