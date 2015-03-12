@@ -1,10 +1,10 @@
-p = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/"
+p = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData/iso/nominal/"
 
 for x in [
     (:tchan, ["T_t_ToLeptons", "Tbar_t_ToLeptons"]),
     (:twchan, ["T_tW", "Tbar_tW"]),
     (:schan, ["T_s", "Tbar_s"]),
-#    (:wjets, ["W1Jets_exclusive", "W2Jets_exclusive", "W3Jets_exclusive", "W4Jets_exclusive"]),
+    (:wjets, ["W1Jets_exclusive", "W2Jets_exclusive", "W3Jets_exclusive", "W4Jets_exclusive"]),
     (:data_mu, ["SingleMu1", "SingleMu2", "SingleMu3", "SingleMu_miss"]),
     (:data_mu_1, ["SingleMu1"]),
     (:data_mu_2, ["SingleMu2"]),
@@ -14,7 +14,7 @@ for x in [
     (:diboson, ["WW", "WZ", "ZZ"]),
     (:gjets, ["GJets1", "GJets2"]),
     (:dyjets, ["DYJets"]),
-#    (:ttjets, ["TTJets_FullLept", "TTJets_SemiLept"]),
+    (:ttjets, ["TTJets_FullLept", "TTJets_SemiLept"]),
     (:qcd, ["QCDMu",
         "QCD_Pt_170_250_BCtoE",
         "QCD_Pt_170_250_EMEnriched",

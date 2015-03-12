@@ -33,15 +33,18 @@ nona!(ele);
 
 totw = chd1[[:lepton_weight__id, :lepton_weight__trigger, :lepton_weight__iso, :b_weight, :top_weight, :pu_weight]];
 totw[:wjets_ct_shape_weight] = chd2[:wjets_ct_shape_weight]
+totw[:wjets_fl_yield_weight] = chd2[:wjets_fl_yield_weight]
+
 
 for x in [
-    :lepton_weight__trigger, :lepton_weight__iso, :lepton_weight__id, :b_weight, :top_weight, :pu_weight, :wjets_ct_shape_weight
+    :lepton_weight__iso, :top_weight,:lepton_weight__trigger, :lepton_weight__id, :pu_weight, :b_weight, :wjets_ct_shape_weight, :wjets_fl_yield_weight
+    
     ]
     totw[x][isna(totw[x])] = 1.0
     totw[x][isnan(totw[x])] = 1.0
 end
 
-totw[:w_new] = totw[:lepton_weight__id] .* totw[:lepton_weight__iso] .* totw[:lepton_weight__trigger] .* totw[:pu_weight] .* totw[:top_weight] .* totw[:b_weight] .* totw[:wjets_ct_shape_weight];
+totw[:w_new] = totw[:lepton_weight__id] .* totw[:lepton_weight__iso] .* totw[:lepton_weight__trigger] .* totw[:pu_weight] .* totw[:top_weight] .* totw[:b_weight] .* totw[:wjets_ct_shape_weight] .* totw[:wjets_fl_yield_weight];
 
 jet = X[:njets].==njets
 nona!(jet)
@@ -60,14 +63,20 @@ nona!(met)
 mtw = X[:mtw].>50
 nona!(met)
 
-qcd04 = X[qcdkey] .> 0.4
-nona!(qcd04)
+qcd_015 = X[qcdkey] .> -0.15
+nona!(qcd_015)
 
-qcd055 = X[qcdkey] .> 0.55
-nona!(qcd055)
+qcd015 = X[qcdkey] .> 0.15
+nona!(qcd015)
 
-bdt = X[:bdt_sig_bg].>0.6
+bdt = X[:bdt_sig_bg].>0.45
 nona!(bdt)
+
+bdt0 = X[:bdt_sig_bg].>0.
+nona!(bdt0)
+
+bdt06 = X[:bdt_sig_bg].>0.6
+nona!(bdt06)
 #
 jet_eta = (abs(X[:ljet_eta]) .< 4.5) .* (abs(X[:bjet_eta]) .< 4.5)
 nona!(jet_eta)
@@ -80,16 +89,20 @@ nona!(bdtold_ele)
 
 cuts = {
     :mu=>{
-        :old => {dr, mu, jet, rms, tag, mtw, jet_eta, bdtold_mu},
-        :new => {mu, mu, jet, jet, tag, qcd04, jet_eta, bdt},
+        #:old => {dr, mu, jet, rms, tag, mtw, jet_eta, bdtold_mu},
+        #:new => {mu, mu, jet, jet, tag, qcd_015, jet_eta, bdt},
+        #:new => {mu, jet, tag, qcd_015, bdt0, bdt, bdt06},
+        :new => {mu, jet, tag, qcd_015, bdt},
     },
     :ele=>{
-        :old => {dr, ele, jet, rms, tag, met, jet_eta, bdtold_ele},
-        :new => {ele, ele, jet, jet, tag, qcd055, jet_eta, bdt},
+        #:old => {dr, ele, jet, rms, tag, met, jet_eta, bdtold_ele},
+        #:new => {ele, ele, jet, jet, tag, qcd015, jet_eta, bdt},
+        #:new => {ele, jet, tag, qcd015, bdt0, bdt, bdt06},
+        :new => {ele, jet, tag, qcd015, bdt},
     }
 };
 
-x = X[ mu .* qcd04 .* jet .* tag .* jet_eta .* bdt, :cos_theta_lj]
+x = X[ mu .* qcd_015 .* jet .* tag .* jet_eta .* bdt, :cos_theta_lj]
 println("selected ", length(x), " cos_theta calculated for ", sum(!isna(x)))
 
 function cutflow(A, weighted, weight)
@@ -122,13 +135,17 @@ end
 
 if SAMPLE==:data_mu || SAMPLE==:data_ele
     d = {
-        :mu=>{:new=>cutflow_data(cuts[:mu][:new]), :old=>cutflow_data(cuts[:mu][:old])},
-        :ele=>{:new=>cutflow_data(cuts[:ele][:new]), :old=>cutflow_data(cuts[:ele][:old])}
+        #:mu=>{:new=>cutflow_data(cuts[:mu][:new]), :old=>cutflow_data(cuts[:mu][:old])},
+        #:ele=>{:new=>cutflow_data(cuts[:ele][:new]), :old=>cutflow_data(cuts[:ele][:old])}
+        :mu=>{:new=>cutflow_data(cuts[:mu][:new])},
+        :ele=>{:new=>cutflow_data(cuts[:ele][:new])}
     }
 else
     d = {
-        :mu=>{:new=>cutflow(cuts[:mu][:new], true, :w_new), :old=>cutflow(cuts[:mu][:old], true, :w_new)},
-        :ele=>{:new=>cutflow(cuts[:ele][:new], true, :w_new), :old=>cutflow(cuts[:ele][:old], true, :w_new)}
+        #:mu=>{:new=>cutflow(cuts[:mu][:new], true, :w_new), :old=>cutflow(cuts[:mu][:old], true, :w_new)},
+        #:ele=>{:new=>cutflow(cuts[:ele][:new], true, :w_new), :old=>cutflow(cuts[:ele][:old], true, :w_new)}
+        :mu=>{:new=>cutflow(cuts[:mu][:new], true, :w_new)},
+        :ele=>{:new=>cutflow(cuts[:ele][:new], true, :w_new)}
     }
 end
 println(d)
@@ -137,22 +154,25 @@ df = similar(
     DataFrame(
         flavour=Symbol[],
         sample=Symbol[],
-        dr=Int64[],
+        #dr=Int64[],
         lepton=Int64[],
         jet=Int64[],
-        rms=Int64[],
+        #rms=Int64[],
         tag=Int64[],
         qcd=Int64[],
-        jet_eta=Int64[],
-        bdt=Int64[],
+        #jet_eta=Int64[],
+        #bdt=Int64[],
+        #bdt_w0=Int64[],
         bdt_w=Int64[],
+        #bdt_w06=Int64[],
         fit=Int64[],
-    ), 4
+    ), 2#4
 );
 
 j = 0
 for lep in [:mu, :ele]
-    for cut in [:old, :new]
+    #for cut in [:old, :new]
+    for cut in [:new]
         j += 1
         df[j, :flavour] = lep
         df[j, :sample] = SAMPLE
@@ -161,11 +181,12 @@ for lep in [:mu, :ele]
         else
             l = Reweight.lumis[lep]
         end
-        for i=1:8
-            df[j, i + 2] = int(round(float(d[lep][cut][1][i])))
+        for i=1:5
+            println(i)
+            df[j, i + 2] = int(round(l * float(d[lep][cut][2][i])) )
         end
-        df[j, :bdt_w] = int(round(l * float(d[lep][cut][2][8])))
-
+        #df[j, :bdt_w] = int(round(l * float(d[lep][cut][2][6])))
+        #df[j, :bdt_w] = int(round(l * float(d[lep][cut][2][5])))
         if SAMPLE == :tchan
             sf = FITRESULTS[lep][:beta_signal]
         elseif SAMPLE in [:wjets, :gjets, :dyjets, :diboson]
@@ -175,8 +196,9 @@ for lep in [:mu, :ele]
         else
             sf = 1.0
         end
-
-        df[j, :fit] = round(df[j, :bdt_w] * sf)|>int
+        println("FFF")
+        df[j, :fit] = round(l * float(d[lep][cut][2][5]) * sf)|>int
+        #df[j, 7] = round(df[j, 6] * sf)|>int
     end
 end
 

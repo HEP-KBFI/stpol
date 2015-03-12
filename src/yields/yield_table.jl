@@ -1,5 +1,5 @@
 include("../analysis/base.jl")
-using SingleTopBase, ROOT, ROOT.ROOTHistograms
+using SingleTopBase, ROOT, ROOTHistograms
 
 s = convert(ASCIIString, ARGS[1])
 yn = convert(ASCIIString, ARGS[2])
