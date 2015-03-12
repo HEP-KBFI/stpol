@@ -116,10 +116,17 @@ class Weights(Getter):
         def nominal(self, event):
             return self._getval(event, "_nominal")
 
+    class BTag(Getter):
+        _nominal = SimpleHandle("float", "bTagWeightProducerNoCut", "bTagWeight", PROCESS)
+        def nominal(self, event):
+            return self._getval(event, "_nominal")
+
+
     def __init__(self):
         self.pileup = self.Pileup()
         self.toppt = self.TopPt()
         self.generator = self.Generator()
+        self.btag = self.BTag()
 
 class File:
     def __init__(self):
@@ -188,12 +195,16 @@ class Event(Getter):
 
     def __init__(self):
         self._met = SimpleHandle("vfloat", "patMETNTupleProducer", "Pt", PROCESS)
+        self._met_phi = SimpleHandle("vfloat", "patMETNTupleProducer", "Phi", PROCESS)
         self._centrality = SimpleHandle("double", "eventShapeVars", "C", PROCESS)
+        self._cwithnu = SimpleHandle("double", "eventShapeVarsWithNu", "C", PROCESS)
         self._d = SimpleHandle("double", "eventShapeVars", "D", PROCESS)
         self._circularity = SimpleHandle("double", "eventShapeVars", "circularity", PROCESS)
         self._aplanarity = SimpleHandle("double", "eventShapeVars", "aplanarity", PROCESS)
         self._isotropy = SimpleHandle("double", "eventShapeVars", "isotropy", PROCESS)
         self._thrust = SimpleHandle("double", "eventShapeVars", "thrust", PROCESS)
+        self._sphericity = SimpleHandle("double", "eventShapeVars", "sphericity", PROCESS)
+        
 
         self._njets = SimpleHandle("int", "goodJetCount", "", PROCESS)
         self._ntags = SimpleHandle("int", "bJetCount", "", PROCESS)
@@ -216,6 +227,12 @@ class Event(Getter):
         """
         return self._getval(events, "_met")
 
+    def met_phi(self, events):
+        """
+        Returns Phi of the transverse component of the missing momentum (MET)
+        """
+        return self._getval(events, "_met_phi")
+
     def id(self, events):
         """
         Returns the (run, lumi, event) tuple of the current event
@@ -228,12 +245,18 @@ class Event(Getter):
         The centrality of the event.
         """
         return self._getval(events, "_centrality")
+    
+    def c_with_nu(self, events):
+        return self._getval(events, "_cwithnu")
 
     def d(self, events):
         return self._getval(events, "_d")
 
     def circularity(self, events):
         return self._getval(events, "_circularity")
+
+    def sphericity(self, events):
+        return self._getval(events, "_sphericity")
 
     def aplanarity(self, events):
         return self._getval(events, "_aplanarity")
@@ -378,6 +401,8 @@ class stpol:
             bjet = Jet("highestBTagJetNTupleProducer")
             specjet1 = Jet("lowestBTagJetNTupleProducer")
             top = Particle("recoTopNTupleProducer")
+            wboson = Particle("recoWNTupleProducer")
+            shat = Particle("shatNTupleProducer")
 
 def list_methods(obj):
     """
