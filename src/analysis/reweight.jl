@@ -41,7 +41,7 @@ module Reweight
     end
 
     const wjets_ratio_hists = {
-        k => fromdf(readtable("$BASE/results/wjets_shape_weight_jan13_deltaR/$k.csv"))
+        k => fromdf(readtable("$BASE/results/wjets_shape_weight_feb25/$k.csv"))
         for k in jet_classifications
     }
 
@@ -61,6 +61,27 @@ module Reweight
         return w, (1.0 - 0.5 * (1.0 - w)), (1.0 - 2.0 * (1.0 - w))
     end
 
-    export reweight, wjets_shape_weight
+    const sherpa_flavor_ratio_hists = {
+        k => fromdf(readtable("$BASE/results/wjets_shape_weight_feb25/sherpa_$k.csv"))
+        for k in jet_classifications
+    }
+
+    function sherpa_flavor_weight(row::DataFrameRow)
+        cls = jet_cls_from_number(row[:jet_cls])
+
+        const ct = row[:cos_theta_lj]
+
+        if !isna(ct)
+            const h = sherpa_flavor_ratio_hists[cls]
+            const w = h.bin_contents[findbin(h, ct)]
+        else
+            const w = 1
+        end
+
+        #nominal, half, double
+        return w
+    end
+
+    export reweight, wjets_shape_weight, sherpa_flavor_weight
 
 end

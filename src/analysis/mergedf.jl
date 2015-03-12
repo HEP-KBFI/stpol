@@ -25,6 +25,7 @@ fhandles = Any[]
 
 #W+light scale-up factor
 const wjets_light_scale_factor = 0.1
+const wjets_light_scale_factor = 0.0
 
 for fi in inf
     println(fi)
@@ -68,6 +69,8 @@ for fi in inf
     added_df[:wjets_fl_yield_weight__up] = float64(1.0)
     added_df[:wjets_fl_yield_weight__down] = float64(1.0)
 
+	added_df[:sherpa_fl_weight] = float64(1.0)
+
     enable_branches(df, ["sample*", "subsample*", "isolation*", "systematic*", "cos_theta_lj*", "jet_cls*", "processing_tag*"])
     
     println("looping over $(nrow(df)) events")
@@ -91,6 +94,9 @@ for fi in inf
         catch err
             error("subsample=$subsample: $fi, could not load key $(df[j, :subsample]|>int) $err")
         end
+        #println(tag, " ", subsample, " ", hmap[:from][int(df[j, :isolation])])
+        #println(hmap[:from][int(df[j, :sample])])
+            
         try
             sample = hmap[:from][int(df[j, :sample])]
         catch err
@@ -107,6 +113,9 @@ for fi in inf
             warn("systematic=$systematic: $fi, could not load key $err")
         end
         #println(tot_res)
+
+        #hack for fulldata processing        
+        systematic = replace(systematic, "nominal_scaleweight_fixed", "nominal")
         if systematic != :nothing
             const ngen = tot_res["$(tag)/$(subsample)/$(iso)/$(systematic)/counters/generated"]
         else #Data, systematic=""
@@ -134,10 +143,16 @@ for fi in inf
                 added_df[j, :wjets_fl_yield_weight__up] = 2.0
                 added_df[j, :wjets_fl_yield_weight__down] = 0.5
             else
-                added_df[j, :wjets_fl_yield_weight] = 1.0 + wjets_light_scale_factor
-                added_df[j, :wjets_fl_yield_weight__up] = 1.0 + 2 * wjets_light_scale_factor 
-                added_df[j, :wjets_fl_yield_weight__down] = 1.0 + 0.5 * wjets_light_scale_factor 
+                added_df[j, :wjets_fl_yield_weight] = 1.0
+                added_df[j, :wjets_fl_yield_weight__up] = 1.1
+                added_df[j, :wjets_fl_yield_weight__down] = 0.9
             end
+		end
+	
+		if symbol(sample) == :wjets_sherpa && !isna(df[j, :cos_theta_lj])
+			w = sherpa_flavor_weight(row)
+			added_df[j, :sherpa_fl_weight] = w
+            println(w)
         end
 
     end
