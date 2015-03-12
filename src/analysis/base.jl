@@ -152,6 +152,12 @@ const FITRESULTS = {
     #:mu=>FitResult("$BASE/results/fits/Aug26_tchpt/nominal/mu.json"),
     #:ele=>FitResult("$BASE/results/fits/Aug26_tchpt/nominal/ele.json"),
     #:combined=>FitResult("$BASE/results/fits/Aug26_tchpt/nominal/combined.json")
+    :mu=>FitResult("$BASE/results/fits/bdt_Mar9_2j1tbelow0/nominal/mu.json"),
+    :ele=>FitResult("$BASE/results/fits/bdt_Mar9_2j1tbelow0/nominal/ele.json"),
+    :combined=>FitResult("$BASE/results/fits/bdt_Mar9_2j1tbelow0/nominal/combined.json")
+    #:mu=>FitResult("$BASE/results/fits/bdt_Jan27/nominal/mu.json"),
+    #:ele=>FitResult("$BASE/results/fits/bdt_Jan27/nominal/ele.json"),
+    #:combined=>FitResult("$BASE/results/fits/bdt_Jan27/nominal/combined.json")
 }
 
 t1 = time()
@@ -237,7 +243,7 @@ function find_files(pref, sample)
     return fs, map(x->"$x.added", fs)
 end
 
-const DATAPATH = "/Users/joosep/Dropbox/kbfi/top/stpol/results/skims/May1_metphi_on/"
+#const DATAPATH = "/Users/joosep/Dropbox/kbfi/top/stpol/results/skims/May1_metphi_on/"
 
 export BASE
 export infb, chunk, chunks, flatten, FITRESULTS, hmap, writedf, readdf, systematic_processings
@@ -246,7 +252,8 @@ export qcd_weight, nominal_weight, is_data, is_mc, get_no_na, is_any_na
 export Histograms
 export remove_prefix, hists_varname
 export asymmetry
-export walk, grep, DATAPATH, nona!, postfix_added, find_files
+#export walk, grep, DATAPATH, nona!, postfix_added, find_files
+export walk, grep, nona!, postfix_added, find_files
 end
 
 using DataArrays, DataFrames
