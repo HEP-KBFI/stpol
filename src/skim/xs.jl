@@ -25,7 +25,7 @@ function sample_type(fn, prefix="file:/hdfs/cms/store/user")
         tag = m.captures[2]
         iso = m.captures[3]
 
-        syst = m.captures[4]
+        syst = replace(m.captures[4], "nominal_scaleweight_fixed", "nominal")
         samp = m.captures[5]
     end
     #TToBMuNu_anomWtb-unphys_t-channel
@@ -58,6 +58,20 @@ function sample_type(fn, prefix="file:/hdfs/cms/store/user")
             else
                 syst = string("signal_comphep__", m.captures[1])
             end
+            break
+        end
+
+        m = match(r".*TToLeptons_tchannel_aMCatNLO", ss)
+        if m != nothing
+            syst = "signal_aMCatNLO__nominal"
+            println(syst)
+            break
+        end
+
+        m = match(r".*TToLeptons_tchannel_aMCatNLO_(.*)", ss)
+        if m != nothing
+            syst = string("signal_aMCatNLO_", m.captures[1])
+            println(syst)
             break
         end
         
@@ -160,6 +174,10 @@ const merges = {
         "TToBENu_anomWtb-0010_LVLT",
         "TToBMuNu_anomWtb-0010_LVLT",
         "TToBTauNu_anomWtb-0010_LVLT",
+
+        "TToLeptons_tchannel_aMCatNLO",
+        "TToLeptons_tchannel_aMCatNLO_scaledown",
+        "TToLeptons_tchannel_aMCatNLO_scaleup", 
 
         "T_t_ToLeptons_mass166_5", 
         "T_t_ToLeptons_mass169_5", 
@@ -314,6 +332,7 @@ const tomap = ASCIIString[
     "matchingdown",
     "matchingup",
     "nominal",
+    "nominal_scaleweight_fixed",
     "qcd_mc_ele",
     "qcd_mc_mu",
     "QCD_Pt_170_250_BCtoE",
@@ -350,6 +369,9 @@ const tomap = ASCIIString[
     "signal_comphep__anomWtb-Lv3Rt1_LVRT_t-channel",
     "signal_comphep__anomWtb-Rt4_LVRT_t-channel",
     "signal_comphep__anomWtb-unphys_LVLT_t-channel",
+    "signal_aMCatNLO__nominal",
+    "signal_aMCatNLO__scaledown",
+    "signal_aMCatNLO__scaleup",
     "SingleElectron",
     "SingleEle",
     "SingleElectron",
@@ -448,6 +470,9 @@ const tomap = ASCIIString[
     "TToBMuNu_anomWtb-0010_LVLT_t-channel",
     "TToBTauNu_anomWtb-0010_LVLT_t-channel",
 
+    "TToLeptons_tchannel_aMCatNLO",
+    "TToLeptons_tchannel_aMCatNLO_scaledown",
+    "TToLeptons_tchannel_aMCatNLO_scaleup", 
     
     "twchan",
     "UnclusteredEnDown",
@@ -491,6 +516,7 @@ const tomap = ASCIIString[
     "W4Jets_exclusive_FSIM",
     "wjets",
     "wjets_fsim_nominal",
+    "wjets_fsim",
     "wjets_inc",
     "WJets_inclusive",
     "WJets_sherpa",
@@ -517,6 +543,13 @@ const tomap = ASCIIString[
     "s2_0801_deltaRChange",
     "s2_1101_data",
     "s2_1101_deltaRChange",
+    "Jan11_deltaR",
+    "Jan22_fullData",
+    "Jan27_fullData",
+    "fullData",
+    "fullData_fixpub_slurm",
+    "fullData_fixmeweight",
+    "fullData_fixmeweight2",
     "TTJets_MSDecays",
     "TTJets_MSDecays_scaleup",
     "TTJets_MSDecays_scaledown",
