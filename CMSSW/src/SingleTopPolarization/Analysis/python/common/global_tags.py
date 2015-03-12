@@ -16,6 +16,7 @@ gt_mc = "START53_V27::All"
 global_tags["mc"]["nominal_Summer12_DR53X"] = gt_mc
 global_tags["mc"]["systematic_Summer12_DR53X"] = gt_mc
 global_tags["mc"]["wjets_FSIM_Summer12"] = gt_mc
+global_tags["mc"]["t-channel_aMCatNLO"] = gt_mc
 
 global_tags["data"]["22Jan_ReReco_Runs2012ABCD"] = gt_data
 
@@ -35,5 +36,8 @@ global_tags["data"]["22Jan_ReReco_Runs2012ABCD"] = gt_data
 #
 
 global_tags["data"]["Sep8"] = gt_data
+global_tags["data"]["Jan22_2015"] = gt_data
 global_tags["mc"]["Sep8"] = gt_mc
 global_tags["mc"]["Sep8_qcd"] = gt_mc
+global_tags["mc"]["Dec17_wjets"] = gt_mc
+#global_tags["mc_sys"]["Dec17_wjets"] = gt_mc

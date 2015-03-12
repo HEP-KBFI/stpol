@@ -110,21 +110,21 @@ def SingleTopStep1(
 
     # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
     # https://twiki.cern.ch/twiki/bin/viewauth/CMS/TWikiTopRefEventSel#Cleaning_Filters
-    #process.goodOfflinePrimaryVertices = cms.EDFilter(
-    #    "PrimaryVertexObjectFilter"
-    #, filterParams = cms.PSet(
-    #        minNdof = cms.double(4.0)
-    #    , maxZ = cms.double(24.0)
-    #    , maxRho = cms.double(2.0)
-    #    )
-    #, filter = cms.bool(True)
-    #, src = cms.InputTag('offlinePrimaryVertices')
-    #)
-
-    process.goodOfflinePrimaryVertices = cms.EDFilter("FirstVertexFilter",
-        src = cms.InputTag("offlinePrimaryVertices"),
-        cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.')
+    process.goodOfflinePrimaryVertices = cms.EDFilter(
+        "PrimaryVertexObjectFilter"
+    , filterParams = cms.PSet(
+            minNdof = cms.double(4.0)
+        , maxZ = cms.double(24.0)
+        , maxRho = cms.double(2.0)
+        )
+    , filter = cms.bool(True)
+    , src = cms.InputTag('offlinePrimaryVertices')
     )
+
+    #process.goodOfflinePrimaryVertices = cms.EDFilter("FirstVertexFilter",
+    #    src = cms.InputTag("offlinePrimaryVertices"),
+    #    cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.')
+    #)
 
     from EventFilters_cff import ApplyEventFilters
     ApplyEventFilters(process, runOnFastSim=options.runOnFastSim)

@@ -49,6 +49,7 @@ def is_signal(sample_name):
     return ((sample_name.lower() in ["t_t_toleptons", "tbar_t_toleptons", "t_t", "tbar_t"] or
         sample_name.lower().startswith("ttob") or
         sample_name.lower().startswith("t_t_toleptons") or
+        sample_name.lower().startswith("ttoleptons") or
         sample_name.lower().startswith("tbar_t_toleptons") or
         sample_name.lower().startswith("t_t") or
         sample_name.lower().startswith("tbar_t")) and not

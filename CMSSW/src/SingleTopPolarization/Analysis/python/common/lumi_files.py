@@ -9,3 +9,4 @@ lumi_files["22Jan_ReReco_Runs2012ABCD"] = golden
 #lumi_files["Jul15"] = golden
 #lumi_files["Aug1"] = golden
 lumi_files["Sep8"] = golden
+lumi_files["Jan22_2015"] = golden
