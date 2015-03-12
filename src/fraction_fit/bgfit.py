@@ -1,4 +1,4 @@
-
+import sys
 from glob import glob
 import tempfile, shutil, os
 import ROOT
@@ -14,6 +14,7 @@ except ConfigParser.NoOptionError:
 if len(prefixes)!=len(infiles):
     prefixes = [""]*len(infiles)
 outfile = Config.get("output", "filename")
+fit_type = Config.get("fit", "type")
 
 import os
 import os.path
@@ -81,9 +82,23 @@ elif sr == "sub":
     print "selecting subrange", mn, mx, n1, n2
     def htransform(h):
         return Histogram(mn, mx, h.get_values()[n1:n2], uncertainties=h.get_uncertainties()[n1:n2], name=h.get_name())
+    def htransform_blind2j1t(h):
+        return Histogram(mn, mx, h.get_values()[0:15], uncertainties=h.get_uncertainties()[0:15], name=h.get_name())
+    
+
+        
 def nameconv(n):
     n = n.replace("wjets__heavy", "wjets_heavy")
-    n = n.replace("wjets__light", "wjets_light")
+    #n = n.replace("wjets__light", "wjets_light")
+    return n
+
+def nameconv_mu(n):
+    n = nameconv(n)
+    n = "mu_"+n
+    return n
+def nameconv_ele(n):
+    n = nameconv(n)
+    n = "ele_"+n
     return n
 
 all_hists = []
@@ -149,7 +164,7 @@ def get_model(infile, pref):
             continue
         hi = h.ReadObj()
         hists[hi.GetName().split("__")[1]] = hi
-        print "hist", hi.GetName(), hi.Integral()
+        #print "hist", hi.GetName(), hi.GetEntries(), hi.Integral()
 
     k1 = "ttjets" if "ttjets" in hists.keys() else "other"
     hists["wzjets"].SetMarkerSize(0)
@@ -160,6 +175,8 @@ def get_model(infile, pref):
     hists["tchan"].SetFillStyle(1001)
     hists[k1].SetFillStyle(1001)
 
+    #if "2j1t" in hists["DATA"].GetName():
+    #    hists["DATA"].GetXaxis().SetRange(0,24);
     hists["DATA"].SetLineColor(ROOT.kBlack)
     hists["DATA"].SetMarkerStyle(ROOT.kDot)
     hists["tchan"].SetLineColor(ROOT.kRed)
@@ -169,21 +186,48 @@ def get_model(infile, pref):
         hists["qcd"].SetLineColor(ROOT.kGray)
 
     #hists["DATA"].SetFillColor(ROOT.kBlack)
-    hists["tchan"].SetFillColor(ROOT.kRed)
-    hists["wzjets"].SetFillColor(ROOT.kGreen)
-    hists[k1].SetFillColor(ROOT.kOrange)
+    #hists["tchan"].SetFillColor(ROOT.kRed)
+    #hists["wzjets"].SetFillColor(ROOT.kGreen)
+    #hists[k1].SetFillColor(ROOT.kOrange)
     if "qcd" in hists.keys():
         hists["qcd"].SetLineColor(ROOT.kGray)
-        hists["qcd"].SetFillColor(ROOT.kGray)
+        #hists["qcd"].SetFillColor(ROOT.kGray)
 
     canv = ROOT.TCanvas()
-    hists["DATA"].GetXaxis().SetTitle(hists["DATA"].GetName().split("__")[0])
-    hists["DATA"].DrawNormalized("E1")
-    hists["tchan"].DrawNormalized("E1 SAME")
-    hists["wzjets"].DrawNormalized("E1 SAME")
-    hists[k1].DrawNormalized("E1 SAME")
+    ROOT.gStyle.SetOptStat(0)
+    #hists["DATA"].GetXaxis().SetTitle(hists["DATA"].GetName())
+    hists["tchan"].SetLineWidth(2)
+    drawData = ROOT.TH1D(hists["DATA"])
+    if "2j1t" in hists["DATA"].GetName():
+        for b in range(drawData.GetNbinsX()):
+            if b > 15:
+                drawData.SetBinContent(b,0)
+                drawData.SetBinError(b,0)
+    drawData.Scale(1/drawData.Integral())
+    drawData.SetLineWidth(2)
+    drawData.SetAxisRange(0, 0.15, "Y")
+    drawData.SetNameTitle("","")
+    drawData.DrawNormalized("E1")
+    hists["tchan"].DrawNormalized("hist SAME")
+    hists["wzjets"].DrawNormalized("hist SAME")
+    #hists["wjets_light"].DrawNormalized("hist SAME")
+    hists[k1].SetLineWidth(2)
+    hists[k1].DrawNormalized("hist SAME")
+    leg = ROOT.TLegend(0.1,0.6,0.4,0.90)
+    leg.SetBorderSize(0)
+    leg.SetLineStyle(0)
+    leg.SetTextSize(0.04)
+    leg.SetFillColor(0)
+    leg.AddEntry(drawData,"Data","pl")
+    leg.AddEntry(hists["tchan"],"t-channel","l")
+    leg.AddEntry(hists["wzjets"],"EWK","l")
+    leg.AddEntry(hists[k1],"Top","l")
     if "qcd" in hists.keys():
-        hists["qcd"].DrawNormalized("E1 SAME")
+        hists["qcd"].SetLineWidth(2)
+        hists["qcd"].DrawNormalized("hist SAME")
+        leg.AddEntry(hists["qcd"],"QCD","l")
+    
+    leg.Draw()
     canv.Print(outfile + "/" + hists["DATA"].GetName() + "_shapes.pdf")
 
     canv = ROOT.TCanvas()
@@ -200,18 +244,37 @@ def get_model(infile, pref):
     tf.Close()
 
     all_hists.append(filename)
-
+    
+    #fit with blinded data bdt<0 in 2j1t 
+    
+    if "mu" in infile:
+        name_conv = nameconv_mu
+    elif "ele" in infile:
+        name_conv = nameconv_ele
+    
+    if "sig_fixed" in fit_type and "2j_1t" in infile:
+        htransform_histo = htransform_blind2j1t
+    else:
+        htransform_histo = htransform
+    
+    #end    
+    """
+    #regular fit
+    name_conv = nameconv
+    htransform_histo = htransform
+    #end regular
+    """
     model = build_model_from_rootfile(
         filename,
-
         #This enables the Barlow-Beeston procedure
         # http://www.pp.rhul.ac.uk/~cowan/stat/mcml.pdf
         # http://atlas.physics.arizona.edu/~kjohns/teaching/phys586/s06/barlow.pdf
         include_mc_uncertainties = True,
         histogram_filter = hfilter,
-        transform_histo = htransform,
-        root_hname_to_convention = nameconv,
-    )
+        transform_histo = htransform_histo,
+        root_hname_to_convention = name_conv,
+    )                
+
     #os.remove(filename)
     model.fill_histogram_zerobins()
     model.set_signal_processes(signal)
@@ -220,21 +283,38 @@ def get_model(infile, pref):
         for p in model.get_processes(o):
             if p == signal:
                 continue
-            try:
-                add_normal_unc(model,
-                    p,
-                    mean=float(Config.get("priors", "%s_mean"%p)),
-                    unc=float(Config.get("priors", "%s_sigma"%p))
-                )
-            except:
-                print "fixing process ", o, p
-    add_normal_unc(model,
+            if p == "qcd":
+                continue
+            #try:
+            """add_normal_unc(model,
+                p,
+                mean=float(Config.get("priors", "%s_mean"%p)),
+                unc=float(Config.get("priors", "%s_sigma"%p))
+            )"""
+            model.add_lognormal_uncertainty('%s' % p, math.log(float(Config.get("priors", "%s_mean"%p)) + float(Config.get("priors", "%s_sigma"%p))), p)
+            #except:
+            #    print "fixing process ", o, p
+    #model.add_lognormal_uncertainty('%s' % p, math.log(float(Config.get("priors", "%s_mean"%p)) + float(Config.get("priors", "%s_sigma"%p))), p)
+    """add_normal_unc(model,
         "beta_signal",
         mean=float(Config.get("priors", "signal_mean")),
         unc=float(Config.get("priors", "signal_sigma"))
-    )
+    )"""
 
     return model
+
+"""
+def add_lognormal_unc(model, par, mean=1.0, unc=1.0):
+    model.distribution.set_distribution(
+        par, 'gauss', mean = mean,
+        width=unc, range=[0.0, float("inf")]
+    )
+    for o in model.get_observables():
+        for p in model.get_processes(o):
+            print("p=",p)
+            if par == p or (par == "beta_signal" and p == "tchan"):
+                print "adding parameters for", o, p
+                model.get_coeff(o,p).add_factor('id', parameter=par)
 
 def add_normal_unc(model, par, mean=1.0, unc=1.0):
     model.distribution.set_distribution(
@@ -246,7 +326,7 @@ def add_normal_unc(model, par, mean=1.0, unc=1.0):
             print("p=",p)
             if par == p or (par == "beta_signal" and p == "tchan"):
                 print "adding parameters for", o, p
-                model.get_coeff(o,p).add_factor('id', parameter=par)
+                model.get_coeff(o,p).add_factor('id', parameter=par)"""
 
 def build_model(infiles):
     model = None
@@ -267,6 +347,7 @@ print "processes:", sorted(model.processes)
 print "observables:", sorted(model.get_observables())
 print "parameters(signal):", sorted(model.get_parameters(["tchan"]))
 print "nbins=", [model.get_range_nbins(o)[2] for o in model.get_observables()]
+print model.get_observables()
 nbins = sum([model.get_range_nbins(o)[2] for o in model.get_observables()])
 model_summary(model)
 
@@ -276,21 +357,30 @@ options.set("minimizer","strategy","robust")
 options.set("global", "debug", "true")
 
 #print "options=", options
-dist = "gauss:1.0,0.01"
+#dist = "gauss:1.0,0.01"
+if fit_type == "mconly" or fit_type== "data":
+    dist = "flat:[0.,2.]:1.0"
+elif fit_type == "sig_fixed":
+    dist = "fix:1.0"
 result = mle(model,
     input = 'data', n=1, with_covariance=True, options=options, chi2=True, ks=True,
-#    signal_prior="flat:[0,1.01]"
+    #input = 'toys-asimov:1.0', n=1, with_covariance=True, options=options, chi2=True, ks=True,
+    #signal_prior="flat:[0,1.01]"
     signal_prior=dist
 )
-print "result=", result
+#print "result=", result
 fitresults = {}
 values = {}
 errors = {}
 for process in result[signal]:
     if '__' not in process:
         fitresults[process] = result[signal][process][0]
-        values[process] = fitresults[process][0]
-        errors[process] = fitresults[process][1]
+        if "jets" in process:
+            values[process] = math.e**(fitresults[process][0] * float(Config.get("priors", "%s_sigma" %process)))
+            errors[process] = math.e**((fitresults[process][0] + abs(fitresults[process][1])) * float(Config.get("priors", "%s_sigma" %process))) - values[process]
+        else:
+            values[process] = fitresults[process][0]
+            errors[process] = fitresults[process][1]
 
 
 pars = sorted(model.get_parameters([signal]))
@@ -318,8 +408,10 @@ for fn in all_hists:
     canv = ROOT.TCanvas()
 
     k1 = "ttjets" if "ttjets" in hists.keys() else "other"
+    #if "2j1t" in hn:
+    #    hists["DATA"].GetXaxis().SetRange(0,24);
     hists["DATA"].SetMarkerStyle(ROOT.kDot)
-
+    
     hists["DATA"].SetLineColor(ROOT.kBlack)
     hists["tchan"].SetLineColor(ROOT.kRed)
     hists["wzjets"].SetLineColor(ROOT.kGreen)
@@ -351,8 +443,8 @@ for fn in all_hists:
     hists["DATA"].Draw("E1 SAME")
     canv.Print(outfile + "/" + hn + "_scaled.pdf")
 
-print("pars:", pars)
-print("outpars:", outpars)
+#print("pars:", pars)
+#print("outpars:", outpars)
 n = len(outpars)
 
 cov = result[signal]['__cov'][0]
@@ -371,12 +463,15 @@ for i in range(n):
         try:
             ci = pars.index(outpars[i])
             cj = pars.index(outpars[j])
-            corr[i][j] = cov[ci][cj] / (errors[outpars[i]] * errors[outpars[j]])
+            #corr[i][j] = cov[ci][cj] / (errors[outpars[i]] * errors[outpars[j]])
+            corr[i][j] = cov[ci][cj] / math.sqrt(cov[ci][ci] * cov[cj][cj])
             covmat.SetBinContent(i + 1, j + 1, cov[ci][cj])
         except Exception as err:
             corr[i][j] = 0#1.0 / (errors[outpars[i]] * errors[outpars[j]])
             covmat.SetBinContent(i + 1, j + 1, 1.0)
-
+        if math.isnan(corr[i][j]): #if NaN because of fixed prior
+            corr[i][j] = 0#1.0 / (errors[outpars[i]] * errors[outpars[j]])
+            covmat.SetBinContent(i + 1, j + 1, 1.0)
         covmat.SetBinError(i, j, 0.0)
 covfi.Write()
 covfi.Close()
@@ -390,6 +485,9 @@ out = {
     "chi2": result[signal]["__chi2"],
     "nbins": nbins
 }
+
+#print corr
+
 print("writing json file")
 import json
 of = open(outfile+".json", "w")
