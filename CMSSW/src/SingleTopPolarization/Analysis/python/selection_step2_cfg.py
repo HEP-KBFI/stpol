@@ -69,7 +69,12 @@ def SingleTopStep2():
               VarParsing.multiplicity.singleton,
               VarParsing.varType.bool,
               "Use CompHep-specific processing")
-
+    
+    options.register ('isAMCatNLO', False,
+              VarParsing.multiplicity.singleton,
+              VarParsing.varType.bool,
+              "Use aMC@NLO-specific processing")
+    
     options.register ('isSherpa', False,
               VarParsing.multiplicity.singleton,
               VarParsing.varType.bool,
@@ -104,6 +109,7 @@ def SingleTopStep2():
     Config.isMC = options.isMC
     Config.doSkim = options.doSync or not sample_types.is_signal(Config.subChannel)
     Config.isCompHep = options.isComphep or "comphep" in Config.subChannel
+    Config.isAMCatNLO = Config.isAMCatNLO or options.isAMCatNLO or "aMCatNLO" in Config.subChannel
     Config.isSherpa = options.isSherpa or "sherpa" in Config.subChannel
     Config.systematic = options.systematic
     Config.doSync = options.doSync
@@ -556,6 +562,8 @@ def SingleTopStep2():
     if Config.isMC and options.doGenParticlePath:
         if Config.isCompHep:
             from SingleTopPolarization.Analysis.partonStudy_comphep_step2_cfi import PartonStudySetup
+        elif Config.isAMCatNLO:
+            from SingleTopPolarization.Analysis.partonStudy_aMCatNLO_step2_cfi import PartonStudySetup
         else:
             from SingleTopPolarization.Analysis.partonStudy_step2_cfi import PartonStudySetup
         PartonStudySetup(process)
@@ -596,6 +604,57 @@ def SingleTopStep2():
     if Config.doWJetsFlavour:
         process.treePath += process.flavourAnalyzer
 
+    if Config.isMC:
+        process.meWeightProducer = cms.EDProducer("MEWeightProducer")
+        process.eventVarsPath += process.meWeightProducer
+
+        process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+        process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
+        src=cms.InputTag("genParticles"),
+        select=cms.vstring(
+            "drop  *",
+            "keep status = 3", #keeps all particles from the hard matrix element
+            "+keep abs(pdgId) = 15 & status = 1" #keeps intermediate decaying tau
+            )
+        )
+        
+        """process.pat2pxlio=cms.EDAnalyzer('EDM2PXLIO',
+            SelectEventsFromProcess=cms.vstring("USER"),  
+            SelectEventsFromPath = cms.vstring("p0"),
+            OutFileName=cms.untracked.string("wjets.pxlio"),
+            process=cms.untracked.string("test"),
+    
+            genCollection = cms.PSet(
+                type=cms.string("GenParticle2Pxlio"),
+                srcs=cms.VInputTag(cms.InputTag("prunedGenParticles")),
+                EventInfo=cms.InputTag('generator')
+            ),
+            
+            genJets = cms.PSet(
+                type=cms.string("GenJet2Pxlio"),
+                srcs=cms.VInputTag("ak5GenJets","kt4GenJets","kt6GenJets"),
+                names=cms.vstring("AK5GenJets","KT4GenJets","KT6GenJets")
+            ),
+            
+            q2weights = cms.PSet(
+                type=cms.string("ValueList2Pxlio"),
+                srcs=cms.VInputTag(
+                    cms.InputTag("extraPartons","nExtraPartons"),
+                ),
+                names = cms.vstring("nExtraPartons")
+            )
+            
+            
+        )"""
+
+        process.extraPartons = cms.EDProducer('ExtraPartonCounter',
+            isTTJets=cms.bool("TTJets" in Config.subChannel)
+        )
+
+        process.extraPartonSequence = cms.Sequence(process.prunedGenParticles*process.extraPartons)
+        #process.pxlioOut=cms.EndPath(process.out*process.pat2pxlio)
+
+        process.eventVarsPath += process.extraPartonSequence
 
     #-----------------------------------------------
     # Outpath
