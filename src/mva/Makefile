@@ -3,11 +3,12 @@ include ../analysis/Makefile.options
 skim:
 	./skim.sh
 
-all: train
+all: train_bdt_sig_bg_mixed_fullData
 
 
 ARGSdef="H:VerbosityLevel=Debug:NTrees=2000:BoostType=Grad:Shrinkage=0.1:!UseBaggedGrad:nCuts=2000:nEventsMin=100:NNodesMax=5:UseNvars=4:PruneStrength=5:PruneMethod=CostComplexity:MaxDepth=6"
 ARGSmixed="H:VerbosityLevel=Debug:NTrees=200:BoostType=Grad:Shrinkage=0.1:nCuts=50:UseNvars=2:MaxDepth=2"
+ARGSmixednew="H:VerbosityLevel=Debug:NTrees=200:BoostType=Grad:Shrinkage=0.4:nCuts=50:UseNvars=2:MaxDepth=2"
 
 train_bdt_sig_bg:
 	cp -R input/default input/bdt_sig_bg 
@@ -18,8 +19,34 @@ train_bdt_sig_bg_exclusive_only:
 	python train.py input/bdt_sig_bg_exclusive_only stpol_bdt_sig_bg_exclusive_only $(ARGSdef) &> input/bdt_sig_bg_exclusive_only/log
 
 train_bdt_sig_bg_mixed:
+	cp -R input/default input/bdt_sig_bg_mixed_new 
+	python train_mixed.py input/bdt_sig_bg_mixed_new stpol_bdt_sig_bg_mixed_new $(ARGSmixednew) &> input/bdt_sig_bg_mixed_new/log
+
+train_bdt_sig_bg_mixed_old:
 	cp -R input/default input/bdt_sig_bg_mixed 
 	python train_mixed.py input/bdt_sig_bg_mixed stpol_bdt_sig_bg_mixed $(ARGSmixed) &> input/bdt_sig_bg_mixed/log
+
+train_bdt_sig_bg_mixed_reproc:
+	cp -R input/default input/bdt_sig_bg_mixed_reproc 
+	python train_mixed.py input/bdt_sig_bg_mixed_reproc stpol_bdt_sig_bg_mixed_reproc $(ARGSmixed) &> input/bdt_sig_bg_mixed_reproc/log
+    echo "python train_mixed.py input/bdt_sig_bg_mixed_reproc stpol_bdt_sig_bg_mixed_reproc $(ARGSmixed) &> input/bdt_sig_bg_mixed_reproc/log"
+
+train_bdt_sig_bg_mixed_deltaR:
+	python train_mixed.py input/bdt_sig_bg_mixed_deltaR stpol_bdt_sig_bg_mixed_deltaR $(ARGSmixednew) &> input/bdt_sig_bg_mixed_deltaR/log
+    echo "python train_mixed.py input/bdt_sig_bg_mixed_deltaR stpol_bdt_sig_bg_mixed_deltaR $(ARGSmixednew) &> input/bdt_sig_bg_mixed_deltaR/log"
+
+train_bdt_sig_bg_mixed_fullData:
+	python train_mixed.py input/bdt_sig_bg_mixed_fullData stpol_bdt_sig_bg_mixed_fullData $(ARGSmixednew) &> input/bdt_sig_bg_mixed_fullData/log
+    echo "python train_mixed.py input/bdt_sig_bg_mixed_fullData stpol_bdt_sig_bg_mixed_fullData $(ARGSmixednew) &> input/bdt_sig_bg_mixed_fullData/log"
+
+train_bdt_sig_bg_mixed_fullData_withC:
+	python train_mixed.py input/bdt_sig_bg_mixed_fullData_withC stpol_bdt_sig_bg_mixed_fullData_withC $(ARGSmixednew) &> input/bdt_sig_bg_mixed_fullData_withC/log
+    echo "python train_mixed.py input/bdt_sig_bg_mixed_fullData_withC stpol_bdt_sig_bg_mixed_fullData_withC $(ARGSmixednew) &> input/bdt_sig_bg_mixed_fullData_withC/log"
+
+train_bdt_sig_bg_reproc:
+	cp -R input/default/* input/bdt_sig_bg_reproc 
+	python train.py input/bdt_sig_bg_reproc stpol_bdt_sig_bg_reproc $(ARGSdef) &> input/bdt_sig_bg_reproc/log
+	echo "python train.py input/bdt_sig_bg_reproc stpol_bdt_sig_bg_reproc $(ARGSdef) &> input/bdt_sig_bg_reproc/log"
 
 evaluate:
 	find ~/singletop/ntuples/nominal/ -name "*.root" | ~/parallel python adder.py bdt_sig_bg weights/stpol_bdt_sig_bg_lepton_flavour.weights.xml {}
