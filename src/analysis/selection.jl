@@ -5,8 +5,8 @@ module Cuts
     import SingleTopBase: hmap_symb_from, hmap_symb_to
 
     const qcd_mva_wps = {
-        :mu=>0.4,
-        :ele=>0.55
+        :mu=>-0.15,
+        :ele=>0.15
     }
 
     is_mu(indata) = (
@@ -32,7 +32,7 @@ module Cuts
 
     njets(indata, x) = indata[:njets] .== x
     ntags(indata, x) = indata[:ntags] .== x
-    qcd_mva(indata, x::Real) = indata[:bdt_qcd_before_reproc] .> x
+    qcd_mva(indata, x::Real) = indata[:bdt_qcd] .> x
     bdt(indata, x::Real, bdtvar=:bdt_sig_bg) = indata[bdtvar] .> x
     bdt_reverse(indata, x::Real, bdtvar=:bdt_sig_bg) = indata[bdtvar] .< x
 
