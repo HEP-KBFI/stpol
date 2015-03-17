@@ -1,4 +1,10 @@
-/hdfs/local/joosep/stpol/skims/step3_v2/Jul4_newsyst_newvars_metshift/iso/nominal/Tbar_t_ToLeptons/5622/output.root
-/hdfs/local/joosep/stpol/skims/step3_v2/Jul4_newsyst_newvars_metshift/iso/nominal/T_t_ToLeptons/837/output.root
-/hdfs/local/joosep/stpol/skims/step3_v2/Jul4_newsyst_newvars_metshift/iso/nominal/T_t/58/output.root
-/hdfs/local/joosep/stpol/skims/step3_v2/Jul4_newsyst_newvars_metshift/iso/nominal/Tbar_t/3431/output.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/Tbar_t_ToLeptons/output0.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/Tbar_t_ToLeptons/output1.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/T_t_ToLeptons/output2.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/T_t_ToLeptons/output0.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/T_t_ToLeptons/output1.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/Tbar_t/output0.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/Tbar_t/output1.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/T_t/output2.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/T_t/output0.root
+/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/T_t/output1.root

@@ -81,8 +81,6 @@ for fn in sigfiles + bgfiles:
         tree.Write()
 
         flist.append(tf)
-        print xsweights
-        print fn, sample_name(fn)
         xsweight = xsweights[sample_name(fn)]
 
         print sample_name(fn), xsweight, (nj, nt), tree.GetEntries()
