@@ -171,11 +171,51 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
             for i in range(0, h.GetNbinsX() + 2):
                 x, y = h.GetBinContent(i), h.GetBinError(i)
 
+            #WJets costheta smoothing
+            if ("cos_theta" in k) and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k) and ("_scale" in k or "matching" in k):
+                # or "bdt_sig_bg" in k
+                if not "light__down" in k or "heavy__down" in k:
+                    joined_k = k.replace("_light;", ";").replace("_heavy;",";")
+                #print k
+                #print joined_k
+                #print joined_k in keylist.keys()
+                hk_joined = select_hist(joined_k, histname, lepton, selection_major, selection_minor, njets, ntags, iso)
+
+                if not hk_joined:
+                    continue
+                hk_joined, dj = hk_joined
+                h_joined = keylist[joined_k].ReadObj()
+        
+                htmp = keylist[k].ReadObj().Clone()
+                
+                if "_heavy;" not in k and "_light;" not in k:
+                    scale = 1.0
+                else:
+                    if h_joined.Integral() > 0:
+                        scale = h.Integral() / h_joined.Integral()
+                    else:
+                        scale = 0.0
+                for bin in range(1, h.GetNbinsX() + 1):
+                    if bin > 1 and bin < h.GetNbinsX():
+                        htmp.SetBinContent(bin, (h_joined.GetBinContent(bin-1) + h_joined.GetBinContent(bin) + h_joined.GetBinContent(bin+1)) / 3.)
+                h = htmp
+                if "2Jets" in k and "scale" in k:
+                    print k, joined_k, scale
+                    print h.Integral()*20000
+                h.Scale(scale)
+                h.Rebin(2)
+                if "2Jets" in k and "scale" in k:
+                    print h.Integral()*20000
+            elif ("cos_theta" in k) and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k):
+                #elif "cos_theta" in k:
+                h.Rebin(2)  
+            
+            
             kn = "%s__%s" % (hk, iso)
             if ret.has_key(kn):
                 raise Exception("Already exists: %s" % kn)
             ret[kn] = h
-    
+            
             """if "JetsToLNu_matching" in k or "JetsToLNu_scale" in k:
                 try:
                     #get corresponding nominal fullsim and fastsim histograms and scale accordingly

@@ -16,9 +16,11 @@ const defaults_func = {
     :ljet_pt => () -> Histogram(infb(linspace(40, 310, 31))),
     :bjet_pt => () -> Histogram(infb(linspace(40, 310, 31))),
 
-    :cos_theta_lj => () -> Histogram(binnings[:cos_theta_lj][:reco]),
+    :cos_theta_lj_tm => () -> Histogram(binnings[:cos_theta_lj][:reco]),
+    :cos_theta_lj_tm_gen => () -> Histogram(binnings[:cos_theta_lj][:gen]),
+    :cos_theta_lj => () -> Histogram(infb(linspace(-1, 1, int(nb_reco*2) + 1))),
     :cos_theta_bl => () -> Histogram(binnings[:cos_theta_lj][:reco]),
-    :cos_theta_lj_gen => () -> Histogram(binnings[:cos_theta_lj][:gen]),
+    :cos_theta_lj_gen => () -> Histogram(infb(linspace(-1, 1, int(nb_reco) + 1))),
     :cos_theta_bl_gen => () -> Histogram(binnings[:cos_theta_lj][:gen]),
     :bdt_sig_bg => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_mixed => () -> Histogram(binnings[:bdt]),
