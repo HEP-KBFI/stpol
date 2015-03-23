@@ -409,9 +409,6 @@ function process_df(rows::AbstractVector{Int64})
         end
         const iso = hmap_symb_from[row[:isolation]::Int64]
     
-        #if we want to split top & anti-top        
-        #Cuts.is_antitop(row) || continue
-        
         true_lep = sample==:tchan ? row[:gen_lepton_id] : int64(0)
         if isna(true_lep) || true_lep==0
             true_lep = row[:lepton_id]
