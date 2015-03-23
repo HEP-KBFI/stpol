@@ -24,7 +24,6 @@ Ntot = 0
 fhandles = Any[]
 
 #W+light scale-up factor
-const wjets_light_scale_factor = 0.1
 const wjets_light_scale_factor = 0.0
 
 for fi in inf
@@ -71,7 +70,11 @@ for fi in inf
 
 	added_df[:sherpa_fl_weight] = float64(1.0)
 
-    enable_branches(df, ["sample*", "subsample*", "isolation*", "systematic*", "cos_theta_lj*", "jet_cls*", "processing_tag*"])
+    added_df[:wjets_pt_weight] = float64(1.0)
+    added_df[:wjets_pt_weight__up] = float64(1.0)
+    added_df[:wjets_pt_weight__down] = float64(1.0)
+
+    enable_branches(df, ["sample*", "subsample*", "isolation*", "systematic*", "cos_theta_lj*", "jet_cls*", "processing_tag*", "lepton_type*", "n_signal_mu*", "n_signal_ele*", "n_veto_mu*", "n_veto_ele*", "hlt_mu*", "hlt_ele*", "w_pt*"])
     
     println("looping over $(nrow(df)) events")
     for j=1:nrow(df)
@@ -154,6 +157,14 @@ for fi in inf
 			added_df[j, :sherpa_fl_weight] = w
             println(w)
         end
+
+        #W+jets pt reweighting
+        if symbol(sample) == :wjets || symbol(sample) == :wjets_inc
+            w, wdown, wup = wjets_pt_weight(row)
+            added_df[j, :wjets_pt_weight] = w
+            added_df[j, :wjets_pt_weight__up] = wup
+            added_df[j, :wjets_pt_weight__down] = wdown            
+		end
 
     end
 
