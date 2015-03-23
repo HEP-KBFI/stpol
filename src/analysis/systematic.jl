@@ -83,6 +83,9 @@ const SYSTEMATICS_TABLE = {
 
     symbol("signal_aMCatNLO__nominal") => :aMCatNLO_nominal,
 
+    :wjets_pt_weight__down => :wjets_pt_weight__down,
+    :wjets_pt_weight__up => :wjets_pt_weight__up,
+
 }
 
 const systematic_processings = collect(keys(SYSTEMATICS_TABLE))
@@ -184,6 +187,9 @@ const nominal_weights = {
 
     :top_weight__up => :top_weight,
     :top_weight__down => :top_weight,
+
+    :wjets_pt_weight__up => :wjets_pt_weight,
+    :wjets_pt_weight__down => :wjets_pt_weight,
 }
 
 #loop over the weight variations
@@ -285,6 +291,16 @@ for weight in [:top_weight__up, :top_weight__down]
         weight
     )
 end
+
+for weight in [:wjets_pt_weight__up, :wjets_pt_weight__down]
+    scenarios[(SYSTEMATICS_TABLE[weight], :wjets)] = Scenario(
+        :nominal,
+        :wjets,
+        (nw::Float64, row::DataFrameRow) -> nw / row[weight],
+        weight
+    )
+end
+
 
 for proc in vcat(mcsamples)
     scenarios[(:nominal, proc)] = Scenario(

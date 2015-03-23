@@ -2,3 +2,5 @@ qcd_estimation/
 get_qcd_yield/
 fit_plots/
 theta_results.txt
+fit/
+oldsource/

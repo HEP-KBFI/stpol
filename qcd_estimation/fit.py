@@ -171,7 +171,7 @@ if __name__ == "__main__":
             for var in fitvars:
                 #if var == "mtw" and channel == "ele": continue
                 for cuttype in ["reversecut", "nocut"]:#"nocut", "qcdcut"]:
-                    for added in ["Mar5"]:
+                    for added in ["Mar23_wjets_pt"]:
                         print "\n"
                         #print "AAA", channel, jt, var, cuttype, added
                         identifier = "%s__%s__%s__%s__%s" % (var, jt, channel, cuttype, added)
@@ -196,8 +196,8 @@ if __name__ == "__main__":
     #make_results_tables_old(results_tex, channels, jtset, fitvars, ["reversecut", "nocut", ], ["isovar"])
     #make_results_tables(results, ["nominal", "isovar", "nocut", "metmtw"])
     #make_results_tables(results, ["varMC"])
-    #make_results_tables(results, ["nominal", "metmtw"])
-    make_results_tables(results, ["isovar", "nocut", "metmtw", "varMC"])
+    make_results_tables(results, ["nominal", "metmtw"])
+    #make_results_tables(results, ["isovar", "nocut", "metmtw", "varMC"])
     #make_results_tables(results, ["nominal"])
 
 

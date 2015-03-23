@@ -88,8 +88,8 @@ def make_table_metmtw(results, group):
             var = "mtw"
             if channel == "ele":
                 var = "met"
-            #for var in ["met", "mtw"]:
-            for v in [1]:
+            for var in ["met", "mtw"]:
+                #for v in [1]:
                 fit = results[jt+channel+var+"reversecut"]
                 table += "%s & %s & %s & QCD: $%.3f \\pm %.3f$ & $%.0f \\pm %.0f$ & $%.1f \\pm %.1f$ & $%.1f$ \\\\ \n" % (jt, channel, var, fit.result["QCD"]["sf"], fit.result["QCD"]["delta_sf"], fit.result["QCD"]["yield"], fit.result["QCD"]["delta_yield"], fit.result["QCD"]["yield_cut"], fit.result["QCD"]["delta_yield_cut"], fit.chi2)
                 for comp in fit.result.keys():

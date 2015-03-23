@@ -121,7 +121,7 @@ i=-1
 for event in events2:
     i+=1
     #extra_data[i] = [event.bdt_qcd, event.bdt_sig_bg, event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight]
-    extra_data[i] = [event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight, event.bdt_qcd, event.bdt_sig_bg]
+    extra_data[i] = [event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight, event.bdt_qcd, event.bdt_sig_bg, event.wjets_pt_weight]
     #print extra_data[i]
 
 i=-1
@@ -140,6 +140,7 @@ for event in events:
 
     xsweight = extra_data[i][0]
     wjets_shape_weight = extra_data[i][1]
+    wjets_pt_weight = extra_data[i][5]
     #wjets_yield_weight = extra_data[i][2]
     #print dataset, xsweight
     jt = "%sj%st" % (event.njets, event.ntags)
@@ -155,7 +156,7 @@ for event in events:
         total_weight *= event.top_weight
     if not math.isnan(event.b_weight):
         total_weight *= event.b_weight
-    
+    total_weight *= wjets_pt_weight
     total_weight *= luminosity
     
     

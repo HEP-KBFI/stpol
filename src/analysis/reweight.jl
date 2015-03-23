@@ -82,6 +82,29 @@ module Reweight
         return w
     end
 
-    export reweight, wjets_shape_weight, sherpa_flavor_weight
+    const wjets_pt_ratio_hists = {
+        k => fromdf(readtable("$BASE/results/wjets_pt_weight/weights_$k.csv"))
+        for k in [:mu, :ele]
+    }
+
+    function wjets_pt_weight(row::DataFrameRow)
+        if Cuts.is_reco_lepton(row, :mu)
+            const lepton = :mu
+        elseif Cuts.is_reco_lepton(row, :ele)
+            const lepton = :ele
+        else
+            #println(row[:lepton_type], row[:n_signal_mu], row[:n_signal_ele], row[:n_veto_mu], row[:n_veto_ele], row[:hlt_mu], row[:hlt_ele])
+            return 1.0,1.0,1.0        
+        end
+
+        const w_pt = row[:w_pt]
+        const h = wjets_pt_ratio_hists[lepton]
+        const w = h.bin_contents[findbin(h, w_pt)]
+        const bin = findbin(h, w_pt)
+        #nominal, no weight
+        return w, 1.0, 1.0
+    end
+
+    export reweight, wjets_shape_weight, sherpa_flavor_weight, wjets_pt_weight
 
 end

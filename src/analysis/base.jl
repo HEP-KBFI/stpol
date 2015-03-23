@@ -65,9 +65,10 @@ function nominal_weight(df::DataFrameRow)
         const lepton_weight__iso = get_no_na(df, :lepton_weight__iso, float32(1))
         const lepton_weight__trigger = get_no_na(df, :lepton_weight__trigger, float32(1))
         const wjets_shape_weight = df[:wjets_ct_shape_weight]
+        const wjets_pt_weight = df[:wjets_pt_weight]
 
         const w = df[:xsweight]::Float64 * b_weight * pu_weight * lepton_weight__id *
-            lepton_weight__iso * lepton_weight__trigger * wjets_shape_weight * top_weight
+            lepton_weight__iso * lepton_weight__trigger * wjets_shape_weight * top_weight * wjets_pt_weight
 
         return w
     else
