@@ -195,18 +195,23 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
                         scale = h.Integral() / h_joined.Integral()
                     else:
                         scale = 0.0
-                for bin in range(1, h.GetNbinsX() + 1):
-                    if bin > 1 and bin < h.GetNbinsX():
-                        htmp.SetBinContent(bin, (h_joined.GetBinContent(bin-1) + h_joined.GetBinContent(bin) + h_joined.GetBinContent(bin+1)) / 3.)
+                for rep in range(10):
+                    #print "integrals", rep, htmp.Integral()*20000, h_joined.Integral()*20000                
+                    for bin in range(1, h.GetNbinsX() + 1):
+                        if bin > 1 and bin < h.GetNbinsX():
+                            htmp.SetBinContent(bin, (h_joined.GetBinContent(bin-1) + h_joined.GetBinContent(bin) + h_joined.GetBinContent(bin+1)) / 3.)
+                        else:
+                            htmp.SetBinContent(bin, h_joined.GetBinContent(bin))
+                    #print "integrals X", rep, htmp.Integral()*20000, h_joined.Integral()*20000                
+                    h_joined = htmp.Clone()
+                    #print "integrals Y", rep, htmp.Integral()*20000, h_joined.Integral()*20000                
+                    
                 h = htmp
-                if "2Jets" in k and "scale" in k:
-                    print k, joined_k, scale
-                    print h.Integral()*20000
                 h.Scale(scale)
-                h.Rebin(2)
-                if "2Jets" in k and "scale" in k:
-                    print h.Integral()*20000
-            elif ("cos_theta" in k) and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k):
+                #print "integrals2", htmp.Integral()*20000, h_joined.Integral()*20000, h.Integral()*20000
+            	h.Rebin(2)
+                
+            elif ("cos_theta" in k):# and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k):
                 #elif "cos_theta" in k:
                 h.Rebin(2)  
             
@@ -445,7 +450,7 @@ def merge_hists(vname, hd):
 
     return out
 
-output_dir = "output"
+output_dir = "output_antitop"
 print("preqcd")
 for lep in ["mu", "ele"]:
     for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
@@ -514,7 +519,7 @@ for bdt_cut in [0.6]:
 #for bdt_cut in [0.0, 0.06, 0.13, 0.2, 0.4, 0.6, 0.8, 0.9]:
 #for bdt_cut in numpy.arange(-0.2, 0.9, 0.1):
 #for bdt_cut in [0.0, 0.06, 0.13, 0.2, 0.4, 0.6,]:
-#for bdt_cut in [0.6]:
+#for bdt_cut in [0.6]:"""
 for bdt_cut in [-0.20, -0.10, 0.00, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]:
     bdts = "%.5f" % bdt_cut
     print(bdts)
