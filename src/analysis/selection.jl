@@ -9,6 +9,16 @@ module Cuts
         :ele=>0.15
     }
 
+    is_top(indata) = (
+        !(isna(indata[:lepton_charge])) &&
+        indata[:lepton_charge] == int32(1)
+    )
+
+    is_antitop(indata) = (
+        !(isna(indata[:lepton_charge])) &&
+        indata[:lepton_charge] == int32(-1)
+    )
+
     is_mu(indata) = (
         !(isna(indata[:n_veto_mu])) &
         !(isna(indata[:n_veto_ele])) &

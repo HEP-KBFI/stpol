@@ -22,6 +22,10 @@ const BDT_CUTS = [-0.2, -0.10, 0.0, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4,
 const BDT_REVERSE_CUTS = [0.6]
 const VARS_TO_USE = symbol(PARS["vars_to_use"])
 
+
+const IS_TOP = false
+const IS_ANTITOP = false
+
 #const BDT_CUTS = [0.0, 0.06, 0.13, 0.2, 0.4, 0.6, 0.8, 0.9]
 
 #PAS
@@ -405,8 +409,9 @@ function process_df(rows::AbstractVector{Int64})
         end
         const iso = hmap_symb_from[row[:isolation]::Int64]
     
-                               
-
+        #if we want to split top & anti-top        
+        #Cuts.is_antitop(row) || continue
+        
         true_lep = sample==:tchan ? row[:gen_lepton_id] : int64(0)
         if isna(true_lep) || true_lep==0
             true_lep = row[:lepton_id]
@@ -452,7 +457,11 @@ function process_df(rows::AbstractVector{Int64})
                reco = reco && Cuts.is_reco_lepton(row, reco_lep)
                reco = reco && Cuts.qcd_cut(row, QCD_CUT_TYPE, reco_lep)
                reco = reco && Cuts.nu_soltype(row, SOLTYPE)
-
+               if IS_TOP
+                   reco = reco && Cuts.is_top(row)
+               elseif IS_ANTITOP
+                   reco = reco && Cuts.is_antitop(row)
+               end
                if DO_LJET_RMS
                    reco = reco && Cuts.ljet_rms(row)
                end
@@ -561,6 +570,12 @@ function process_df(rows::AbstractVector{Int64})
         #required to cut away mismodeled high-eta region
         (abs(row[:ljet_eta]) < 4.5 && abs(row[:bjet_eta]) < 4.5) || continue
         
+        if IS_TOP
+            Cuts.is_top(row) || continue
+        elseif IS_ANTITOP
+            Cuts.is_antitop(row) || continue
+        end
+        
        #pre-qcd plots
        for (nj, nt) in JET_TAGS
            #pre-bdt selection
@@ -586,7 +601,7 @@ function process_df(rows::AbstractVector{Int64})
                    lepton,
                    nj, nt
                )
-               #println ("siiin ",row[:njets], " ", row[:ntags], " ", row[:bdt_qcd], " ", row[:n_signal_mu], " ", row[:n_signal_ele], " ", row[:n_veto_mu], " ", row[:n_veto_ele])
+               
            end
        end
        
