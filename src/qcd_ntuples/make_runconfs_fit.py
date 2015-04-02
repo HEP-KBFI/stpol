@@ -42,6 +42,6 @@ for iso in ["iso", "antiiso"]:
                             print "XXX"
                             time.sleep(10)
                     i+=1
-                    time.sleep(0.3)
+                    time.sleep(0.05)
 
 print "total jobs", total_jobs

@@ -57,4 +57,9 @@ def passes_cuts(event, channel, iso="iso", iso_var=None):
         #else: break
     return True
 
-        
+def cos_theta_bin(cos_theta, bin):
+    if math.isnan(cos_theta):
+        return False
+    if cos_theta > (-1 + (bin - 1) * (1./3)) and cos_theta <= (-1 + bin * (1./3)):
+        return True
+    return False

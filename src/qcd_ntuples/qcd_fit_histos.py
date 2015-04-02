@@ -15,6 +15,10 @@ import math
 from mva_variables import *
 from cuts import *
 
+CT_BIN = False
+BDT_BIN = True
+BIN = 6
+
 print "args", sys.argv
 channel = sys.argv[1]
 dataset = sys.argv[2]
@@ -126,10 +130,20 @@ for event in events2:
 
 i=-1
 missing = 0
+asd = 0
 for event in events:
     i+=1
     if i not in extra_data: continue
     if not passes_cuts(event, channel, iso, isovar): continue
+    if CT_BIN == True:    
+        if not cos_theta_bin(event.cos_theta_lj, BIN):
+            continue
+        else: asd += 1
+    elif BDT_BIN == True:    
+        if not cos_theta_bin(extra_data[i][4], BIN):
+            continue
+        else: asd += 1
+    
     #run = event.run
     #lumi = event.lumi
     #eventid = event.event    
@@ -190,6 +204,8 @@ for event in events:
     if abs(event.bjet_eta) >= 4.5 or abs(event.ljet_eta) >= 4.5 and event_vars["qcd_mva"] > qcd_mva_cut: print "JA_MA", dataset, iso, channel, event_vars["qcd_mva"], extra_data[i][4]    
     if abs(event.bjet_eta) >= 4.5 or abs(event.ljet_eta) >= 4.5 and event_vars["qcd_mva"] > qcd_mva_cut and extra_data[i][4] > 0.6 : print "JA__MA", dataset, iso, channel, event_vars["qcd_mva"], extra_data[i][4]    
 
+
+
     for v in event_vars:
         histograms[c+v+jt+"nocut"].Fill(event_vars[v], total_weight)
         if event_vars[v] > cut_points[v]:
@@ -206,6 +222,11 @@ if iso == "antiiso" and (isovar != None and isovar != "None"):
     isovardesc = "_isovar_" + isovar
 outfilename = os.path.join(os.environ["STPOL_DIR"], "src/qcd_ntuples/histos/",  channel , "histos_%s_%s_%s%s_%s.root" % (dataset, channel, iso, isovardesc, counter))
 
+if CT_BIN == True:
+    outfilename = os.path.join(os.environ["STPOL_DIR"], "src/qcd_ntuples/histos_bin%d/" % BIN,  channel , "histos_%s_%s_%s%s_%s.root" % (dataset, channel, iso, isovardesc, counter))
+elif BDT_BIN == True:
+    outfilename = os.path.join(os.environ["STPOL_DIR"], "src/qcd_ntuples/histos_bdtbin%d/" % BIN,  channel , "histos_%s_%s_%s%s_%s.root" % (dataset, channel, iso, isovardesc, counter))
+
 #outfilename = os.path.join("/scratch/andres/qcd/histos",  channel , "histos_%s_%s_%s_%s.root" % (dataset, channel, iso, counter))
 #outfilename = os.path.join("/hdfs/local/andres/stpol/qcd/histos/", channel , "histos_%s_%s_%s_%s.root" % (dataset, channel, iso, counter))
 print outfilename
@@ -220,7 +241,8 @@ outfile.Close()
 
 #for f in ROOT.gROOT.GetListOfFiles():
 #    f.Close("R")
-    
+
+print asd
 print "finished"             
 
         
