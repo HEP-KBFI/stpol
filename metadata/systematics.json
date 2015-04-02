@@ -51,8 +51,10 @@
         "nominal": "nominal",
         "signal_comphep__anomWtb-unphys_LVLT": "comphep_anom_unphys_LVLT",
         "qcd_antiiso__down": "qcd_antiiso__down",
-        "me_weight__down": "qscale_me_weight__down",
-        "me_weight__up": "qscale_me_weight__up",
+        "qscale_me_weight__down": "qscale_me_weight__down",
+        "qscale_me_weight__up": "qscale_me_weight__up",
+        "wjets_pt_weight__down": "wjets_pt_weight__down",
+        "wjets_pt_weight__up": "wjets_pt_weight__up",
         "signal_aMCatNLO__nominal": "aMCatNLO_nominal"        
     }
 }
