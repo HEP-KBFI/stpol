@@ -296,7 +296,7 @@ for weight in [:wjets_pt_weight__up, :wjets_pt_weight__down]
     scenarios[(SYSTEMATICS_TABLE[weight], :wjets)] = Scenario(
         :nominal,
         :wjets,
-        (nw::Float64, row::DataFrameRow) -> nw / row[weight],
+        (nw::Float64, row::DataFrameRow) -> nw / row[:wjets_pt_weight],
         weight
     )
 end
