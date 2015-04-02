@@ -37,4 +37,17 @@ function jet_cls_heavy_light(s::Symbol)
     end
 end
 
+function jet_cls_bcl(s::Symbol)
+    if s in [:bb, :bX, :bc]
+        return :heavy
+    elseif s in [:gg, :gX, :XX]
+        return :light
+    elseif s in [:cc, :cX]
+        return :wc
+    else
+        error("unknown jet classification $s")
+    end
+end
+
 jet_cls_heavy_light(x::Integer) = jet_cls_heavy_light(jet_cls_from_number(x))
+jet_cls_bcl(x::Integer) = jet_cls_bcl(jet_cls_from_number(x))
