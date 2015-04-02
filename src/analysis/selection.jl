@@ -19,6 +19,12 @@ module Cuts
         indata[:lepton_charge] == int32(-1)
     )
 
+    cos_theta_bin(indata, bin) = (
+        !(isna(indata[:cos_theta_lj])) &&
+        indata[:cos_theta_lj] > -1 + (bin - 1) * (1./3) &&
+        indata[:cos_theta_lj] <= -1 + bin * (1./3) 
+    )
+
     is_mu(indata) = (
         !(isna(indata[:n_veto_mu])) &
         !(isna(indata[:n_veto_ele])) &

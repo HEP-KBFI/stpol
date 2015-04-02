@@ -61,8 +61,14 @@ def matching_doubler(filename, path, outpath):
                         hists[hist].Scale(1.427254)
                     if "ttjets" in hist and "mu" in outpath:
                         hists[hist].Scale(1.122473)"""
-    for name, h in hists.items():  
-        h.SetNameTitle(name, name)      
+    for name, h in hists.items(): 
+        prefix = ""
+        if "preselection" in outpath and "bdt_sig_bg" in name:
+            if "_top" in outpath.split("stpol")[1]: 
+                prefix = "top_"
+            elif "_antitop" in outpath.split("stpol")[1]: 
+                prefix = "antitop_" 
+        h.SetNameTitle(prefix+name, prefix+name)      
         h.Write()
     #outfile.Write()
     outfile.Close()

@@ -16,15 +16,18 @@ const B_WEIGHT_NOMINAL = symbol(PARS["b_weight_nominal"])
 const BDT_VAR = symbol(PARS["bdt_var"])
 #const BDT_CUTS = [-0.2:0.1:0.9]
 #const BDT_CUTS = [-0.2, 0.0, 0.06, 0.13, 0.2, 0.4, 0.6,]
-const BDT_CUTS = [-0.2, -0.10, 0.0, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]
-#const BDT_CUTS = [0.6]
+#const BDT_CUTS = [-0.2, -0.10, 0.0, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]
+const BDT_CUTS = [-0.2, 0.45]
 #const BDT_REVERSE_CUTS = [-0.2, -0.10, 0.0, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]
 const BDT_REVERSE_CUTS = [0.6]
 const VARS_TO_USE = symbol(PARS["vars_to_use"])
 
 
 const IS_TOP = false
-const IS_ANTITOP = false
+const IS_ANTITOP = true
+
+const IS_CT_BIN = false
+const WHICH_BIN = 0
 
 #const BDT_CUTS = [0.0, 0.06, 0.13, 0.2, 0.4, 0.6, 0.8, 0.9]
 
@@ -89,7 +92,8 @@ const JET_TAGS = [(2, 0), (2, 2), (2, 1), (3, 0), (3, 1), (3, 2), (3, 3)]
 
 const wjets_weights = {
     :heavy => {:up=>2.0, :down=>0.5},
-    :light => {:up=> 1.2, :down=>0.8}
+    :light => {:up=> 1.2, :down=>0.8},
+    :wc => {:up=> 1.2, :down=>0.8}
 }
 
 lepton_iso_limits = {
@@ -281,8 +285,8 @@ function fill_histogram(
                 const ev_cls = row[:jet_cls] |> jet_cls_from_number
                 ev_cls == cls || continue
 
-                ev_cls = jet_cls_heavy_light(ev_cls)
-
+                ev_cls = jet_cls_bcl(ev_cls)
+                println(symbol("$(sample)_$(ev_cls)"))
                 const kk = HistKey(
                     hname,
                     symbol("$(sample)_$(ev_cls)"),
@@ -313,7 +317,7 @@ function fill_histogram(
             const ev_cls = row[:jet_cls] |> jet_cls_from_number
             ev_cls == cls || continue
 
-            ev_cls = jet_cls_heavy_light(ev_cls)
+            ev_cls = jet_cls_bcl(ev_cls)
 
             #W+jets heavy/light flavour reweighting
             for wdir in [:up, :down]
@@ -459,6 +463,9 @@ function process_df(rows::AbstractVector{Int64})
                elseif IS_ANTITOP
                    reco = reco && Cuts.is_antitop(row)
                end
+               if IS_CT_BIN
+                    reco = reco && Cuts.cos_theta_bin(row, WHICH_BIN)                    
+               end            
                if DO_LJET_RMS
                    reco = reco && Cuts.ljet_rms(row)
                end
@@ -572,6 +579,10 @@ function process_df(rows::AbstractVector{Int64})
         elseif IS_ANTITOP
             Cuts.is_antitop(row) || continue
         end
+        if IS_CT_BIN
+            Cuts.cos_theta_bin(row, WHICH_BIN) || continue
+            
+        end   
         
        #pre-qcd plots
        for (nj, nt) in JET_TAGS

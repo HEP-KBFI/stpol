@@ -31,7 +31,7 @@ mc_samples = [
     "tchan", "wjets", "ttjets",
     "twchan", "schan", "diboson", #"gjets", 
     "dyjets",
-    "wjets__heavy", "wjets__light"
+    "wjets__heavy", "wjets__light", "wjets__wc"
 ]
 samples = mc_samples + [
     "data_mu", "data_ele"
@@ -51,6 +51,9 @@ qcd_sfs = from_json("../../metadata/qcd_sfs.json")
 
 def select_hist(k, histname, lepton, selection_major, selection_minor, njets, ntags, iso):
     d = keydicts[k]
+    #if not "W2Jets" in k: return None
+    #if not ("pt_weight" in k or ("scenario=nominal" in k and "systematic=nominal" in k)): return None
+    #print k, histname, lepton, selection_major, selection_minor, njets, ntags, iso
     if d["object"] != histname:
         return None
 
@@ -71,7 +74,6 @@ def select_hist(k, histname, lepton, selection_major, selection_minor, njets, nt
 
     if d["iso"] != iso:
         return None
-    
     #is double variated MC
     #Hacky parsing
     if d["systematic"]!="nominal" and d["scenario"]!="nominal" and d["systematic"]!="" and ("wjets" in d["scenario"] or "qcd" in d["scenario"]) and "FSIM" not in k:
@@ -172,48 +174,28 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
                 x, y = h.GetBinContent(i), h.GetBinError(i)
 
             #WJets costheta smoothing
-            if ("cos_theta" in k) and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k) and ("_scale" in k or "matching" in k):
+            if ("cos_theta" in k) and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k) and ("_scale" in k or "matching" in k) and "bdt" in selection_major:
                 # or "bdt_sig_bg" in k
-                if not "light__down" in k or "heavy__down" in k:
-                    joined_k = k.replace("_light;", ";").replace("_heavy;",";")
-                #print k
-                #print joined_k
-                #print joined_k in keylist.keys()
-                hk_joined = select_hist(joined_k, histname, lepton, selection_major, selection_minor, njets, ntags, iso)
+                if not "light__down" in k or "heavy__down" in k or "wc__down" in k:
+                    joined_k = k.replace("_light;", ";").replace("_heavy;",";").replace("_wc;",";")
+                comps = joined_k.split(";")
+                comps[6] = "selection_minor=-0.20000"
+                joined_k = ";".join(comps)
+                print lepton, selection_major, selection_minor, njets, ntags, iso
+                h = select_hist(joined_k, histname, lepton, selection_major, "-0.20000", njets, ntags, iso)
 
-                if not hk_joined:
+                if not h:
                     continue
-                hk_joined, dj = hk_joined
-                h_joined = keylist[joined_k].ReadObj()
+                h, dj = h
+                h = keylist[joined_k].ReadObj()
         
-                htmp = keylist[k].ReadObj().Clone()
-                
-                if "_heavy;" not in k and "_light;" not in k:
-                    scale = 1.0
-                else:
-                    if h_joined.Integral() > 0:
-                        scale = h.Integral() / h_joined.Integral()
-                    else:
-                        scale = 0.0
-                for rep in range(10):
-                    #print "integrals", rep, htmp.Integral()*20000, h_joined.Integral()*20000                
-                    for bin in range(1, h.GetNbinsX() + 1):
-                        if bin > 1 and bin < h.GetNbinsX():
-                            htmp.SetBinContent(bin, (h_joined.GetBinContent(bin-1) + h_joined.GetBinContent(bin) + h_joined.GetBinContent(bin+1)) / 3.)
-                        else:
-                            htmp.SetBinContent(bin, h_joined.GetBinContent(bin))
-                    #print "integrals X", rep, htmp.Integral()*20000, h_joined.Integral()*20000                
-                    h_joined = htmp.Clone()
-                    #print "integrals Y", rep, htmp.Integral()*20000, h_joined.Integral()*20000                
-                    
-                h = htmp
-                h.Scale(scale)
-                #print "integrals2", htmp.Integral()*20000, h_joined.Integral()*20000, h.Integral()*20000
-            	h.Rebin(2)
+                h.Scale(int_sum / h.Integral())
+                h.Rebin(2)
                 
             elif ("cos_theta" in k):# and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k):
                 #elif "cos_theta" in k:
-                h.Rebin(2)  
+                if h.GetNbinsX() == 96:
+                    h.Rebin(2)  
             
             
             kn = "%s__%s" % (hk, iso)
@@ -310,8 +292,7 @@ def select_transfermatrix(gen_lepton, reco_lepton, selection_major, selection_mi
         hk, d = hk
 
         hk = hk.split("__")
-        #print "TM", hk
-
+        
         x = "__".join(hk[2:])
         if len(x)==0:
             x = "nominal"
@@ -436,12 +417,13 @@ def merge_hists(vname, hd):
     merge_into(vname, hd, out, "ttjets", "twchan")
     merge_into(vname, hd, out, "ttjets", "schan")
 
-    merge_into(vname, hd, out, "wzjets", "wjets")
+    #merge_into(vname, hd, out, "wzjets", "wjets")
     merge_into(vname, hd, out, "wzjets", "diboson")
     merge_into(vname, hd, out, "wzjets", "dyjets")
 
-    #merge_into(vname, hd, out, "wzjets", "wjets_heavy")
-    #merge_into(vname, hd, out, "wjets_light", "wjets_light")
+    merge_into(vname, hd, out, "wzjets", "wjets_heavy")
+    merge_into(vname, hd, out, "wzjets", "wjets_light")
+    merge_into(vname, hd, out, "wjets_c", "wjets_wc")
     
     
     merge_into(vname, hd, out, "qcd", "qcd")
@@ -450,7 +432,7 @@ def merge_hists(vname, hd):
 
     return out
 
-output_dir = "output_antitop"
+output_dir = "output_wc_antitop"
 print("preqcd")
 for lep in ["mu", "ele"]:
     for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
@@ -492,7 +474,7 @@ for lep in ["mu", "ele"]:
 
 print("reverse BDT cut for fit")
 #for bdt_cut in [-0.20, -0.15, -0.10, -0.05, 0.0, 0.05, 0.06, 0.10, 0.13, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]:
-for bdt_cut in [0.6]:
+for bdt_cut in [0.60]:
     bdts = "%.5f" % bdt_cut
     for lep in ["mu", "ele"]:
         for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
@@ -519,8 +501,8 @@ for bdt_cut in [0.6]:
 #for bdt_cut in [0.0, 0.06, 0.13, 0.2, 0.4, 0.6, 0.8, 0.9]:
 #for bdt_cut in numpy.arange(-0.2, 0.9, 0.1):
 #for bdt_cut in [0.0, 0.06, 0.13, 0.2, 0.4, 0.6,]:
-#for bdt_cut in [0.6]:"""
-for bdt_cut in [-0.20, -0.10, 0.00, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]:
+for bdt_cut in [0.45]:
+    #for bdt_cut in [-0.20, -0.10, 0.00, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]:
     bdts = "%.5f" % bdt_cut
     print(bdts)
     for reco_lep in ["mu", "ele"]:

@@ -1,8 +1,8 @@
 include ../analysis/Makefile.options
 
 #INDIR=../../results/hists/Aug26_tchpt/bdt_scan/hists/
-INDIR=output/bdt_scan/hists/
-OUTDIR=../../results/hists/raw_Mar9/merged
+INDIR=output_wc_antitop/bdt_scan/hists/
+OUTDIR=../../results/hists/raw_Apr1_wc_antitop/merged
 
 all: merge merge2 merge3
 clean:
@@ -114,7 +114,7 @@ merge:
 	done
 
 merge2:
-	for bdt in -0.20000 -0.10000 0.00000 0.06000 0.10000 0.13000 0.20000 0.25000 0.30000 0.35000 0.40000 0.45000 0.50000 0.55000 0.60000 0.65000 0.70000 0.75000 0.80000; do \
+	for bdt in 0.45000; do \
 		mkdir -p $(OUTDIR)/$$bdt/mu ; \
 		mkdir -p $(OUTDIR)/$$bdt/ele ; \
 		mybdt=$$bdt ; \

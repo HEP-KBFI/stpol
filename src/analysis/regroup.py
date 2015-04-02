@@ -61,11 +61,11 @@ merges = from_json("merges.json")
 
 
 systs_to_split = {
-    "scale": ["ttjets", "tchan", "wzjets"],
-    "matching": ["ttjets", "wzjets"],
+    "scale": ["ttjets", "tchan", "wzjets", "wjets_c"],
+    "matching": ["ttjets", "wzjets", "wjets_c"],
     #"scale": ["ttjets", "tchan", "wzjets", "wjets_light"],
     #"matching": ["ttjets", "wzjets", "wjets_light"],
-    "qscale_me_weight": ["ttjets", "tchan", "wzjets"]
+    "qscale_me_weight": ["ttjets", "tchan", "wzjets", "wjets_c"]
 }
 
 
@@ -87,9 +87,10 @@ if grouping=="fit":
     final_groups = {
         "tchan":["tchan"],
         "ttjets": ["ttjets", "twchan", "schan"],
+        #"wzjets": ["wjets", "diboson", "dyjets"],# "gjets"],
         "wzjets": ["wjets", "diboson", "dyjets"],# "gjets"],
-        #"wzjets": ["wjets_heavy", "diboson", "dyjets"],# "gjets"],
         #"wjets_light": ["wjets_light"]
+        "wjets_c": ["wjets_c"]
         #"qcd": ["qcd"],
     }
 elif grouping=="plot":
@@ -97,6 +98,7 @@ elif grouping=="plot":
         "tchan": ["tchan"],
         "ttjets": ["ttjets"],
         "wjets": ["wjets"],
+        "wjets_wc": ["wjets_c"],
         "twchan": ["twchan"],
         "schan": ["schan"],
         "diboson": ["diboson"],
@@ -139,8 +141,8 @@ def get_hists(sample, syst, di, iso):
 
     for k in hd.keys():
         d = dict(k)
-        if "TTJets" in sample:
-            print "sample1", d["sample"], d["syst"], d["dir"], d["iso"]
+        #if "TTJets" in sample:
+        #    print "sample1", d["sample"], d["syst"], d["dir"], d["iso"]
         if d["sample"]==sample and d["syst"]==syst and d["dir"]==di and d["iso"]==iso:
             hks.append(k)
             subsamps.append(d["subsample"])
@@ -284,6 +286,9 @@ for (gn, gs) in final_groups.items():
             print "systs_to_split", systs_to_split[syst], gn
             if gn in systs_to_split[syst]:
                 _snb = gn + "_" + snb
+                #hack for w+c                
+                if gn.startswith("wjets_c"):
+                    _snb = "wzjets_" + snb
                 print("renamed snb %s->%s" % (snb, _snb))
                 snb = _snb
 
