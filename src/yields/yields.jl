@@ -55,8 +55,8 @@ nona!(tag)
 rms = X[:ljet_rms] .< 0.025
 nona!(rms)
 #
-dr = (X[:ljet_dr] .> 0.3) .* (X[:bjet_dr] .> 0.3);
-nona!(dr)
+#dr = (X[:ljet_dr] .> 0.3) .* (X[:bjet_dr] .> 0.3);
+#nona!(dr)
 #
 met = X[:met].>45
 nona!(met)
