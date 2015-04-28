@@ -171,7 +171,7 @@ if __name__ == "__main__":
             for var in fitvars:
                 #if var == "mtw" and channel == "ele": continue
                 for cuttype in ["reversecut", "nocut"]:#"nocut", "qcdcut"]:
-                    for added in ["Mar23_wjets_pt"]:
+                    for added in ["Apr21"]:
                         print "\n"
                         #print "AAA", channel, jt, var, cuttype, added
                         identifier = "%s__%s__%s__%s__%s" % (var, jt, channel, cuttype, added)

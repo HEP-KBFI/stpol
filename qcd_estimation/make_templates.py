@@ -13,7 +13,7 @@ from colors import *
 def get_histos(fname, channel, isovar=None):
     f = TFile(fname)
     histos = {}
-    for cut in ["qcdcut", "nocut", "reversecut"]:
+    for cut in ["nocut", "reversecut"]:#,"qcdcut", 
         for var in ["qcd_mva", "met", "mtw"]:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
                 for iso in ["iso", "antiiso"]:
@@ -140,7 +140,7 @@ if __name__=="__main__":
         myvars = ["qcd_mva", "met"]
         #if channel == "mu":
         myvars.append("mtw")
-        added = "Mar23_wjets_pt" ##Nov_reproc"
+        added = "Apr21" ##Nov_reproc"
     	for varname in myvars:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
                 for cut in ["reversecut", "nocut"]:#, "qcdcut"]:
