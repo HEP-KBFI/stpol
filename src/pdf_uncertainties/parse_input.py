@@ -60,6 +60,7 @@ base_dir = "/hdfs/local/joosep/stpol/skims/step3/csvt/Jul4_newsyst_newvars_metsh
 base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/nominal/"
 base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan11_deltaR/iso/nominal/"
 base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData/iso/nominal/"
+base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags/iso/nominal/"
 
 def get_data_files():
     data_files = dict()

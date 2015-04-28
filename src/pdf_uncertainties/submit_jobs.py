@@ -12,13 +12,9 @@ data_files = get_data_files()
 
 total_jobs = 0
 #time.sleep(10000)
-for channel in ["ele"]:
+for channel in ["mu", "ele"]:
     for dataset, fileset in data_files.items():
         for p in pdfs:
-            #if not ("TTJets" in dataset or "exclusive" in dataset):continue
-            if not "TTJets_S" in dataset: continue
-            if not ("NNPDF" in p or "MSTW" in p): continue
-            #if not "exclusive" in dataset: continue
             call(["mkdir", "-p", dataset])
             savedPath = os.getcwd()
             os.chdir(savedPath+"/"+dataset)

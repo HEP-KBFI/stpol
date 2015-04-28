@@ -16,7 +16,6 @@ for dataset, fileset in data_files.items():
         i = 0
         print
         print dataset
-        if not "exclusive" in dataset: continue
         for (base_file, added_file) in fileset:
             print i, base_file
             counter = base_file.split("output")[2].split(".")[0]
