@@ -161,10 +161,7 @@
         "W4JetsToLNu_matchingdown_heavy",
         "W4JetsToLNu_matchingup_heavy",
         "W4JetsToLNu_scaleup_heavy",
-        "W4JetsToLNu_scaledown_heavy"
-    ],
-
-    "wjets_c": [
+        "W4JetsToLNu_scaledown_heavy",
         "W1Jets_exclusive_wc",
         "W2Jets_exclusive_wc",
         "W3Jets_exclusive_wc",
@@ -185,6 +182,75 @@
         "W4JetsToLNu_matchingup_wc",
         "W4JetsToLNu_scaleup_wc",
         "W4JetsToLNu_scaledown_wc"
+    ],
+
+    "wjets_heavy": [
+        "W1Jets_exclusive_heavy",
+        "W2Jets_exclusive_heavy",
+        "W3Jets_exclusive_heavy",
+        "W4Jets_exclusive_heavy",
+        "W1JetsToLNu_matchingdown_heavy",
+        "W1JetsToLNu_matchingup_heavy",
+        "W1JetsToLNu_scaleup_heavy",
+        "W1JetsToLNu_scaledown_heavy",
+        "W2JetsToLNu_matchingdown_heavy",
+        "W2JetsToLNu_matchingup_heavy",
+        "W2JetsToLNu_scaleup_heavy",
+        "W2JetsToLNu_scaledown_heavy",
+        "W3JetsToLNu_matchingdown_heavy",
+        "W3JetsToLNu_matchingup_heavy",
+        "W3JetsToLNu_scaleup_heavy",
+        "W3JetsToLNu_scaledown_heavy",
+        "W4JetsToLNu_matchingdown_heavy",
+        "W4JetsToLNu_matchingup_heavy",
+        "W4JetsToLNu_scaleup_heavy",
+        "W4JetsToLNu_scaledown_heavy"        
+    ],
+
+    "wjets_charm": [
+        "W1Jets_exclusive_wc",
+        "W2Jets_exclusive_wc",
+        "W3Jets_exclusive_wc",
+        "W4Jets_exclusive_wc",
+        "W1JetsToLNu_matchingdown_wc",
+        "W1JetsToLNu_matchingup_wc",
+        "W1JetsToLNu_scaleup_wc",
+        "W1JetsToLNu_scaledown_wc",
+        "W2JetsToLNu_matchingdown_wc",
+        "W2JetsToLNu_matchingup_wc",
+        "W2JetsToLNu_scaleup_wc",
+        "W2JetsToLNu_scaledown_wc",
+        "W3JetsToLNu_matchingdown_wc",
+        "W3JetsToLNu_matchingup_wc",
+        "W3JetsToLNu_scaleup_wc",
+        "W3JetsToLNu_scaledown_wc",
+        "W4JetsToLNu_matchingdown_wc",
+        "W4JetsToLNu_matchingup_wc",
+        "W4JetsToLNu_scaleup_wc",
+        "W4JetsToLNu_scaledown_wc"
+    ],
+
+    "wjets_light": [
+        "W1Jets_exclusive_light",
+        "W2Jets_exclusive_light",
+        "W3Jets_exclusive_light",
+        "W4Jets_exclusive_light",
+        "W1JetsToLNu_matchingdown_light",
+        "W1JetsToLNu_matchingup_light",
+        "W1JetsToLNu_scaleup_light",
+        "W1JetsToLNu_scaledown_light",
+        "W2JetsToLNu_matchingdown_light",
+        "W2JetsToLNu_matchingup_light",
+        "W2JetsToLNu_scaleup_light",
+        "W2JetsToLNu_scaledown_light",
+        "W3JetsToLNu_matchingdown_light",
+        "W3JetsToLNu_matchingup_light",
+        "W3JetsToLNu_scaleup_light",
+        "W3JetsToLNu_scaledown_light",
+        "W4JetsToLNu_matchingdown_light",
+        "W4JetsToLNu_matchingup_light",
+        "W4JetsToLNu_scaleup_light",
+        "W4JetsToLNu_scaledown_light"
     ],
         
     "wjets_fsim": [
@@ -208,6 +274,15 @@
     ],
     "dyjets": [
         "DYJets"
+    ],
+    "dyjets_heavy": [
+        "DYJets_heavy"
+    ],
+    "dyjets_charm": [
+        "DYJets_wc"
+    ],
+    "dyjets_light": [
+        "DYJets_light"
     ],
     "gjets": [
         "GJets1",

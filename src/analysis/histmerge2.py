@@ -30,7 +30,8 @@ print("loaded keys: ", len(keylist))
 mc_samples = [
     "tchan", "wjets", "ttjets",
     "twchan", "schan", "diboson", #"gjets", 
-    "dyjets",
+    #"dyjets",
+    "dyjets__heavy", "dyjets__light", "dyjets__wc",
     "wjets__heavy", "wjets__light", "wjets__wc"
 ]
 samples = mc_samples + [
@@ -270,7 +271,7 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
                     #happens only rarely for unnecessary case, just ignore and don't rescale
                     #continue
                 """
-                    
+                
     if len(ret)==0:
         raise Exception("no histograms produced for %s:%s:%s:%s:%s:%s" % (histname, lepton, selection_major, selection_minor, njets, ntags))
     #print "%dj%dt_%s" % (njets, ntags, k):v for (k, v) in ret.items()
@@ -418,12 +419,19 @@ def merge_hists(vname, hd):
     merge_into(vname, hd, out, "ttjets", "schan")
 
     #merge_into(vname, hd, out, "wzjets", "wjets")
-    merge_into(vname, hd, out, "wzjets", "diboson")
-    merge_into(vname, hd, out, "wzjets", "dyjets")
-
-    merge_into(vname, hd, out, "wzjets", "wjets_heavy")
-    merge_into(vname, hd, out, "wzjets", "wjets_light")
-    merge_into(vname, hd, out, "wjets_c", "wjets_wc")
+    #merge_into(vname, hd, out, "wzjets", "diboson")
+    merge_into(vname, hd, out, "diboson", "diboson")
+    #merge_into(vname, hd, out, "wzjets", "dyjets")
+    merge_into(vname, hd, out, "dyjets_heavy", "dyjets_heavy")
+    merge_into(vname, hd, out, "wjets_heavy", "wjets_heavy")
+    #merge_into(vname, hd, out, "wzjets_heavy", "wjets_wc")
+    #merge_into(vname, hd, out, "wzjets_heavy", "dyjets_wc")
+    
+    merge_into(vname, hd, out, "wjets_light", "wjets_light")
+    merge_into(vname, hd, out, "dyjets_light", "dyjets_light")
+    
+    merge_into(vname, hd, out, "wjets_charm", "wjets_wc")
+    merge_into(vname, hd, out, "dyjets_charm", "dyjets_wc")
     
     
     merge_into(vname, hd, out, "qcd", "qcd")
@@ -432,7 +440,7 @@ def merge_hists(vname, hd):
 
     return out
 
-output_dir = "output_wc_antitop"
+output_dir = "output_temp"
 print("preqcd")
 for lep in ["mu", "ele"]:
     for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
@@ -468,10 +476,12 @@ for lep in ["mu", "ele"]:
                 "C",
 #                "met", "mtw", "shat", "ht",
                 "cos_theta_lj",
+                "bjet_bd_b",
+                "ljet_bd_b",
                 ]:
             x = select_hists(variable, lep, "preselection", "nothing", nj, nt)
             write_hists("%s/%s.root" % (d, variable), x)
-
+    
 print("reverse BDT cut for fit")
 #for bdt_cut in [-0.20, -0.15, -0.10, -0.05, 0.0, 0.05, 0.06, 0.10, 0.13, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]:
 for bdt_cut in [0.60]:

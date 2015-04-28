@@ -61,11 +61,16 @@ merges = from_json("merges.json")
 
 
 systs_to_split = {
-    "scale": ["ttjets", "tchan", "wzjets", "wjets_c"],
-    "matching": ["ttjets", "wzjets", "wjets_c"],
+    #"scale": ["ttjets", "tchan", "wzjets", "wjets_c"],
+    #"matching": ["ttjets", "wzjets", "wjets_c"],
+    #"scale": ["ttjets", "tchan", "wzjets"],
+    #"matching": ["ttjets", "wzjets"],
+    "scale": ["ttjets", "tchan", "wzjets", "wjets_heavy", "wjets_charm", "wjets_light", "wzjets_heavy", "wzjets_charm", "wzjets_light"],
+    "matching": ["ttjets", "wzjets", "wjets_heavy", "wjets_charm", "wjets_light", "wzjets_heavy", "wzjets_charm", "wzjets_light"],
     #"scale": ["ttjets", "tchan", "wzjets", "wjets_light"],
     #"matching": ["ttjets", "wzjets", "wjets_light"],
-    "qscale_me_weight": ["ttjets", "tchan", "wzjets", "wjets_c"]
+    #"qscale_me_weight": ["ttjets", "tchan", "wzjets", "wjets_c"]
+    "qscale_me_weight": ["ttjets", "tchan", "wzjets", "wjets_heavy", "wjets_charm", "wjets_light", "wzjets_heavy", "wzjets_charm", "wzjets_light"]
 }
 
 
@@ -87,18 +92,28 @@ if grouping=="fit":
     final_groups = {
         "tchan":["tchan"],
         "ttjets": ["ttjets", "twchan", "schan"],
+        #"wzjets_heavy": ["wjets_heavy", "dyjets_heavy", "wjets_light", "dyjets_light", "diboson"],
         #"wzjets": ["wjets", "diboson", "dyjets"],# "gjets"],
-        "wzjets": ["wjets", "diboson", "dyjets"],# "gjets"],
+        #"wzjets_heavy": ["wjets_heavy", "dyjets_heavy", "wjets_wc", "dyjets_wc"],# "gjets"],
+        #"wzjets_c" : ["wjets_wc", "dyjets_wc"],
+        #"wzjets_light": ["wjets_light", "dyjets_light"],# "gjets"],
+        #"VV": ["diboson"],# "gjets"],
+        "wzjets": ["wjets_light", "wjets_charm", "wjets_heavy", "dyjets_light", "dyjets_charm", "dyjets_heavy", "diboson"],# "gjets"],
+        #"wzjets_heavy": ["wjets_heavy", "dyjets_heavy"],
+        #"wzjets_charm": ["wjets_charm", "dyjets_charm"],
+        #"wzjets_light": ["wjets_light", "dyjets_light"],
+        #"diboson": ["diboson"],
         #"wjets_light": ["wjets_light"]
-        "wjets_c": ["wjets_c"]
-        #"qcd": ["qcd"],
+        #"wjets_c": ["wjets_c"]
+        "qcd": ["qcd"],
     }
 elif grouping=="plot":
     final_groups = {
         "tchan": ["tchan"],
         "ttjets": ["ttjets"],
-        "wjets": ["wjets"],
-        "wjets_wc": ["wjets_c"],
+        "wjets_light": ["wjets_light"],
+        "wjets_heavy": ["wjets_heavy"],
+        "wjets_charm": ["wjets_charm"],
         "twchan": ["twchan"],
         "schan": ["schan"],
         "diboson": ["diboson"],
@@ -255,6 +270,7 @@ for (gn, gs) in final_groups.items():
 
 for (gn, gs) in final_groups.items():
     for (sna, snb) in syst_table.items():
+        #print gn, "_|_", gs, "_|_", sna, "_|_", snb
         if gn in ["tchan_inc", "wjets_inc", "DATA"]:
             continue
 
@@ -287,7 +303,7 @@ for (gn, gs) in final_groups.items():
             if gn in systs_to_split[syst]:
                 _snb = gn + "_" + snb
                 #hack for w+c                
-                if gn.startswith("wjets_c"):
+                if gn.startswith("wzjets") or  gn.startswith("wjets"):
                     _snb = "wzjets_" + snb
                 print("renamed snb %s->%s" % (snb, _snb))
                 snb = _snb
@@ -300,8 +316,7 @@ for (gn, gs) in final_groups.items():
         )
         h1.Scale(lumi)
         nomh = of.Get("__".join(h1.GetName().split("__")[0:2]))
-
-        if h1.GetEntries() == nomh.GetEntries() and h1.Integral()==nomh.Integral() and (get_bins(h1) == get_bins(nomh)).all() and "lepton" not in h1.GetName():
+        if h1.GetEntries() == nomh.GetEntries() and h1.Integral()==nomh.Integral() and (get_bins(h1) == get_bins(nomh)).all():# and "lepton" not in h1.GetName():
             print h1.GetName(), " is same as nominal, not writing"
         else:
             h1.Write("", ROOT.TObject.kOverwrite)
@@ -329,6 +344,18 @@ hqcd = hantiiso_data.Clone("%s__qcd" % varname)
 hqcd.Add(hantiiso_mc, -1.0)
 hqcd.Scale(qcd_scale)
 set_zero_if_neg(hqcd)
+
+"""if lepton == "ele" and jet_tag == "2j1t" and "bdt_sig_bg" in sys.argv[1]:
+    print "QCD+", lepton, jet_tag, sys.argv[1]
+    bin0 = 1.147 / 0.839
+    binmax = 0.506 / 0.839
+    for bin in range(hqcd.GetNbinsX()+1):
+        scale_bin = bin0 - (bin0 - binmax) * bin / hqcd.GetNbinsX()
+        hqcd.SetBinContent(bin, hqcd.GetBinContent(bin) * scale_bin)
+        print "QCD+", bin, scale_bin
+"""   
+    
+
 hqcd.Write("", ROOT.TObject.kOverwrite)
 hqcd_up = hqcd.Clone(hqcd.GetName() + "__qcd_yield__up")
 hqcd_up.Scale(1.5)
