@@ -83,6 +83,8 @@ const defaults_func = {
 
     :lepton_charge => () -> Histogram(infb([-2, 0, 2])),
 
+    :bjet_bd_b => () -> Histogram(infb(linspace(0, 1.0, 21))),
+    :ljet_bd_b => () -> Histogram(infb(linspace(0, 1.0, 21))),
 }
 
 #default histograms

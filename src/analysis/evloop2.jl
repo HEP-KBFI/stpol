@@ -24,7 +24,7 @@ const VARS_TO_USE = symbol(PARS["vars_to_use"])
 
 
 const IS_TOP = false
-const IS_ANTITOP = true
+const IS_ANTITOP = false
 
 const IS_CT_BIN = false
 const WHICH_BIN = 0
@@ -152,6 +152,8 @@ elseif VARS_TO_USE == :analysis
         :bdt_sig_bg_top_13_001,
         :cos_theta_lj,
         :C,
+        :bjet_bd_b,
+        :ljet_bd_b,
 #        :ljet_eta,
         (:abs_ljet_eta, row::DataFrameRow -> abs(row[:ljet_eta])),
         (:abs_ljet_eta_16, row::DataFrameRow -> abs(row[:ljet_eta])),
@@ -280,7 +282,7 @@ function fill_histogram(
         h.bin_entries[bin] += 1
 
         #fill W+jets jet flavours separately as well
-        if get_process(sample) == :wjets || get_process(sample) == :wjets_fsim
+        if get_process(sample) == :wjets || get_process(sample) == :dyjets || get_process(sample) == :wjets_fsim
             for cls in jet_classifications
                 const ev_cls = row[:jet_cls] |> jet_cls_from_number
                 ev_cls == cls || continue
@@ -312,7 +314,7 @@ function fill_histogram(
         end
     end
 
-    if get_process(sample) == :wjets
+    if get_process(sample) == :wjets || get_process(sample) == :dyjets
         for cls in jet_classifications
             const ev_cls = row[:jet_cls] |> jet_cls_from_number
             ev_cls == cls || continue
