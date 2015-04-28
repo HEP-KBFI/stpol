@@ -209,17 +209,19 @@ def JetSetup(process, conf):
     #)
 
     if conf.isMC:
-        effB, effC, effL = Calibrations.getEffFiles(conf.subChannel)
-        logger.info("using the following efficiency files for channel %s (b, c, l): %s" % (conf.subChannel, str((effB, effC, effL))))
+        effB, effC, effL, effG = Calibrations.getEffFiles(conf.subChannel)
+        logger.info("using the following efficiency files for channel %s (b, c, l, g): %s" % (conf.subChannel, str((effB, effC, effL, effG))))
 
         process.bTagWeightProducerNoCut = cms.EDProducer('TwoDimBTagSystematicsWeightProducer',
             src=cms.InputTag("goodJets"),
             nJetSrc=cms.InputTag("goodJetCount"),
             nTagSrc=cms.InputTag("bJetCount"),
-            efficiencyFileB=cms.FileInPath("data/b_eff_hists/nocut/%s.root" % effB),
-            efficiencyFileC=cms.FileInPath("data/b_eff_hists/nocut/%s.root" % effC),
-            efficiencyFileL=cms.FileInPath("data/b_eff_hists/nocut/%s.root" % effL),
-            algo=cms.string(conf.Jets.bTagWorkingPoint)
+            efficiencyFileB=cms.FileInPath("data/b_eff_hists/%s.root" % effB),
+            efficiencyFileC=cms.FileInPath("data/b_eff_hists/%s.root" % effC),
+            efficiencyFileL=cms.FileInPath("data/b_eff_hists/%s.root" % effL),
+            efficiencyFileG=cms.FileInPath("data/b_eff_hists/%s.root" % effG),
+            algo=cms.string(conf.Jets.bTagWorkingPoint),
+            isTTbar=cms.bool("TTJets" in conf.subChannel)
         )
 
         process.bTagWeightProducerNoCutTCHPT = cms.EDProducer('TwoDimBTagSystematicsWeightProducer',
@@ -229,7 +231,9 @@ def JetSetup(process, conf):
             efficiencyFileB=cms.FileInPath("data/b_eff_hists__tchpt/nocut/%s.root" % effB),
             efficiencyFileC=cms.FileInPath("data/b_eff_hists__tchpt/nocut/%s.root" % effC),
             efficiencyFileL=cms.FileInPath("data/b_eff_hists__tchpt/nocut/%s.root" % effL),
-            algo=cms.string(conf.Jets.bTagWorkingPoint)
+            efficiencyFileG=cms.FileInPath("data/b_eff_hists__tchpt/nocut/%s.root" % effL),
+            algo=cms.string(conf.Jets.bTagWorkingPoint),
+            isTTbar=cms.bool(False)
         )
 
         effs_2j = Calibrations.getEffValues(conf.subChannel, 2)

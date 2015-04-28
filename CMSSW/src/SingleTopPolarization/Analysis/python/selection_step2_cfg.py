@@ -605,8 +605,9 @@ def SingleTopStep2():
         process.treePath += process.flavourAnalyzer
 
     if Config.isMC:
-        process.meWeightProducer = cms.EDProducer("MEWeightProducer")
-        process.eventVarsPath += process.meWeightProducer
+        if not Config.isSherpa:
+            process.meWeightProducer = cms.EDProducer("MEWeightProducer")
+            process.eventVarsPath += process.meWeightProducer
 
         process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
         process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
