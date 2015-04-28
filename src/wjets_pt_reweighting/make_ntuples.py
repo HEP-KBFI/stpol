@@ -94,7 +94,7 @@ for event in events:
     wjets_shape_weight = extra_data[i][1]
     #wjets_yield_weight = extra_data[i][2]
      
-    total_weight = event.pu_weight * wjets_shape_weight * xsweight * event.b_weight * event.lepton_weight__id * event.lepton_weight__iso * event.lepton_weight__trigger
+    total_weight = event.pu_weight * xsweight * event.b_weight * event.lepton_weight__id * event.lepton_weight__iso * event.lepton_weight__trigger
     
     total_weight *= luminosity
     

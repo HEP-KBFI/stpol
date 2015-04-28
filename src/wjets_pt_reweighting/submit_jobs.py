@@ -22,7 +22,7 @@ for iso in ["iso", "antiiso"]:
         for dataset, fileset in data_files[iso+channel].items():
             print
             print channel, dataset, iso
-            if not (iso == "antiiso" and dataset == "DYJets"): continue
+            #if not (iso == "antiiso" and dataset == "DYJets"): continue
             i = 0
             for (base_file, added_file) in fileset:
                 total_jobs += 1
