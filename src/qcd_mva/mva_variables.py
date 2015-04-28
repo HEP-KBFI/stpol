@@ -84,6 +84,35 @@ def get_fixed(channel):
 
     return fixed
 
+def get_fixed_nomet(channel):
+    fixed = []
+    if channel == "mu":
+        fixed = ["mtw", "isotropy", "top_mass", "ljet_pt"]#, "ljet_mass", "bjet_mass"] 
+    if channel == "ele":
+        fixed = ["top_mass", "bjet_pt", "isotropy", "top_eta"]
+    """
+    if channel == "mu":
+        fixed = ["lepton_eta",  
+            "bjet_pt", "bjet_eta", "bjet_mass", 
+            "ljet_pt", "ljet_eta", "ljet_mass",
+            "met", "mtw", "circularity", "isotropy", "thrust",
+            "top_mass", "top_pt", "top_eta", "w_mass", "w_pt", "w_eta", 
+            #"hadronic_pt", "hadronic_mass",
+            "shat_pt", "shat_eta", "shat_phi", "shat_mass"#, "shat", "ht"        
+        ]
+    if channel == "ele":
+        fixed = ["lepton_eta",  
+            "bjet_pt", "bjet_eta", "bjet_mass",
+            "ljet_pt", "ljet_eta", "ljet_mass",
+            "met", "mtw", "C", "circularity", "sphericity", "isotropy", "thrust", "C_with_nu",
+            "top_mass", "top_pt", "top_eta", "w_pt", "w_eta", 
+            "w_mass", 
+            #"hadronic_pt", "hadronic_eta", "hadronic_mass",
+            "shat_pt", "shat_eta", "shat_phi", "shat_mass"#, "shat", "ht"        
+        ]"""
+
+    return fixed
+
 def get_removed(channel):
     removed = []
     if channel == "mu":

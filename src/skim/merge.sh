@@ -25,7 +25,7 @@ mvapath=/home/andres/single_top/stpol_pdf/src/mva
     #python $mvapath/qcd_mva_adder.py bdt_qcd_old anti_QCD_MVA_07_04_final2 $FILE_NAMES
     #python $mvapath/qcd_mva_adder.py bdt_qcd_mixed  anti_QCD_MVA_28Nov_qcdBDT_mixed_ $FILE_NAMES
     python $mvapath/qcd_mva_adder.py bdt_qcd anti_QCD_MVA_27Jan_fullData_qcdBDT $FILE_NAMES
-
+    python $mvapath/qcd_mva_adder.py bdt_qcd_nomet anti_QCD_MVA_24Apr_qcdBDT_nomet $FILE_NAMES
     python $mvapath/top_13_001_mva_adder.py $FILE_NAMES
 )
 #source /home/software/root_v_5_34_21/bin/thisroot.sh && julia $scpath/analysis/mergedf.jl /home/andres/single_top/stpol_pdf/src/step3/metadata.json $FILE_NAMES

@@ -22,7 +22,7 @@ from copy import copy
 from ROOT import TFile,TTree,TMVA,TCut
 import ROOT
 
-from utils import *
+#from utils import *
 from mva_variables import *
 
 
@@ -71,7 +71,8 @@ def doTMVA(args, filename="", rm_extra=""):
     Use["qcdBDTGrad3"]  = 0 # uses Gradient Boost
     Use["qcdBDTGrad4"]  = 0 # uses Gradient Boost
     Use["qcdBDTGrad5"]  = 0 # uses Gradient Boost
-    Use["qcdBDTGrad0"]  = 1 # uses Gradient Boost
+    Use["qcdBDTGrad0"]  = 0 # uses Gradient Boost
+    Use["qcdBDT_nomet"]  = 1 # uses Gradient Boost
     Use["qcdBDTGradMixed"]  = 0 # uses Gradient Boost
     Use["BDTold"] = 0
 
@@ -91,14 +92,17 @@ def doTMVA(args, filename="", rm_extra=""):
         outfileName = filename
     else:
         #outfileName = "TMVA_%s%s_27Jan.root" % (args.channel, "")#extra)
-        outfileName = "TMVA_%s%s_27Jan_allvars.root" % (args.channel, "")#extra)
+        outfileName = "TMVA_%s%s_Apr24_nomet.root" % (args.channel, "")#extra)
     of = TFile( outfileName, "RECREATE" )
 
-    #factory = TMVA.Factory( "anti_QCD_MVA_28Nov", of, "V:!Silent:Color:DrawProgressBar:Transformations=I;N;D:AnalysisType=Classification" );
+    factory = TMVA.Factory( "anti_QCD_MVA_24Apr", of, "V:!Silent:Color:DrawProgressBar:Transformations=I;N;D:AnalysisType=Classification" );
     #factory = TMVA.Factory( "anti_QCD_MVA_27Jan_fullData", of, "V:!Silent:Color:DrawProgressBar:Transformations=I;N;D:AnalysisType=Classification" );
-    factory = TMVA.Factory( "test", of, "V:!Silent:Color:DrawProgressBar:Transformations=I;N;D:AnalysisType=Classification" );        
+    #factory = TMVA.Factory( "test", of, "V:!Silent:Color:DrawProgressBar:Transformations=I;N;D:AnalysisType=Classification" );        
 
     # define variables that we'll use for training
+    if Use["qcdBDT_nomet"] == 1:
+        varlist = get_fixed_nomet(args.channel)
+
     for v in varlist:
         factory.AddVariable(v,'D')
     #for v in speclist:
@@ -149,6 +153,16 @@ def doTMVA(args, filename="", rm_extra=""):
     if Use["qcdBDTGrad0"]:  # Gradient Boost
             print outfileName, args.channel
             factory.BookMethod( TMVA.Types.kBDT, "qcdBDT"+"_"+args.channel+rm_extra, "!H:V:NTrees=50:nEventsMin=250:MaxDepth=2:BoostType=Grad:Shrinkage=0.1:!UseBaggedGrad:SeparationType=CrossEntropy:nCuts=200:PruneStrength=7:PruneMethod=CostComplexity")
+            """shrinkage = 0.39
+            if args.channel == "mu":
+                shrinkage = 0.18
+            params = "!H:V:NTrees=50:nEventsMin=250:MaxDepth=2:BoostType=Grad:Shrinkage=%f:!UseBaggedGrad:SeparationType=CrossEntropy:nCuts=200" % shrinkage
+            factory.BookMethod( TMVA.Types.kBDT, "qcdBDT"+"_"+args.channel+rm_extra, params)"""
+            print "booked"
+
+    if Use["qcdBDT_nomet"]:  # Gradient Boost
+            print outfileName, args.channel
+            factory.BookMethod( TMVA.Types.kBDT, "qcdBDT_nomet"+"_"+args.channel+rm_extra, "!H:V:NTrees=50:nEventsMin=250:MaxDepth=2:BoostType=Grad:Shrinkage=0.1:!UseBaggedGrad:SeparationType=CrossEntropy:nCuts=200:PruneStrength=7:PruneMethod=CostComplexity")
             """shrinkage = 0.39
             if args.channel == "mu":
                 shrinkage = 0.18
@@ -258,7 +272,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     
-    #args.var = get_fixed(args.channel)
-    args.var = get_varlist(args.channel)
+    args.var = get_fixed(args.channel)
+    #args.var = get_varlist(args.channel)
 
     doTMVA(args)
