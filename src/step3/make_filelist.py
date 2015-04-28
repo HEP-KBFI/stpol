@@ -2,7 +2,7 @@ import os
 
 #rootdir ='/hdfs/local/andres/stpol/step2/Oct28_reproc'
 rootdir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc"
-rootdir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData"
+#rootdir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags"
 rootdir = "/home/andres/single_top/stpol_pdf/src/step4/output/"
 
 count = 0

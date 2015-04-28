@@ -136,7 +136,7 @@ groups = {
 #base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/"
 #base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc_size1_renames/"
 #base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan11_deltaR_v1/"
-base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData/"
+base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags/"
 
 def get_data_files(iso, channel, qcdmva = False):
     data_files = dict()

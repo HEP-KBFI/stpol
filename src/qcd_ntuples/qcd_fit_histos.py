@@ -16,7 +16,7 @@ from mva_variables import *
 from cuts import *
 
 CT_BIN = False
-BDT_BIN = True
+BDT_BIN = False
 BIN = 6
 
 print "args", sys.argv

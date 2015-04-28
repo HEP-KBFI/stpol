@@ -23,9 +23,12 @@ for line in infile:
     ds = compos[-2]
     syst = compos[-3]
     iso = compos[-4]
+    if "sherpa" in line or "MassiveBin" in line: continue    
     #if not ("ToLeptons" in ds): continue
     #if not "TTJets" in ds: continue
-    if not ("WJets" in line or "Jets_exclusive" in line or "JetsToLNu" in line): continue
+    #if "sherpa" in line:continue
+    #if not ("WJets" in line or "Jets_exclusive" in line or "JetsToLNu" in line): continue
+    #if not ("JetsToLNu" in line): continue
     #if not ("W2JetsToLNu_scaleup" in line): continue
     #if not "FSIM" in line:continue
     #if not ("nominal" in syst or "data" in syst): continue
@@ -60,12 +63,12 @@ for line in infile:
         call(["chmod", "755", bf_name])
         suc = 1
         while not suc == 0:
-            suc = call(["sbatch", "-x comp-c-012", bf_name])
+            suc = call(["sbatch", "-x comp-c-012 comp-c-013", bf_name])
             print bf_name, suc
             if not suc == 0:
                 print "XXX"
                 time.sleep(10)
         total_jobs += 1
-        time.sleep(.4)
+        time.sleep(.04)
     #print bf_name
 print "total jobs submitted", total_jobs

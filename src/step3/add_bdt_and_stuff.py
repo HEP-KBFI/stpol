@@ -19,12 +19,14 @@ for line in infile:
     #if not "Single" in line:continue
     #if not ("UnclusteredEnUp" in line and "W2" in line):continue
     #if not "/iso/nominal" in line: continue
-    if not ("Jets" in line and "SYST" not in line and "GJets" not in line): continue
+    #if not ("Jets" in line and "SYST" not in line and "GJets" not in line): continue
     #if not ("WJets" in line or "Jets_exclusive" in line or "JetsToLNu" in line): continue
     #if not ("W2JetsToLNu_scaleup" in line): continue
     #if "exclusive" in line or "T_" in line or "Tbar_" in line or "Single" in line or "herpa" in line: continue
     #if not (("exclusive" in line or "JetsToLNu" in line) and "SYST" in line): continue
-    #if not ("sherpa" in line): continue
+    #if ("sherpa" in line): continue
+    #if not ("WJets" in line or "Jets_exclusive" in line or "JetsToLNu" in line): continue
+    #if not "MCatNLO" in line: continue
     bf_name = "/tmp/andres/s3_added_"+line.strip().replace(".","_").replace("/","_")+".sh"
     batch_outfile = open(bf_name, "w")
     batch_outfile.write("#!/bin/bash\n")
@@ -35,7 +37,7 @@ for line in infile:
     call(["chmod", "755", bf_name])
     suc = 1
     while not suc == 0:
-        suc = call(["sbatch", "-x comp-c-012", bf_name])
+        suc = call(["sbatch", "-x comp-c-012 comp-c-013", bf_name])
         suc = 0
         print bf_name, suc
         if not suc == 0:

@@ -28,8 +28,8 @@ from parse_input import datasets, datasets_qcd, datasets_syst, datasets_data
 #mc/iso/nominal/
 
 channels = ["mu", "ele"]
-isos = ["iso"]#, "antiiso"]
-systematics = ["nominal", "EnDown", "EnUp", "ResDown", "ResUp", "UnclusteredEnDown", "UnclusteredEnUp"]
+isos = ["antiiso"]
+systematics = ["nominal"]
 #, "SYST"
 infile_lists = {}
 
@@ -37,19 +37,20 @@ for iso in isos:
     infile_lists[iso] = {}
     for ds in datasets:
         infile_lists[iso][ds] = {}
-        for syst in ["nominal"]:#systematics:
+        for syst in systematics:
             if iso == "antiiso" and not syst == "nominal": continue
-            infile_lists[iso][ds][syst] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Jan22_fullData", "step2", "mc", iso, syst, "%s.files.txt" % ds)
+            infile_lists[iso][ds][syst] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Apr21_btags", "step2", "mc", iso, syst, "%s.files.txt" % ds)
     
     """
     for ds in datasets_qcd:
         infile_lists[iso][ds] = {}
-        infile_lists[iso][ds]["nominal"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Jan22_fullData", "step2", "mc", iso, "nominal", "%s.files.txt" % ds)
+        infile_lists[iso][ds]["nominal"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Apr21_btags", "step2", "mc", iso, "nominal", "%s.files.txt" % ds)
     """
-    """for ds in datasets_syst:
+    """
+    for ds in datasets_syst:
         if iso == "antiiso": continue
         infile_lists[iso][ds] = {}
-        infile_lists[iso][ds]["SYST"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Jan22_fullData", "step2", "mc_syst", iso, "nominal", "%s.files.txt" % ds)
+        infile_lists[iso][ds]["SYST"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Apr21_btags", "step2", "mc_syst", iso, "nominal", "%s.files.txt" % ds)
     """
     """
     for ds in datasets_data:
@@ -57,7 +58,7 @@ for iso in isos:
         infile_lists[iso][ds]["data"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Jan22_fullData", "step2", "data", iso, "%s.files.txt" % ds)
     """
 size = 1
-path = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData"
+path = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags"
 try:
     if not os.path.isdir(path): 
         os.makedirs(path)
@@ -87,7 +88,7 @@ for (iso, stuff) in infile_lists.items():
         #if not ("WJets" in dataset or "Jets_exclusive" in dataset or "JetsToLNu" in dataset): continue
         #if not ("W2JetsToLNu_scaleup" in dataset): continue
         #if not ("TTJets_MS_scaleup" in dataset): continue
-        if (not "TTJets_FullLept" in dataset): continue
+        #if (not "TTJets_FullLept" in dataset): continue
         if "W2JetsToLNu_scaleup" in dataset: size = 4
         elif "QCD" in dataset or "GJets" in dataset or "JetsTo" in dataset or "WJets" in dataset or "Jets_exclusive" in dataset or "Single" in dataset: size = 10
         elif "_MS" in dataset: size=2
