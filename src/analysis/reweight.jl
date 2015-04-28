@@ -41,7 +41,7 @@ module Reweight
     end
 
     const wjets_ratio_hists = {
-        k => fromdf(readtable("$BASE/results/wjets_shape_weight_mar24/$k.csv"))
+        k => fromdf(readtable("$BASE/results/wjets_shape_weight_apr23/$k.csv"))
         for k in jet_classifications
     }
 
@@ -62,7 +62,7 @@ module Reweight
     end
 
     const sherpa_flavor_ratio_hists = {
-        k => fromdf(readtable("$BASE/results/wjets_shape_weight_mar24/sherpa_$k.csv"))
+        k => fromdf(readtable("$BASE/results/wjets_shape_weight_apr23/sherpa_$k.csv"))
         for k in jet_classifications
     }
 

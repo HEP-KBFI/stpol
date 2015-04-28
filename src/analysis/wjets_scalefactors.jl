@@ -119,7 +119,7 @@ ratios_sherpa = {x => yields[x][:madgraph] / yields[x][:sherpa] for x in jet_cla
 println(ratios_sherpa[:XX])
 #save ratios to csv
 for (k, v) in ratios_sherpa
-    p = "$BASE/results/wjets_shape_weight_mar24/sherpa_$k.csv"
+    p = "$BASE/results/wjets_shape_weight_apr23/sherpa_$k.csv"
     mkpath(dirname(p))
     writetable(p, htodf(v))
 end
@@ -140,7 +140,7 @@ for x in jet_classifications
     n += 1
 end
 suptitle("W+jets angular modelling, split by jet parton flavour in 2J0T", y=0.95)
-savefig("$BASE/results/wjets_shape_weight_mar24/costheta.pdf")
+savefig("$BASE/results/wjets_shape_weight_apr23/costheta.pdf")
 close()
 
 
@@ -149,7 +149,7 @@ ratios = {x => normed(hd[x][:sherpa]) / normed(hd[x][:madgraph]) for x in jet_cl
 
 #save ratios to csv
 for (k, v) in ratios
-    p = "$BASE/results/wjets_shape_weight_mar24/$k.csv"
+    p = "$BASE/results/wjets_shape_weight_apr23/$k.csv"
     mkpath(dirname(p))
     writetable(p, htodf(v))
 end
@@ -170,7 +170,7 @@ for x in jet_classifications
     #legend()
     n += 1
 end
-savefig("$BASE/results/wjets_shape_weight_mar24/ratios.pdf")
+savefig("$BASE/results/wjets_shape_weight_apr23/ratios.pdf")
     close()
 
 
