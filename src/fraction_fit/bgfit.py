@@ -3,6 +3,9 @@ from glob import glob
 import tempfile, shutil, os
 import ROOT
 import ConfigParser
+sys.path.append("/".join([os.environ["STPOL_DIR"], "src", "fraction_fit"]))
+from colors import *
+
 Config = ConfigParser.ConfigParser(allow_no_value=True)
 Config.read(sys.argv[2])
 
@@ -166,12 +169,12 @@ def get_model(infile, pref):
         hists[hi.GetName().split("__")[1]] = hi
         #print "hist", hi.GetName(), hi.GetEntries(), hi.Integral()
 
-    k1 = "ttjets" if "ttjets" in hists.keys() else "other"
-    hists["wzjets"].SetMarkerSize(0)
+    """k1 = "ttjets" if "ttjets" in hists.keys() else "other"
+    #hists["wzjets"].SetMarkerSize(0)
     hists["tchan"].SetMarkerSize(0)
     hists[k1].SetMarkerSize(0)
 
-    hists["wzjets"].SetFillStyle(1001)
+    #hists["wzjets"].SetFillStyle(1001)
     hists["tchan"].SetFillStyle(1001)
     hists[k1].SetFillStyle(1001)
 
@@ -180,7 +183,7 @@ def get_model(infile, pref):
     hists["DATA"].SetLineColor(ROOT.kBlack)
     hists["DATA"].SetMarkerStyle(ROOT.kDot)
     hists["tchan"].SetLineColor(ROOT.kRed)
-    hists["wzjets"].SetLineColor(ROOT.kGreen)
+    #hists["wzjets"].SetLineColor(ROOT.kGreen)
     hists[k1].SetLineColor(ROOT.kOrange)
     if "qcd" in hists.keys():
         hists["qcd"].SetLineColor(ROOT.kGray)
@@ -192,55 +195,77 @@ def get_model(infile, pref):
     if "qcd" in hists.keys():
         hists["qcd"].SetLineColor(ROOT.kGray)
         #hists["qcd"].SetFillColor(ROOT.kGray)
-
+    """
+    fn = hists["DATA"].GetName().split("__")[0]
+    
     canv = ROOT.TCanvas()
     ROOT.gStyle.SetOptStat(0)
     #hists["DATA"].GetXaxis().SetTitle(hists["DATA"].GetName())
-    hists["tchan"].SetLineWidth(2)
     drawData = ROOT.TH1D(hists["DATA"])
-    if "2j1t" in hists["DATA"].GetName():
+    if "2j1t" in hists["DATA"].GetName() and not fit_type == "data":
         for b in range(drawData.GetNbinsX()):
             if b > 15:
                 drawData.SetBinContent(b,0)
                 drawData.SetBinError(b,0)
     drawData.Scale(1/drawData.Integral())
     drawData.SetLineWidth(2)
-    drawData.SetAxisRange(0, 0.15, "Y")
+    if "bd_b" in fn:
+        drawData.SetAxisRange(0, drawData.GetMaximum()*1.25, "Y")
+    else:
+        drawData.SetAxisRange(0, drawData.GetMaximum()*2.3, "Y")
     drawData.SetNameTitle("","")
+    drawData.GetXaxis().SetTitle(axis_name[fn])
+    drawData.GetYaxis().SetTitle("")
     drawData.DrawNormalized("E1")
-    hists["tchan"].DrawNormalized("hist SAME")
-    hists["wzjets"].DrawNormalized("hist SAME")
-    #hists["wjets_light"].DrawNormalized("hist SAME")
-    hists[k1].SetLineWidth(2)
-    hists[k1].DrawNormalized("hist SAME")
+    for (name, hist) in hists.items():
+        #print name, hist
+        if name == "DATA": continue
+        hist.SetLineColor(colors[name])
+        hist.SetLineWidth(2)
+        hist.DrawNormalized("hist SAME")
+    
+    
+
+    leg = ROOT.TLegend(0.4,0.6,0.6,0.90)
+    leg.SetBorderSize(0)
+    leg.SetLineStyle(0)
+    leg.SetTextSize(0.04)
+    leg.SetFillColor(0)
+    leg.AddEntry(drawData,"Data","pl")
+    for (name, hist) in hists.items():
+        if name == "DATA": continue
+        leg.AddEntry(hist,names[name],"l")
+
+    leg.Draw()
+    canv.Print(outfile + "/" + fn + "_shapes.pdf")
+    canv.Print(outfile + "/" + fn + "_shapes.png")
+
+    canv = ROOT.TCanvas()
+    hs = ROOT.THStack("stack", "stack")
+    hists["tchan"].SetFillColor(colors["tchan"])
+    hs.Add(hists["tchan"])
+    for (name, hist) in hists.items():
+        if name == "DATA": continue
+        hist.SetFillColor(colors[name])
+        hist.SetFillStyle(1001)
+        if name == "tchan": continue
+        hs.Add(hist)
+
+    hs.Draw("HIST")
+    #hs.Draw("BAR HIST")
+    hists["DATA"].Draw("E1 SAME")
     leg = ROOT.TLegend(0.1,0.6,0.4,0.90)
     leg.SetBorderSize(0)
     leg.SetLineStyle(0)
     leg.SetTextSize(0.04)
     leg.SetFillColor(0)
     leg.AddEntry(drawData,"Data","pl")
-    leg.AddEntry(hists["tchan"],"t-channel","l")
-    leg.AddEntry(hists["wzjets"],"EWK","l")
-    leg.AddEntry(hists[k1],"Top","l")
-    if "qcd" in hists.keys():
-        hists["qcd"].SetLineWidth(2)
-        hists["qcd"].DrawNormalized("hist SAME")
-        leg.AddEntry(hists["qcd"],"QCD","l")
-    
+    for (name, hist) in hists.items():
+        if name == "DATA": continue
+        leg.AddEntry(hist,names[name],"l")
     leg.Draw()
-    canv.Print(outfile + "/" + hists["DATA"].GetName() + "_shapes.pdf")
 
-    canv = ROOT.TCanvas()
-    hs = ROOT.THStack("stack", "stack")
-    if "qcd" in hists.keys():
-        hs.Add(hists["qcd"])
-    hs.Add(hists["wzjets"])
-    hs.Add(hists[k1])
-    hs.Add(hists["tchan"])
-    hs.Draw("BAR HIST")
-    hs.Draw("BAR HIST")
-    hists["DATA"].Draw("E1 SAME")
-    canv.Print(outfile + "/" + hists["DATA"].GetName() + "_unscaled.pdf")
+    canv.Print(outfile + "/" + fn + "_unscaled.pdf")
     tf.Close()
 
     all_hists.append(filename)
@@ -285,6 +310,10 @@ def get_model(infile, pref):
                 continue
             if p == "qcd":
                 continue
+            if p == "VV" or p == "diboson":
+                continue
+            #if p == "wzjets_c":
+            #    continue
             #try:
             """add_normal_unc(model,
                 p,
@@ -352,8 +381,8 @@ nbins = sum([model.get_range_nbins(o)[2] for o in model.get_observables()])
 model_summary(model)
 
 options = Options()
-options.set("minimizer","strategy","robust")
-#options.set("minimizer","strategy","minuit_vanilla")
+#options.set("minimizer","strategy","robust")
+options.set("minimizer","strategy","minuit_vanilla")
 options.set("global", "debug", "true")
 
 #print "options=", options
@@ -392,6 +421,13 @@ for p in ["qcd"]:
         values[p] = 1.0
     if p not in errors.keys():
         errors[p] = 0.0
+if "wzjets" not in values.keys():
+    for p in ["diboson"]:
+        outpars.append("diboson")
+        if p not in values.keys():
+            values[p] = 1.0
+        if p not in errors.keys():
+            errors[p] = 0.0
 
 for fn in all_hists:
 
@@ -404,44 +440,48 @@ for fn in all_hists:
         hi = h.ReadObj()
         hists[hi.GetName().split("__")[1]] = hi
         print "hist", hi.GetName(), hi.Integral()
-    hn = hists["DATA"].GetName()
+    hn = hists["DATA"].GetName().split("__")[0]
     canv = ROOT.TCanvas()
-
-    k1 = "ttjets" if "ttjets" in hists.keys() else "other"
-    #if "2j1t" in hn:
-    #    hists["DATA"].GetXaxis().SetRange(0,24);
-    hists["DATA"].SetMarkerStyle(ROOT.kDot)
-    
-    hists["DATA"].SetLineColor(ROOT.kBlack)
-    hists["tchan"].SetLineColor(ROOT.kRed)
-    hists["wzjets"].SetLineColor(ROOT.kGreen)
-    hists[k1].SetLineColor(ROOT.kOrange)
-    if "qcd" in hists.keys():
-        hists["qcd"].SetLineColor(ROOT.kGray)
-
-    #hists["DATA"].SetFillColor(ROOT.kBlack)
-    hists["tchan"].SetFillColor(ROOT.kRed)
-    hists["wzjets"].SetFillColor(ROOT.kGreen)
-    hists[k1].SetFillColor(ROOT.kOrange)
-    if "qcd" in hists.keys():
-        hists["qcd"].SetFillColor(ROOT.kGray)
 
     hs = ROOT.THStack("stack", "stack")
 
-    if "qcd" in hists.keys():
-        hists["qcd"].Scale(values["qcd"])
-    hists[k1].Scale(values[k1])
-    hists["wzjets"].Scale(values["wzjets"])
+    hists["tchan"].SetFillColor(colors["tchan"])
     hists["tchan"].Scale(values["beta_signal"])
-
-    if "qcd" in hists.keys():
-        hs.Add(hists["qcd"])
-    hs.Add(hists["wzjets"])
-    hs.Add(hists[k1])
     hs.Add(hists["tchan"])
+    for (name, hist) in hists.items():
+        if name == "DATA": continue
+        hist.SetFillColor(colors[name])
+        hist.SetLineColor(colors[name])
+        hist.SetFillStyle(1001)
+        if name == "tchan": continue
+        if not name in ["VV"]: 
+            hist.Scale(values[name])
+        hs.Add(hist)
+
+    hs.SetTitle("Stack scaled to fit results")
+    hs.SetMaximum(hs.GetMaximum()*1.25)
     hs.Draw("BAR HIST")
+    hs.GetXaxis().SetTitle(axis_name[hn])
+    #hs.Draw("BAR HIST")
     hists["DATA"].Draw("E1 SAME")
+    leg = ROOT.TLegend(0.6,0.6,0.9,0.90)
+    leg.SetBorderSize(0)
+    leg.SetLineStyle(0)
+    leg.SetTextSize(0.04)
+    leg.SetFillColor(0)
+    leg.AddEntry(hists["DATA"],"Data","pl")
+    for (name, hist) in hists.items():
+        if name == "DATA": continue
+        leg.AddEntry(hist,names[name],"lf")
+    leg.Draw()
+
     canv.Print(outfile + "/" + hn + "_scaled.pdf")
+    #canv.Print(outfile + "/" + hn + "_scaled.png")
+
+for p in ["wzjets_heavy"]:
+    if p in values:
+        values[p] = 2.0 * values[p]
+        errors[p] = 2.0 * errors[p]
 
 #print("pars:", pars)
 #print("outpars:", outpars)
