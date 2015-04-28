@@ -29,6 +29,11 @@ def matching_doubler(filename, path, outpath):
                 #print hist
                 if not "DEBUG" in hist:
                     hists[hist] = f.Get(hist).Clone()
+                    #if "wzjets_heavy" in hist:
+                    #    hists[hist].Scale(1.5)
+                    #if "wzjets_c" in hist:
+                    #    hists[hist].Scale(1.5)
+
                     if "wzjets" in hist and "matching__down" in hist:
                         hists[hist].Scale(2.0)
                     elif "wzjets" in hist and "matching__up" in hist:
@@ -51,8 +56,8 @@ def matching_doubler(filename, path, outpath):
                         hists[hist].Scale(1.25)
                     #elif "wjets_light" in hist:
                     #    hists[hist].Scale(0.5) 
-                    if "2j0t" in hist and "bdt_sig_bg" in hist:
-                        hists[hist].Rebin(hists[hist].GetNbinsX())
+                    #if "2j0t" in hist and "bdt_sig_bg" in hist:
+                    #    hists[hist].Rebin(hists[hist].GetNbinsX())
                     """if "wzjets" in hist and "ele" in outpath:
                         hists[hist].Scale(1.062726)
                     if "ttjets" in hist and "ele" in outpath:

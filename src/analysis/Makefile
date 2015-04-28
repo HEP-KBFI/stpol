@@ -1,8 +1,8 @@
 include ../analysis/Makefile.options
 
 #INDIR=../../results/hists/Aug26_tchpt/bdt_scan/hists/
-INDIR=output_wc_antitop/bdt_scan/hists/
-OUTDIR=../../results/hists/raw_Apr1_wc_antitop/merged
+INDIR=output_btag/bdt_scan/hists/
+OUTDIR=../../results/hists/raw_Apr28_lept/merged
 
 all: merge merge2 merge3
 clean:
