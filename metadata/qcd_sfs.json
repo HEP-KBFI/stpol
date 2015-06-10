@@ -2,6 +2,7 @@
     "mu": {
         "3j1t": {
             "qcd_mva": 0.577, 
+            "qcd_mva_dphicut": 0.444, 
             "qcd_mva_nomet": 0.581,
             "qcd_mva_dphis": 0.746,
             "met": 0.678,
@@ -9,6 +10,7 @@
         }, 
         "3j2t": {
             "qcd_mva": 1.317, 
+            "qcd_mva_dphicut": 1.124, 
             "qcd_mva_nomet": 1.889, 
             "qcd_mva_dphis": 2.608,
             "met": 2.183,
@@ -16,6 +18,7 @@
         }, 
         "2j0t": {
             "qcd_mva": 0.926, 
+            "qcd_mva_dphicut": 0.910, 
             "qcd_mva_nomet": 0.968, 
             "qcd_mva_dphis": 1.105,
             "met": 1.269,
@@ -23,6 +26,7 @@
         }, 
         "2j1t": {
             "qcd_mva": 0.650,
+            "qcd_mva_dphicut": 0.585, 
             "qcd_mva_nomet": 0.686, 
             "qcd_mva_dphis": 0.701,
             "met": 0.647, 
@@ -32,6 +36,7 @@
     "ele": {
         "3j1t": {
             "qcd_mva": 1.147, 
+            "qcd_mva_dphicut": 1.223, 
             "qcd_mva_nomet": 1.443, 
             "qcd_mva_dphis": 0.930,
             "met": 0.922,
@@ -39,6 +44,7 @@
         }, 
         "3j2t": {
             "qcd_mva": 1.491, 
+            "qcd_mva_dphicut": 1.620, 
             "qcd_mva_nomet": 2.360, 
             "qcd_mva_dphis": 1.491,
             "met": 1.397,
@@ -46,6 +52,7 @@
         }, 
         "2j0t": {
             "qcd_mva": 1.129, 
+            "qcd_mva_dphicut": 1.135, 
             "qcd_mva_nomet": 1.187, 
             "qcd_mva_dphis": 0.895,
             "met": 1.118,
@@ -53,6 +60,7 @@
         }, 
         "2j1t": {
             "qcd_mva": 0.837, 
+            "qcd_mva_dphicut": 0.860, 
             "qcd_mva_nomet": 1.015, 
             "qcd_mva_dphis": 0.696,
             "met": 0.713,
