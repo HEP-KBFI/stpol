@@ -6,7 +6,12 @@
             "qcd_mva_nomet": 0.581,
             "qcd_mva_dphis": 0.746,
             "met": 0.678,
-            "mtw": 0.638
+            "mtw": 0.638,
+            "qcd_mva_loosecut": 1.686, 
+            "qcd_mva_nomet_loosecut": 0.693,
+            "qcd_mva_dphis_loosecut": 1.330, 
+            "met_loosecut": 2.334,
+            "mtw_loosecut": 1.185
         }, 
         "3j2t": {
             "qcd_mva": 1.317, 
@@ -14,7 +19,12 @@
             "qcd_mva_nomet": 1.889, 
             "qcd_mva_dphis": 2.608,
             "met": 2.183,
-            "mtw": 0.000
+            "mtw": 0.000,
+            "qcd_mva_loosecut": 13.821, 
+            "qcd_mva_nomet_loosecut": 21.404,
+            "qcd_mva_dphis_loosecut": 18.650, 
+            "met_loosecut": 20.807,
+            "mtw_loosecut": 16.333
         }, 
         "2j0t": {
             "qcd_mva": 0.926, 
@@ -22,7 +32,12 @@
             "qcd_mva_nomet": 0.968, 
             "qcd_mva_dphis": 1.105,
             "met": 1.269,
-            "mtw": 0.857
+            "mtw": 0.857,
+            "qcd_mva_loosecut": 2.035, 
+            "qcd_mva_nomet_loosecut": 1.131,
+            "qcd_mva_dphis_loosecut": 2.684, 
+            "met_loosecut": 3.312,
+            "mtw_loosecut": 1.567
         }, 
         "2j1t": {
             "qcd_mva": 0.650,
@@ -30,7 +45,12 @@
             "qcd_mva_nomet": 0.686, 
             "qcd_mva_dphis": 0.701,
             "met": 0.647, 
-            "mtw": 0.701
+            "mtw": 0.701,
+            "qcd_mva_loosecut": 1.184, 
+            "qcd_mva_nomet_loosecut": 0.848,
+            "qcd_mva_dphis_loosecut": 1.484, 
+            "met_loosecut": 1.884,
+            "mtw_loosecut": 1.052
         }
     }, 
     "ele": {
@@ -40,7 +60,12 @@
             "qcd_mva_nomet": 1.443, 
             "qcd_mva_dphis": 0.930,
             "met": 0.922,
-            "mtw": 0.503
+            "mtw": 0.503,
+            "qcd_mva_loosecut": 1.811, 
+            "qcd_mva_nomet_loosecut": 1.392,
+            "qcd_mva_dphis_loosecut": 1.302, 
+            "met_loosecut": 1.984,
+            "mtw_loosecut": 0.980
         }, 
         "3j2t": {
             "qcd_mva": 1.491, 
@@ -48,7 +73,12 @@
             "qcd_mva_nomet": 2.360, 
             "qcd_mva_dphis": 1.491,
             "met": 1.397,
-            "mtw": 0.000
+            "mtw": 0.000,
+            "qcd_mva_loosecut": 3.812, 
+            "qcd_mva_nomet_loosecut": 0.949,
+            "qcd_mva_dphis_loosecut": 2.290, 
+            "met_loosecut": 3.110,
+            "mtw_loosecut": 0.630
         }, 
         "2j0t": {
             "qcd_mva": 1.129, 
@@ -56,7 +86,12 @@
             "qcd_mva_nomet": 1.187, 
             "qcd_mva_dphis": 0.895,
             "met": 1.118,
-            "mtw": 0.587
+            "mtw": 0.587,
+            "qcd_mva_loosecut": 1.558, 
+            "qcd_mva_nomet_loosecut": 1.144,
+            "qcd_mva_dphis_loosecut": 1.559, 
+            "met_loosecut": 1.579,
+            "mtw_loosecut": 0.994
         }, 
         "2j1t": {
             "qcd_mva": 0.837, 
@@ -64,7 +99,12 @@
             "qcd_mva_nomet": 1.015, 
             "qcd_mva_dphis": 0.696,
             "met": 0.713,
-            "mtw": 0.525
+            "mtw": 0.525,
+            "qcd_mva_loosecut": 1.106, 
+            "qcd_mva_nomet_loosecut": 1.037,
+            "qcd_mva_dphis_loosecut": 1.203, 
+            "met_loosecut": 1.419,
+            "mtw_loosecut": 0.730
         }
     }
 }
