@@ -1,5 +1,5 @@
-#!/bin/sh
-if [ "x$1" != "x" ]; then fl=$1; else fl=`ls -d WD_*|grep -v lumi`; fi
+        #!/bin/sh
+if [ "x$1" != "x" ]; then fl=`ls -d $1`; else fl=`ls -d WD*|grep -v lumi`; fi
 selist="kbfi"
 for i in $fl; do 
 	echo "Starting: $i"
@@ -9,7 +9,8 @@ for i in $fl; do
 	fi
 
 	# get current status
-	crab -c $i -status > bs.out 2>&1
+	#crab -c $i -status > bs.out 2>&1
+    crab -c $i -USER.xml_report RReport.xml -status > bs.out 2>&1
 	# check if any jobs are in Done state, if so download them and recheck status
 	DN=`grep "Done" bs.out | wc|awk '{print $1}'`
 	if [ $DN -gt 0 ]; then 

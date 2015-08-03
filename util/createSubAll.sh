@@ -16,6 +16,9 @@ do
             echo "ERROR creating job "$WD
         fi
         crab -c $WD -submit 500 >> create.log 2>&1
+        crab -c $WD -submit 500 >> create.log 2>&1
+        crab -c $WD -submit 500 >> create.log 2>&1
+        crab -c $WD -submit 500 >> create.log 2>&1
         echo "submission exit code: ", $?
     else
         echo "Skipping config $DIR/$CFG, directory $DIR/$WD exists"
