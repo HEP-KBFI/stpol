@@ -1,6 +1,6 @@
 def get_varlist(channel):
-    varlist = ["met", "C", "top_mass", "top_eta",
-        "D", "aplanarity", "isotropy", "thrust", 
+    varlist = ["top_mass", "top_eta",
+        "aplanarity", "isotropy", "thrust", 
         #"bjet_dr", 
         #"bjet_eta", 
         "bjet_mass", 
@@ -14,9 +14,11 @@ def get_varlist(channel):
         #channel+"_pt",
         #channel+"_eta", 
         #channel+"_phi",
+        "lepton_met_dphi", "ljet_dphi", "bjet_dphi", "jet1_met_dphi", "jet2_met_dphi", "ljet_met_dphi", "bjet_met_dphi",
         ]
-    if channel == "mu":
-        varlist.append("mtw")        
+    #if channel == "mu":
+    varlist.append("mtw")
+    varlist.append("met")
     return varlist
 
 def get_varlist_removed(channel):
