@@ -2,11 +2,11 @@
 #generated file lists
 
 #SKIM_DIR="/hdfs/local/joosep/stpol/mva/"
-SKIM_DIR=/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData/iso/nominal
+SKIM_DIR=/home/andres/single_top/stpol_pdf/src/step3/output/May30_deltaRs/iso/nominal
 
 #TAG=$1
 #BDT=$2
-BDT=bdt_sig_bg_mixed_fullData
+BDT=bdt_sig_bg_new
 
 mkdir -p input/$BDT
 

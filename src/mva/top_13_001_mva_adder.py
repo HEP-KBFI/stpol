@@ -31,7 +31,7 @@ def main():
     for (k, v) in varmaps.items():
         varmaps[k].update(varmap_general)
 
-    mva_loop_lepton_separate(mvaname, infiles, mvas, varmaps)
+    mva_loop_lepton_separate(mvaname, infiles, mvas, varmaps, "top-13-001")
 
 if __name__=="__main__":
     main()

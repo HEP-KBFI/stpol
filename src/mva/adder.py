@@ -12,6 +12,8 @@ from path import STPOL_DIR
 import math
 treename = "dataframe"
 
+absolute_vars = ["top_eta", "ljet_eta", "bjet_eta",  "lepton_met_dphi", "ljet_dphi", "bjet_dphi", "jet1_met_dphi", "jet2_met_dphi", "ljet_met_dphi", "bjet_met_dphi"]
+
 def main():
     tstart = time.time()
     try:
@@ -64,7 +66,10 @@ def main():
                         counters[var] = 0
                     counters[var] += 1
                     break #one variable was NA, lets stop
-                varbuffers[var][0] = v
+                if var in absolute_vars and "Jun8" in weightfile:
+                    varbuffers[var][0] = abs(v)
+                else:
+                    varbuffers[var][0] = v
 
             if (isna) or not event.passes: 
                 x = "NA" #MVA(..., NA, ...) -> NA
@@ -156,7 +161,7 @@ def zero_buffers(varbuffers):
         v[0] = 0.0
 
 
-def mva_loop_lepton_separate(mvaname, infiles, mvas, varmaps):
+def mva_loop_lepton_separate(mvaname, infiles, mvas, varmaps, weightname):
     for infn in infiles:
         print "Processing file",infn
         #get the events tree
@@ -198,7 +203,10 @@ def mva_loop_lepton_separate(mvaname, infiles, mvas, varmaps):
                     v, _isna = rv(event, varn)
                     isna = isna or _isna
                     if not isna:
-                        varbuffers[var][0] = v
+                        if var in absolute_vars and "Jun8" in weightname:
+                            varbuffers[var][0] = abs(v)
+                        else:
+                            varbuffers[var][0] = v
                     else:
                         break
                 if not isna:
