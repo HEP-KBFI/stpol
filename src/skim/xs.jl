@@ -26,7 +26,7 @@ function sample_type(fn, prefix="file:/hdfs/cms/store/user")
         iso = m.captures[3]
 
         syst = replace(m.captures[4], "nominal_scaleweight_fixed", "nominal")
-        samp = m.captures[5]
+        samp = replace(m.captures[5], "T_t_ToLeptons_scaledown_v2", "T_t_ToLeptons_scaledown")
     end
     #TToBMuNu_anomWtb-unphys_t-channel
 
@@ -68,7 +68,21 @@ function sample_type(fn, prefix="file:/hdfs/cms/store/user")
             break
         end
 
+        m = match(r".*TToLeptons_t-channel_aMCatNLO", ss)
+        if m != nothing
+            syst = "signal_aMCatNLO__nominal"
+            println(syst)
+            break
+        end
+
         m = match(r".*TToLeptons_tchannel_aMCatNLO_(.*)", ss)
+        if m != nothing
+            syst = string("signal_aMCatNLO_", m.captures[1])
+            println(syst)
+            break
+        end
+
+        m = match(r".*TToLeptons_t-channel_aMCatNLO_(.*)", ss)
         if m != nothing
             syst = string("signal_aMCatNLO_", m.captures[1])
             println(syst)
@@ -197,6 +211,7 @@ const merges = {
         
         "T_t_ToLeptons_scaleup", 
         "T_t_ToLeptons_scaledown", 
+        "T_t_ToLeptons_scaledown_v2", 
         "T_t_ToLeptons_scaledown_split",
         "Tbar_t_ToLeptons_scaleup", 
         "Tbar_t_ToLeptons_scaledown", 
@@ -397,6 +412,7 @@ const tomap = ASCIIString[
     "T_t_ToLeptons_mass175_5",
     "T_t_ToLeptons_mass178_5",
     "T_t_ToLeptons_scaledown",
+    "T_t_ToLeptons_scaledown_v2",
     "T_t_ToLeptons_scaledown_split",
     "T_t_ToLeptons_scaleup",
     "T_tW",
@@ -552,11 +568,14 @@ const tomap = ASCIIString[
     "Jan22_fullData",
     "Jan27_fullData",
     "Apr21_btags",
+    "May30_deltaRs",
     "fullData",
     "fullData_fixpub_slurm",
     "fullData_fixmeweight",
     "fullData_fixmeweight2",
     "btag_effs",
+    "deltars_27_05",
+    "deltars_30_05",
     "TTJets_MSDecays",
     "TTJets_MSDecays_scaleup",
     "TTJets_MSDecays_scaledown",
