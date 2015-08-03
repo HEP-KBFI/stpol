@@ -48,6 +48,26 @@ train_bdt_sig_bg_reproc:
 	python train.py input/bdt_sig_bg_reproc stpol_bdt_sig_bg_reproc $(ARGSdef) &> input/bdt_sig_bg_reproc/log
 	echo "python train.py input/bdt_sig_bg_reproc stpol_bdt_sig_bg_reproc $(ARGSdef) &> input/bdt_sig_bg_reproc/log"
 
+train_bdt_sig_bg_nomet:
+	python train.py input/bdt_sig_bg_new stpol_bdt_sig_bg_nomet $(ARGSdef) &> input/bdt_sig_bg_new/log
+	echo "python train.py input/bdt_sig_bg_new stpol_bdt_sig_bg_nomet $(ARGSdef) &> input/bdt_sig_bg_new/log"
+
+train_bdt_sig_bg_dr_nomet:
+	python train.py input/bdt_sig_bg_new_dr_lpt stpol_bdt_sig_bg_dr_nomet_lpt $(ARGSdef) &> input/bdt_sig_bg_new_dr_lpt/log
+	echo "python train.py input/bdt_sig_bg_new_dr_lpt stpol_bdt_sig_bg_dr_nomet_lpt $(ARGSdef) &> input/bdt_sig_bg_new_dr_lpt/log"
+
+train_bdt_sig_bg_dr_met:
+	python train.py input/bdt_sig_bg_new_dr_met_lpt stpol_bdt_sig_bg_dr_met_lpt $(ARGSdef) &> input/bdt_sig_bg_new_dr_met_lpt/log
+	echo "python train.py input/bdt_sig_bg_new_dr_met_lpt stpol_bdt_sig_bg_dr_met_lpt $(ARGSdef) &> input/bdt_sig_bg_new_dr_met_lpt/log"
+
+train_bdt_sig_bg_dr_nomet_nolpt:
+	python train.py input/bdt_sig_bg_new_dr stpol_bdt_sig_bg_dr_nomet_nolpt $(ARGSdef) &> input/bdt_sig_bg_new_dr/log
+	echo "python train.py input/bdt_sig_bg_new_dr stpol_bdt_sig_bg_dr_nomet_nolpt $(ARGSdef) &> input/bdt_sig_bg_new_dr/log"
+
+train_bdt_sig_bg_dr_met_nolpt:
+	python train.py input/bdt_sig_bg_new_dr_met stpol_bdt_sig_bg_dr_met_nolpt $(ARGSdef) &> input/bdt_sig_bg_new_dr_met/log
+	echo "python train.py input/bdt_sig_bg_new_dr_met stpol_bdt_sig_bg_dr_met_nolpt $(ARGSdef) &> input/bdt_sig_bg_new_dr_met/log"
+
 evaluate:
 	find ~/singletop/ntuples/nominal/ -name "*.root" | ~/parallel python adder.py bdt_sig_bg weights/stpol_bdt_sig_bg_lepton_flavour.weights.xml {}
 	find ~/singletop/ntuples/nominal/ -name "*.root" | ~/parallel python adder.py bdt_sig_bg_A3 weights/stpol_bdt_sig_bg_ARGS3_lepton_flavour.weights.xml {}
