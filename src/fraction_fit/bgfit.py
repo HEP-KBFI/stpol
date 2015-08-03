@@ -82,9 +82,11 @@ elif sr == "sub":
     mn = float(Config.get("fit", "min"))
     n1 = int(Config.get("fit", "firstbin"))
     n2 = int(Config.get("fit", "lastbin"))
+    #print len(h.get_values())
     print "selecting subrange", mn, mx, n1, n2
     def htransform(h):
-        return Histogram(mn, mx, h.get_values()[n1:n2], uncertainties=h.get_uncertainties()[n1:n2], name=h.get_name())
+        #return Histogram(mn, mx, h.get_values()[n1:n2], uncertainties=h.get_uncertainties()[n1:n2], name=h.get_name())
+        return Histogram(mn, mx, h.get_values(), uncertainties=h.get_uncertainties(), name=h.get_name())
     def htransform_blind2j1t(h):
         return Histogram(mn, mx, h.get_values()[0:15], uncertainties=h.get_uncertainties()[0:15], name=h.get_name())
     
@@ -382,13 +384,16 @@ model_summary(model)
 
 options = Options()
 #options.set("minimizer","strategy","robust")
-options.set("minimizer","strategy","minuit_vanilla")
+#options.set("minimizer","strategy","newton_vanilla")
+#options.set("minimizer","strategy","minuit_vanilla")
 options.set("global", "debug", "true")
 
 #print "options=", options
 #dist = "gauss:1.0,0.01"
 if fit_type == "mconly" or fit_type== "data":
-    dist = "flat:[0.,2.]:1.0"
+    dist = "flat"#:[0.,2.]:1.0"
+    #dist = "log_normal:%s,%s" % (Config.get("priors", "signal_mean"), Config.get("priors", "signal_sigma"))
+    #dist = "gauss:1.0,0.1"
 elif fit_type == "sig_fixed":
     dist = "fix:1.0"
 result = mle(model,
@@ -397,16 +402,30 @@ result = mle(model,
     #signal_prior="flat:[0,1.01]"
     signal_prior=dist
 )
-#print "result=", result
+model_summary(model)
+print "result=", result
+values = {}
+for name, value in result["tchan"].items():
+    if name not in ["__chi2", "__ks", "__nll", "__cov"]:
+        val, var = value[0]
+        values[name] = val
+    #if name == "beta_signal":
+    #    beta_signal = val
+pred = evaluate_prediction(model, values)
+#for name, it in pred["mu_2j1t_bdt_sig_bg"].items():
+#    print name, it.get_value_sum()
+write_histograms_to_rootfile(pred, "fit_histos.root")
+
+
 fitresults = {}
 values = {}
 errors = {}
 for process in result[signal]:
     if '__' not in process:
         fitresults[process] = result[signal][process][0]
-        if "jets" in process:
-            values[process] = math.e**(fitresults[process][0] * float(Config.get("priors", "%s_sigma" %process)))
-            errors[process] = math.e**((fitresults[process][0] + abs(fitresults[process][1])) * float(Config.get("priors", "%s_sigma" %process))) - values[process]
+        if not ("beta_signal" in process):
+            values[process] = math.e**(fitresults[process][0] * math.log((float(Config.get("priors", "%s_sigma" %process)) + float(Config.get("priors", "%s_mean" %process)))))
+            errors[process] = math.e**((fitresults[process][0] + abs(fitresults[process][1])) * math.log(float(Config.get("priors", "%s_mean" %process)) + float(Config.get("priors", "%s_sigma" %process)))) - values[process]
         else:
             values[process] = fitresults[process][0]
             errors[process] = fitresults[process][1]
@@ -439,7 +458,7 @@ for fn in all_hists:
             continue
         hi = h.ReadObj()
         hists[hi.GetName().split("__")[1]] = hi
-        print "hist", hi.GetName(), hi.Integral()
+        print "hist", hi.GetName(), hi.GetEntries(), hi.Integral()
     hn = hists["DATA"].GetName().split("__")[0]
     canv = ROOT.TCanvas()
 
@@ -447,15 +466,19 @@ for fn in all_hists:
 
     hists["tchan"].SetFillColor(colors["tchan"])
     hists["tchan"].Scale(values["beta_signal"])
+    print "scaled hist", hists["tchan"].GetName(), hists["tchan"].GetEntries(), hists["tchan"].Integral()
     hs.Add(hists["tchan"])
     for (name, hist) in hists.items():
-        if name == "DATA": continue
+        if name == "DATA":
+            print "scaled hist", hist.GetName(), hist.GetEntries(), hist.Integral()
+            continue
         hist.SetFillColor(colors[name])
         hist.SetLineColor(colors[name])
         hist.SetFillStyle(1001)
         if name == "tchan": continue
         if not name in ["VV"]: 
             hist.Scale(values[name])
+        print "scaled hist", hist.GetName(), hist.GetEntries(), hist.Integral()
         hs.Add(hist)
 
     hs.SetTitle("Stack scaled to fit results")
@@ -465,6 +488,7 @@ for fn in all_hists:
     #hs.Draw("BAR HIST")
     hists["DATA"].Draw("E1 SAME")
     leg = ROOT.TLegend(0.6,0.6,0.9,0.90)
+    #leg = ROOT.TLegend(0.1,0.6,0.4,0.90)
     leg.SetBorderSize(0)
     leg.SetLineStyle(0)
     leg.SetTextSize(0.04)
@@ -476,7 +500,7 @@ for fn in all_hists:
     leg.Draw()
 
     canv.Print(outfile + "/" + hn + "_scaled.pdf")
-    #canv.Print(outfile + "/" + hn + "_scaled.png")
+    canv.Print(outfile + "/" + hn + "_scaled.png")
 
 for p in ["wzjets_heavy"]:
     if p in values:
