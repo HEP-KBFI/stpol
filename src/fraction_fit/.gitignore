@@ -1,2 +1,9 @@
 *.tar
 bgfit/
+bdt_wc_float/
+bdt_qcdshape/
+bdt_mconly_sigup/
+bdt_mconly_sigdown/
+bdt_fullData_2j1tbelow0_wlight/
+bdt_csv_wc
+bdt_charmed
