@@ -11,6 +11,7 @@ using CMSSW, DataFrames, HEP
 include("../analysis/base.jl")
 
 output_file = ARGS[1]
+println(output_file)
 
 flist = Any[]
 append!(flist, ARGS[2:length(ARGS)])
@@ -67,6 +68,8 @@ df = similar(#Data frame as big as the input
             lepton_iso=Float32[], lepton_phi=Float32[],
             lepton_type=Float32[],
             lepton_id=Int32[], lepton_charge=Int32[],
+            lepton_met_dr=Float32[],
+            lepton_met_dphi=Float32[],
 
 #neutrino
             nu_pz=Float32[], nu_eta=Float32[],
@@ -79,7 +82,10 @@ df = similar(#Data frame as big as the input
             bjet_rms=Float32[],
             bjet_phi=Float32[],
             bjet_dr=Float32[],
+            bjet_dphi=Float32[],
             bjet_pumva=Float32[],
+            bjet_met_dr=Float32[],
+            bjet_met_dphi=Float32[],
 
             ljet_pt=Float32[], ljet_eta=Float32[], ljet_mass=Float32[], ljet_id=Float32[],
             #ljet_bd_a=Float32[],
@@ -87,11 +93,17 @@ df = similar(#Data frame as big as the input
             ljet_rms=Float32[],
             ljet_phi=Float32[],
             ljet_dr=Float32[],
+            ljet_dphi=Float32[],
             ljet_pumva=Float32[],
+            ljet_met_dr=Float32[],
+            ljet_met_dphi=Float32[],
 #
 ##spectator jets
-            sjet1_pt=Float32[], sjet1_eta=Float32[], sjet1_id=Float32[], sjet1_bd=Float32[], sjet1_rms=Float32[], sjet1_dr=Float32[],
-            sjet2_pt=Float32[], sjet2_eta=Float32[], sjet2_id=Float32[], sjet2_bd=Float32[], sjet2_rms=Float32[], sjet2_dr=Float32[],
+            sjet1_pt=Float32[], sjet1_eta=Float32[], sjet1_id=Float32[], sjet1_bd=Float32[], sjet1_rms=Float32[], sjet1_dr=Float32[], sjet1_met_dr=Float32[], sjet1_dphi=Float32[], sjet1_met_dphi=Float32[],
+            sjet2_pt=Float32[], sjet2_eta=Float32[], sjet2_id=Float32[], sjet2_bd=Float32[], sjet2_rms=Float32[], sjet2_dr=Float32[], sjet2_met_dr=Float32[], sjet2_dphi=Float32[], sjet2_met_dphi=Float32[],
+#Pt-ordered jets
+            jet1_pt=Float32[], jet1_eta=Float32[], jet1_id=Float32[], jet1_bd=Float32[], jet1_rms=Float32[], jet1_dr=Float32[], jet1_met_dr=Float32[], jet1_dphi=Float32[], jet1_met_dphi=Float32[],
+            jet2_pt=Float32[], jet2_eta=Float32[], jet2_id=Float32[], jet2_bd=Float32[], jet2_rms=Float32[], jet2_dr=Float32[], jet2_met_dr=Float32[], jet2_dphi=Float32[], jet2_met_dphi=Float32[],
 
 #event-level characteristics
             cos_theta_lj=Float32[],
@@ -200,12 +212,12 @@ prfiles = similar(
 )
 
 i = 1
-
+filename = ""
 #Get the number of processed events from all files
 for fi in good_filelist
     #filename
     prfiles[i, :files] = fi
-   
+    filename = fi
     x = 0
 
     #in case of data, LumiBlock counters do not exist any more due to new configuration, just load number of events from file
@@ -395,6 +407,8 @@ for i=1:maxev
         df[i, :lepton_charge] = events[sources[part(lepton_type, :Charge)]] |> ifpresent
         df[i, :lepton_phi] = events[sources[part(lepton_type, :Phi)]] |> ifpresent
         df[i, :mtw] = events[sources[part(lepton_type, :mtw)]] |> ifpresent
+        df[i, :lepton_met_dr] = events[sources[part(lepton_type, :deltaRMET)]] |> ifpresent
+        df[i, :lepton_met_dphi] = events[sources[part(lepton_type, :deltaPhiMET)]] |> ifpresent
     end
     
     #println("lepton")
@@ -421,8 +435,11 @@ for i=1:maxev
     df[i, :bjet_rms] = events[sources[:bjet_rms]] |> ifpresent
     df[i, :bjet_phi] = events[sources[:bjet_Phi]] |> ifpresent
     df[i, :bjet_dr] = events[sources[:bjet_deltaR]] |> ifpresent
+    df[i, :bjet_dphi] = events[sources[:bjet_deltaPhi]] |> ifpresent
     df[i, :bjet_pumva] = events[sources[:bjet_puMva]] |> ifpresent
-
+    df[i, :bjet_met_dr] = events[sources[:bjet_deltaRMET]] |> ifpresent
+    df[i, :bjet_met_dphi] = events[sources[:bjet_deltaPhiMET]] |> ifpresent
+    
     df[i, :ljet_pt] = events[sources[:ljet_Pt]] |> ifpresent
     df[i, :ljet_eta] = events[sources[:ljet_Eta]] |> ifpresent
     df[i, :ljet_mass] = events[sources[:ljet_Mass]] |> ifpresent
@@ -432,7 +449,10 @@ for i=1:maxev
     df[i, :ljet_rms] = events[sources[:ljet_rms]] |> ifpresent
     df[i, :ljet_phi] = events[sources[:ljet_Phi]] |> ifpresent
     df[i, :ljet_dr] = events[sources[:ljet_deltaR]] |> ifpresent
+    df[i, :ljet_dphi] = events[sources[:ljet_deltaPhi]] |> ifpresent
     df[i, :ljet_pumva] = events[sources[:ljet_puMva]] |> ifpresent
+    df[i, :ljet_met_dr] = events[sources[:ljet_deltaRMET]] |> ifpresent
+    df[i, :ljet_met_dphi] = events[sources[:ljet_deltaPhiMET]] |> ifpresent
     #println("jet")
 
     df[i, :jet_cls] = jet_cls_to_number(jet_classification(df[i, :ljet_id], df[i, :bjet_id]))
@@ -475,25 +495,59 @@ for i=1:maxev
         jet_bds  = events[sources[part(:jets, :bDiscriminatorCSV)]]
         jet_rmss  = events[sources[part(:jets, :rms)]]
         jet_drs  = events[sources[part(:jets, :deltaR)]]
-
-        if all(map(ispresent, Any[jet_pts, jet_etas, jet_ids, jet_bds]))
+        jet_met_drs  = events[sources[part(:jets, :deltaRMET)]]
+        jet_dphis  = events[sources[part(:jets, :deltaPhi)]]
+        jet_met_dphis  = events[sources[part(:jets, :deltaPhiMET)]]
+        
+        if all(map(ispresent, Any[jet_pts, jet_etas, jet_ids, jet_bds, jet_met_drs]))
             #get the indices of the b-tagged jet and the light jet by comparing with pt
             indb = find(x -> abs(x-df[i, :bjet_pt])<eps(x), jet_pts)[1]
             indl = find(x -> abs(x-df[i, :ljet_pt])<eps(x), jet_pts)[1]
 
             #get the indices of the other jets
             specinds = Int64[]
+            maininds = Int64[]
             for k=1:length(jet_pts)
                 if k!=indb && k!=indl
                     push!(specinds, k)
+                else
+                    push!(maininds, k)
+                end
+            end
+
+            #get main jets
+            #order by pt-descending
+            j = 1
+            for (pt, eta, id, bd, rms, dr, met_dr, dphi, met_dphi, ind) in sort(
+                [z for z in zip(jet_pts, jet_etas, jet_ids, jet_bds, jet_rmss, jet_drs, jet_met_drs, jet_dphis, jet_met_dphis, [1:length(jet_pts)])],
+                rev=true
+            )
+                #is a 'main jet'
+                if (ind in maininds)
+                    df[i, symbol("jet$(j)_pt")] = pt
+                    df[i, symbol("jet$(j)_eta")] = eta
+                    df[i, symbol("jet$(j)_id")] = id
+                    df[i, symbol("jet$(j)_bd")] = bd
+                    df[i, symbol("jet$(j)_rms")] = rms
+                    df[i, symbol("jet$(j)_dr")] = dr
+                    df[i, symbol("jet$(j)_met_dr")] = met_dr
+                    df[i, symbol("jet$(j)_dphi")] = dphi
+                    df[i, symbol("jet$(j)_met_dphi")] = met_dphi
+    
+                    #up to two
+                    if j==2
+                        break
+                    else
+                        j += 1
+                    end
                 end
             end
 
             #get all the other jets
             #order by pt-descending
             j = 1
-            for (pt, eta, id, bd, rms, dr, ind) in sort(
-                [z for z in zip(jet_pts, jet_etas, jet_ids, jet_bds, jet_rmss, jet_drs, [1:length(jet_pts)])],
+            for (pt, eta, id, bd, rms, dr, met_dr, dphi, met_dphi, ind) in sort(
+                [z for z in zip(jet_pts, jet_etas, jet_ids, jet_bds, jet_rmss, jet_drs, jet_met_drs, jet_dphis, jet_met_dphis, [1:length(jet_pts)])],
                 rev=true
             )
                 #is a 'spectator jet'
@@ -504,6 +558,9 @@ for i=1:maxev
                     df[i, symbol("sjet$(j)_bd")] = bd
                     df[i, symbol("sjet$(j)_rms")] = rms
                     df[i, symbol("sjet$(j)_dr")] = dr
+                    df[i, symbol("sjet$(j)_met_dr")] = met_dr
+                    df[i, symbol("sjet$(j)_dphi")] = dphi
+                    df[i, symbol("sjet$(j)_met_dphi")] = met_dphi
     
                     #up to two
                     if j==2
@@ -587,13 +644,19 @@ for i=1:maxev
     #    continue
     #end
 
-    met = events[sources[:met]]
+    met = events[sources[:met]] 
     tsee = events[sources[:C]]
     isotropy = events[sources[:isotropy]]
     masstw = events[sources[part(lepton_type, :mtw)]]
     bjet_pt = events[sources[:bjet_Pt]]
     top_mass = df[i, part(:top, :mass)]
-    if isna(masstw) || isna(df[i, :mtw]) || masstw == NaN || masstw == "NaN" || !(masstw>0) || string(masstw) == "Nan"        
+    idw = df[i, :lepton_weight__id]
+    trigw = df[i, :lepton_weight__trigger]
+    bw = df[i, :b_weight]
+    if isna(masstw) || isnan(masstw) || isna(top_mass) || isnan(top_mass)
+        fails[:nan] += 1
+        continue
+    elseif !contains(filename, "Single") && (isna(idw) || isna(trigw) || isna(bw) || isnan(idw) || isnan(trigw) || isnan(bw))
         fails[:nan] += 1
         continue
     end

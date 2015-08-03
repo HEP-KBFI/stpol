@@ -6,13 +6,13 @@ include("jet_cls.jl")
 
 #see selection_step2_cfg.py for possible inputs
 #leptons
-for s in [:Pt, :Eta, :Phi, :relIso, :genPdgId, :Charge]
+for s in [:Pt, :Eta, :Phi, :relIso, :genPdgId, :Charge, :deltaRMET, :deltaPhiMET]
     sources[part(:muon, s)] = Source(:goodSignalMuonsNTupleProducer, s, :STPOLSEL2)
     sources[part(:electron, s)] = Source(:goodSignalElectronsNTupleProducer, s, :STPOLSEL2)
 end
 
 #jets
-for s in [:Pt, :Eta, :Phi, :Mass, :partonFlavour, :bDiscriminatorCSV, :bDiscriminatorTCHP, :rms, :deltaR, :puMva]
+for s in [:Pt, :Eta, :Phi, :Mass, :partonFlavour, :bDiscriminatorCSV, :bDiscriminatorTCHP, :rms, :deltaR, :puMva, :deltaRMET, :deltaPhi, :deltaPhiMET]
     sources[part(:bjet, s)] = Source(:highestBTagJetNTupleProducer, s, :STPOLSEL2)
     sources[part(:ljet, s)] = Source(:lowestBTagJetNTupleProducer, s, :STPOLSEL2)
     sources[part(:jets, s)] = Source(:goodJetsNTupleProducer, s, :STPOLSEL2)
