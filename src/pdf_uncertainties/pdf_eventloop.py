@@ -34,6 +34,7 @@ counter = sys.argv[3]
 channel = sys.argv[4]
 base_filename = sys.argv[5]
 added_filename = sys.argv[6]
+select = sys.argv[7]
 
 ROOT.TH1.AddDirectory(False)
 
@@ -60,7 +61,7 @@ infile2 = TFile.Open(added_filename, "read")
 events = infile.Get('dataframe')
 events2 = infile2.Get('dataframe')
 
-colnames = ["bdt_qcd", "bdt_sig_bg", "xsweight", "wjets_ct_shape_weight", "wjets_fl_yield_weight"]
+colnames = ["bdt_qcd", "bdt_sig_bg", "xsweight", "wjets_ct_shape_weight", "wjets_fl_yield_weight", "wjets_pt_weight"]
 extra_data = {}
 
 (pdf_weights, average_weights, pdf_input) = get_weights(dataset, thispdf, channel, counter)
@@ -180,7 +181,7 @@ i=-1
 for event in events2:
     i+=1
     if event.bdt_qcd <= -0.15: continue
-    extra_data[i] = [event.bdt_qcd, event.bdt_sig_bg, event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight]
+    extra_data[i] = [event.bdt_qcd, event.bdt_sig_bg, event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight, event.wjets_pt_weight]
 
 i=-1
 missing = 0
@@ -201,6 +202,10 @@ for event in events:
     if not outdata[channel][run][lumi][eventid] == True: continue
 
     jt = "%sj%st" % (event.njets, event.ntags)
+    if select == "top":
+        if not event.lepton_charge == 1: continue
+    elif select == "antitop":
+        if not event.lepton_charge == -1: continue
     #if channel == "mu" and not (abs(event.lepton_id) == 13): continue
     #if channel == "ele" and not (abs(event.lepton_id) == 11): continue
     qw += 1
@@ -225,10 +230,11 @@ for event in events:
     xsweight = extra_data[i][2]
     wjets_shape = extra_data[i][3]
     #wjets_yield = extra_data[i][4]
+    wjets_pt = extra_data[i][5]
     #if math.isnan(event.b_weight): 
     #    event.b_weight = 1
     total_weight = event.pu_weight * event.lepton_weight__id * event.lepton_weight__iso * event.lepton_weight__trigger \
-             * wjets_shape * xsweight
+             * wjets_shape * wjets_pt * xsweight
 
     #if eventid in missing_events:
     #missing += 1
@@ -337,6 +343,11 @@ for event in events:
 print "writing"
 #path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output_removestrange")
 path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output")
+if select == "top":
+    path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output_top")    
+elif select == "antitop":
+    path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output_antitop")
+
 #path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output_skip")
 #path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output_events")
 outfilename = "%s/pdftest_%s_%s_%s_%s.root" % (path, channel, dataset, thispdf, counter)

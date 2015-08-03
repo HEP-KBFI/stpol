@@ -27,7 +27,7 @@ def get_file_list(file_list_file):
     lines = [line.strip() for line in open(file_list_file)]
     return lines
 
-def get_weights_nnpdf(dataset, thispdf, channel, filecounter, filename):
+def get_weights_nnpdf(dataset, thispdf, channel, filecounter, filename, dont_skim = False):
     maxscale = 200
     minscale = 170
     maxid = 0
@@ -79,7 +79,6 @@ def get_weights_nnpdf(dataset, thispdf, channel, filecounter, filename):
             run = event._event.eventAuxiliary().run()    
             lumi = event._event.eventAuxiliary().luminosityBlock()
             eventid = event._event.eventAuxiliary().id().event()
-            dont_skim = False
             if not dont_skim:
                 if not run in outdata[channel]: continue
                 if not lumi in outdata[channel][run]: continue

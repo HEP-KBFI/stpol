@@ -23,11 +23,12 @@ import numpy
 #file_list = sys.argv[4:]
 
 
-def get_file_list(file_list_file):
+def get_file_list(file_list_file, i):
     lines = ["/hdfs/cms/"+line.strip() for line in open(file_list_file)]
-    return lines
+    return lines[i*10: i*10+9]
+    #return lines
 
-def get_weights(dataset, thispdf, channel, filecounter, dont_skim = False):
+def get_weights(dataset, thispdf, channel, filecounter, counter_w, dont_skim = False):
     maxscale = 200
     minscale = 170
     maxid = 0
@@ -44,8 +45,8 @@ def get_weights(dataset, thispdf, channel, filecounter, dont_skim = False):
     #pdfs["nnpdf"] = ["NNPDF23nloas0119LHgrid", "NNPDF22nlo100LHgrid", "NNPDF21100LHgrid"]
     #pdfs["nnpdf"] = ["NNPDF23"]
     pdfs["nnpdf"] = ["NNPDF23nloas0119LHgrid"]
-    pdfs["nnpdf_down"] = ["NNPDF23nloas0116LHgrid", "NNPDF23nloas0117LHgrid", "NNPDF23nloas0118LHgrid"]
-    pdfs["nnpdf_up"] = ["NNPDF23nloas0120LHgrid", "NNPDF23nloas0121LHgrid", "NNPDF23nloas0122LHgrid"]
+    #pdfs["nnpdf_down"] = ["NNPDF23nloas0116LHgrid", "NNPDF23nloas0117LHgrid", "NNPDF23nloas0118LHgrid"]
+    #pdfs["nnpdf_up"] = ["NNPDF23nloas0120LHgrid", "NNPDF23nloas0121LHgrid", "NNPDF23nloas0122LHgrid"]
 
     events = {}
     handles = {}
@@ -56,7 +57,7 @@ def get_weights(dataset, thispdf, channel, filecounter, dont_skim = False):
         if not (thispdf in pdfs[p]): continue
         print "AAA"
         file_list_file = os.path.join(os.environ["STPOL_DIR"], "filelists", "pdf_Jan11_deltaR", p, dataset+".files.txt")
-        file_list = get_file_list(file_list_file)
+        file_list = get_file_list(file_list_file, counter_w)
         print file_list
         events[p] = Events(file_list)
         for l in lst:        

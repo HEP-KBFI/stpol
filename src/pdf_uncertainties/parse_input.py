@@ -61,6 +61,7 @@ base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/iso/
 base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan11_deltaR/iso/nominal/"
 base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan27_fullData/iso/nominal/"
 base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags/iso/nominal/"
+base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/May30_deltaRs/iso/nominal/"
 
 def get_data_files():
     data_files = dict()

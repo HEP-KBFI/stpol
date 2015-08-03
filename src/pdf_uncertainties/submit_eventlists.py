@@ -12,8 +12,9 @@ data_files = get_data_files()
 
 print data_files
 
+i = 0
+        
 for dataset, fileset in data_files.items():
-        i = 0
         print
         print dataset
         for (base_file, added_file) in fileset:
@@ -37,4 +38,4 @@ for dataset, fileset in data_files.items():
             i+=1
             time.sleep(0.5)
             
-        
+print "total jobs", i        
