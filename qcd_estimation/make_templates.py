@@ -13,8 +13,8 @@ from colors import *
 def get_histos(fname, channel, isovar=None):
     f = TFile(fname)
     histos = {}
-    for cut in ["nocut", "reversecut"]:#,"qcdcut", 
-        for var in ["qcd_mva", "met", "mtw"]:
+    for cut in ["nocut", "reversecut","qcdcut"]: 
+        for var in ["qcd_mva", "qcd_mva_nomet", "bdt_qcd_dphis_nomet", "bdt_qcd_dphis_withmet", "met", "mtw"]:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
                 for iso in ["iso", "antiiso"]:
                     for dataset in all_datasets_reproc:
@@ -137,13 +137,13 @@ if __name__=="__main__":
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch()
     for channel in ["mu", "ele"]:
-        myvars = ["qcd_mva", "met"]
+        myvars = ["qcd_mva", "qcd_mva_nomet", "bdt_qcd_dphis_nomet", "bdt_qcd_dphis_withmet", "met"]
         #if channel == "mu":
         myvars.append("mtw")
-        added = "Apr21" ##Nov_reproc"
+        added = "Jun15_loosecut" ##Nov_reproc"
     	for varname in myvars:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
-                for cut in ["reversecut", "nocut"]:#, "qcdcut"]:
+                for cut in ["reversecut", "nocut", "qcdcut"]:
                     for variateMC in [None, "up", "down"]:#, "QCDMC", "QCDMC2J0T"]:
                         for isovar in [None, "up", "down"]:
                             histos = get_histos("input_histos/%s/%s.root" % (added, channel), channel, isovar)  

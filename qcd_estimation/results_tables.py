@@ -45,20 +45,28 @@ def make_table(results, group):
     name = group.name
     if name == "nominal":
         return make_table_nominal(results, group)
-    if name == "nocut":
+    elif name == "nocut":
         return make_table_nominal(results, group, cut = "nocut")
+    elif name == "qcdcut":
+        return make_table_nominal(results, group, cut = "qcdcut")
     elif name == "isovar":
         return make_table_extra(results, group, extra="isovar")
     elif name == "varMC":
         return make_table_extra(results, group, extra="varMC")
     elif name == "metmtw":
         return make_table_metmtw(results, group)
+    elif name == "metmtw_qcdcut":
+        return make_table_metmtw(results, group, cut="qcdcut")
+    elif name in ["qcd_mva_nomet", "bdt_qcd_dphis_nomet", "bdt_qcd_dphis_withmet"]:
+        return make_table_nominal(results, group, cut = "nocut", var = name)
+    elif name in ["qcd_mva_nomet_qcdcut", "bdt_qcd_dphis_nomet_qcdcut", "bdt_qcd_dphis_withmet_qcdcut"]:
+        return make_table_nominal(results, group, cut = "qcdcut", var = name.replace("_qcdcut",""))
 
-def make_table_nominal(results, group, cut = "reversecut"):
+def make_table_nominal(results, group, cut = "reversecut", var = "qcd_mva"):
     table = ""
     for jt in jt_order:
         for channel in channel_order:
-            fit = results[jt+channel+"qcd_mva"+cut]
+            fit = results[jt+channel+var+cut]
             print fit.result["QCD"]
             print fit.chi2
             table += "%s & %s & QCD: $%.3f \\pm %.3f$ & $%.0f \\pm %.0f$ & $%.1f \\pm %.1f$ & $%.1f$ \\\\ \n" % (jt, channel, fit.result["QCD"]["sf"], fit.result["QCD"]["delta_sf"], fit.result["QCD"]["yield"], fit.result["QCD"]["delta_yield"], fit.result["QCD"]["yield_cut"], fit.result["QCD"]["delta_yield_cut"], fit.chi2)
@@ -68,12 +76,12 @@ def make_table_nominal(results, group, cut = "reversecut"):
             table += "\\hline\n"
     return table
             
-def make_table_extra(results, group, extra="isovar"):
+def make_table_extra(results, group, extra="isovar", cut="reversecut"):
     table = ""
     for jt in jt_order:
         for channel in channel_order:
             for variation in ["up", "down"]:
-                fit = results[jt+channel+"qcd_mva"+"reversecut"+extra+variation]
+                fit = results[jt+channel+"qcd_mva"+cut+extra+variation]
                 table += "%s & %s & %s & QCD: $%.3f \\pm %.3f$ & $%.0f \\pm %.0f$ & $%.1f \\pm %.1f$ & $%.1f$ \\\\ \n" % (jt, channel, variation, fit.result["QCD"]["sf"], fit.result["QCD"]["delta_sf"], fit.result["QCD"]["yield"], fit.result["QCD"]["delta_yield"], fit.result["QCD"]["yield_cut"], fit.result["QCD"]["delta_yield_cut"], fit.chi2)
                 for comp in fit.result.keys():
                     if comp == "QCD": continue
@@ -81,7 +89,7 @@ def make_table_extra(results, group, extra="isovar"):
                 table += "\\hline\n"
     return table
 
-def make_table_metmtw(results, group):
+def make_table_metmtw(results, group, cut="reversecut"):
     table = ""
     for jt in jt_order:
         for channel in channel_order:
@@ -90,7 +98,7 @@ def make_table_metmtw(results, group):
                 var = "met"
             for var in ["met", "mtw"]:
                 #for v in [1]:
-                fit = results[jt+channel+var+"reversecut"]
+                fit = results[jt+channel+var+cut]
                 table += "%s & %s & %s & QCD: $%.3f \\pm %.3f$ & $%.0f \\pm %.0f$ & $%.1f \\pm %.1f$ & $%.1f$ \\\\ \n" % (jt, channel, var, fit.result["QCD"]["sf"], fit.result["QCD"]["delta_sf"], fit.result["QCD"]["yield"], fit.result["QCD"]["delta_yield"], fit.result["QCD"]["yield_cut"], fit.result["QCD"]["delta_yield_cut"], fit.chi2)
                 for comp in fit.result.keys():
                     if comp == "QCD": continue

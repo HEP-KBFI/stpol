@@ -155,6 +155,9 @@ if __name__ == "__main__":
     fitvars.append("qcd_mva")
     fitvars.append("mtw")
     fitvars.append("met")
+    fitvars.append("qcd_mva_nomet")
+    fitvars.append("bdt_qcd_dphis_nomet")
+    fitvars.append("bdt_qcd_dphis_withmet")
     #fitvars.append("qcd_mva_deltaR")
     #fitvars.append(Variable("qcd_mva", -1, 1, bins=20, shortName="qcd_mva", displayName="BDT"))
     #fitvars.append(Variable("met", 0, 200, bins=40, shortName="met", displayName="MET"))
@@ -170,15 +173,16 @@ if __name__ == "__main__":
         for jt in jtset:
             for var in fitvars:
                 #if var == "mtw" and channel == "ele": continue
-                for cuttype in ["reversecut", "nocut"]:#"nocut", "qcdcut"]:
-                    for added in ["Apr21"]:
+                for cuttype in ["reversecut", "nocut"]:#, "nocut", "reversecut"]:#"nocut", "qcdcut"]:
+                    for added in ["Jun10"]:
                         print "\n"
                         #print "AAA", channel, jt, var, cuttype, added
                         identifier = "%s__%s__%s__%s__%s" % (var, jt, channel, cuttype, added)
                         #fit = Fit()
                         fit = fit_qcd(identifier, components)
                         results[jt+channel+var+cuttype] = fit
-                        for isovar in ["up", "down"]:
+                        #print fit
+                        """for isovar in ["up", "down"]:
                             print "\n"
                             print var, channel, jt, cuttype, added, "isovar=%s" %isovar
                             identifier = "%s__%s__%s__%s__%s__isovar_%s" % (var, jt, channel, cuttype, added, isovar)
@@ -191,14 +195,19 @@ if __name__ == "__main__":
                             print var, channel, jt, cuttype, added, "varMC=%s" %varmc
                             identifier = "%s__%s__%s__%s__%s__varMC_%s" % (var, jt, channel, cuttype, added, varmc)
                             fit = fit_qcd(identifier, components, extra = {"varMC": varmc})
-                            results[jt+channel+var+cuttype+"varMC"+varmc] = fit
+                            results[jt+channel+var+cuttype+"varMC"+varmc] = fit"""
     print "\n\n\n\n\n"
+    make_results_tables(results, ["nominal"])
+    #make_results_tables(results, ["qcdcut"])
     #make_results_tables_old(results_tex, channels, jtset, fitvars, ["reversecut", "nocut", ], ["isovar"])
     #make_results_tables(results, ["nominal", "isovar", "nocut", "metmtw"])
     #make_results_tables(results, ["varMC"])
-    make_results_tables(results, ["nominal", "metmtw"])
+    #make_results_tables(results, ["nominal", "metmtw", "nocut"])
+    #make_results_tables(results, ["metmtw_qcdcut"])
+    #make_results_tables(results, ["qcd_mva_nomet_qcdcut", "bdt_qcd_dphis_nomet_qcdcut", "bdt_qcd_dphis_withmet_qcdcut"])
     #make_results_tables(results, ["isovar", "nocut", "metmtw", "varMC"])
-    #make_results_tables(results, ["nominal"])
+    make_results_tables(results, ["nocut"])
+
 
 
 

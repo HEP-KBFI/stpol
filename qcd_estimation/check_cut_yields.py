@@ -15,7 +15,7 @@ def get_histos(fname, channel, isovar=None):
     f = TFile(fname)
     histos = {}
     for cut in ["nocut"]:
-        for var in ["qcd_mva", "met", "mtw"]:#,"qcd_mva_new", "qcd_mva_mixed"]:
+        for var in ["qcd_mva", "qcd_mva_nomet", "bdt_qcd_dphis_nomet", "bdt_qcd_dphis_withmet", "met", "mtw"]:#,"qcd_mva_new", "qcd_mva_mixed"]:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
                 for iso in ["iso", "antiiso"]:
                     for dataset in all_datasets_reproc:
@@ -69,13 +69,18 @@ if __name__=="__main__":
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch()
     for channel in ["mu", "ele"]:
-        myvars = ["qcd_mva"]#, "qcd_mva_new", "qcd_mva_mixed"]
-        if channel == "ele":
-            myvars.append("met")
-        if channel == "mu":
-            myvars.append("mtw")
+        total_string_bins = ""
+        total_string_sig = ""
+        total_string_qcd = ""
+        total_string_varname = ""
+        myvars = ["qcd_mva", "qcd_mva_nomet", "bdt_qcd_dphis_nomet"]#, "bdt_qcd_dphis_withmet"]
+        #if channel == "ele":
+        myvars.append("met")
+        #if channel == "mu":
+        myvars.append("mtw")
         #added = "10Nov_reproc_oldbdt" ##Nov_reproc"
-        added = "Feb18_pubfix" ##Nov_reproc"
+        #added = "May11_nomet" ##Nov_reproc"
+        added = "Jun10"
     	for varname in myvars:
             for jt in ["2j1t"]:#, "2j0t", "3j1t", "3j2t"]:
                 for cut in ["nocut"]:
@@ -108,8 +113,19 @@ if __name__=="__main__":
                                     string_bins += str(hQCD.GetBinLowEdge(bin)) + ", "
                                     string_sig += str(hSig[0].Integral(bin, 100)) + ", "
                                     string_qcd += str(hQCD.Integral(bin, 100)) + ", "
-                                    string_varname += varname.replace("qcd_mva", "'QCD BDT'").replace("met", "'MET'").replace("mtw", "'MTW'").replace("_deltaR","")+ ", "
-                            print string_bins
-                            print string_sig
-                            print string_qcd
-                            print string_varname
+                                    string_varname += varname.replace("qcd_mva_nomet", "'QCD BDT without MET'").replace("bdt_qcd_dphis_nomet", "'QCD BDT with dPhis, without MET'").replace("bdt_qcd_dphis_withmet", "'QCD BDT with dPhis & MET'").replace("qcd_mva", "'QCD BDT'").replace("met", "'MET'").replace("mtw", "'MTW'").replace("_deltaR","")+ ", "
+                            #print string_bins
+                            #print string_sig
+                            #print string_qcd
+                            #print string_varname
+                            total_string_bins += string_bins
+                            total_string_sig += string_sig
+                            total_string_qcd += string_qcd
+                            total_string_varname += string_varname
+        print "TOTAL", channel
+        print "bins_%s = c(%s)" % (channel, total_string_bins[:-2])
+        print "signal_%s = c(%s)" % (channel, total_string_sig[:-2])
+        print "qcd_%s = c(%s)" % (channel, total_string_qcd[:-2])
+        print "var_%s = c(%s)" % (channel, total_string_varname[:-2])
+            
+        

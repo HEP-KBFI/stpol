@@ -1,4 +1,5 @@
 from odict import *
+from copy import copy
 
 class FitGroup():
     def __init__(self, name):
@@ -20,6 +21,37 @@ nominalFit.header = "Region & Lepton & Scale factors & Event yields & Event yiel
 nominalFit.header += " & & & before QCD cut	& after QCD cut & \\\\ \n"
 nominalFit.caption = "QCD fit results"
 
+mvaNometFit = FitGroup("qcd_mva_nomet")
+mvaNometFit.columns = "|l|l|c|c|c|c|"
+mvaNometFit.header = "Region & Lepton & Scale factors & Event yields & Event yields& Chi^2/NDF \\\\ \n"
+mvaNometFit.header += " & & & before QCD cut	& after QCD cut & \\\\ \n"
+mvaNometFit.caption = "QCD fit results, QCD MVA without MET"
+
+mvaNometFit_qcdcut = copy(mvaNometFit)
+mvaNometFit_qcdcut.name = "qcd_mva_nomet_qcdcut"
+mvaNometFit_qcdcut.caption = "QCD fit results, QCD MVA without MET, loose cut"
+
+dPhisNoMetFit = FitGroup("bdt_qcd_dphis_nomet") 
+dPhisNoMetFit.columns = "|l|l|c|c|c|c|"
+dPhisNoMetFit.header = "Region & Lepton & Scale factors & Event yields & Event yields& Chi^2/NDF \\\\ \n"
+dPhisNoMetFit.header += " & & & before QCD cut	& after QCD cut & \\\\ \n"
+dPhisNoMetFit.caption = "QCD fit results, QCD MVA with dPhi variables, without MET"
+
+dPhisNoMetFit_qcdcut = copy(dPhisNoMetFit)
+dPhisNoMetFit_qcdcut.name = "bdt_qcd_dphis_nomet_qcdcut"
+dPhisNoMetFit_qcdcut.caption = "QCD fit results, QCD MVA with dPhi variables, without MET, loose cut on QCD MVA"
+
+dPhisMetFit = FitGroup("bdt_qcd_dphis_withmet")
+dPhisMetFit.columns = "|l|l|c|c|c|c|"
+dPhisMetFit.header = "Region & Lepton & Scale factors & Event yields & Event yields& Chi^2/NDF \\\\ \n"
+dPhisMetFit.header += " & & & before QCD cut	& after QCD cut & \\\\ \n"
+dPhisMetFit.caption = "QCD fit results, QCD MVA with dPhi variables and MET"
+
+dPhisMetFit_qcdcut = copy(dPhisMetFit)
+dPhisMetFit_qcdcut.name = "bdt_qcd_dphis_withmet_qcdcut"
+dPhisMetFit_qcdcut.caption = "QCD fit results, QCD MVA with dPhi variables and MET, loose cut on QCD MVA"
+
+
 isovarFit = FitGroup("isovar")
 isovarFit.header = "Region & Lepton & Anti-Iso & Scale factors & Event yields & Event yields& Chi^2/NDF \\\\ \n"
 isovarFit.header += " & & & & before QCD cut	& after QCD cut & \\\\ \n"
@@ -36,17 +68,36 @@ nocutFit.header = "Region & Lepton & Scale factors & Event yields & Event yields
 nocutFit.header += " & & & before QCD cut	& after QCD cut & \\\\ \n"
 nocutFit.caption = "QCD fit results, fitted on full BDT region"
 
+qcdcutFit = copy(nocutFit)
+qcdcutFit.name = "qcdcut"
+qcdcutFit.caption = "QCD fit results, fitted on BDT distribution with loose cut"
+
 metmtwFit = FitGroup("metmtw")
 metmtwFit.header = "Region & Lepton & Variable & Scale factors & Event yields & Event yields& Chi^2/NDF \\\\ \n"
 metmtwFit.header += " & & & & before QCD cut	& after QCD cut & \\\\ \n"
 metmtwFit.caption = "QCD fit results with $\mTW$ (for muons) and $\MET$ (for electrons) variables, which were used in the PAS. NB! Event yields after cut are not directly comparable to the nominal fit, as the cut is on a different variable"
+
+metmtwFit_qcdcut = copy(metmtwFit)
+metmtwFit_qcdcut.name = "metmtw_qcdcut"
+metmtwFit_qcdcut.caption = "QCD fit results with $\mTW$ (for muons) and $\MET$ (for electrons) variables, loosely cut. NB! Event yields after cut are not directly comparable to the nominal fit, as the cut is on a different variable"
+
 
 groupings = {
     "nominal": nominalFit,
     "isovar": isovarFit,
     "nocut": nocutFit,
     "metmtw": metmtwFit,
-    "varMC": varMCFit
+    "varMC": varMCFit,
+    "qcd_mva_nomet": mvaNometFit,
+    "bdt_qcd_dphis_nomet": dPhisNoMetFit,
+    "bdt_qcd_dphis_withmet": dPhisMetFit,
+    "qcdcut": qcdcutFit,
+    "metmtw_qcdcut": metmtwFit_qcdcut,
+    "qcd_mva_nomet_qcdcut": mvaNometFit_qcdcut,
+    "bdt_qcd_dphis_nomet_qcdcut": dPhisNoMetFit_qcdcut,
+    "bdt_qcd_dphis_withmet_qcdcut": dPhisMetFit_qcdcut
+    
+    
 }
 """
 region = "full variable range"

@@ -9,12 +9,14 @@ import ROOT
 from fit_components import *
 from colors import *
 
+myvars = ["qcd_mva", "met", "mtw", "lepton_met_dr", "bjet_met_dr", "ljet_met_dr", "sjet1_met_dr", "sjet2_met_dr", "lepton_met_dphi", "bjet_met_dphi", "ljet_met_dphi", "jet1_met_dphi", "jet2_met_dphi", "bjet_dphi", "ljet_dphi"]
+        
 
 def get_histos(fname, channel, isovar=None):
     f = TFile(fname)
     histos = {}
     for cut in ["nocut", "reversecut"]:
-        for var in ["qcd_mva"]:#, "met", "mtw"]:
+        for var in myvars:#["qcd_mva"]:#, "met", "mtw"]:
             for jt in ["2j1t", "2j0t", "3j1t", "3j2t"]:
                 for iso in ["iso", "antiiso"]:
                     for dataset in all_datasets_reproc:
@@ -98,15 +100,18 @@ def plot_templates(channel, var, jt, cut, hData, hQCD, others):
     canv1 = TCanvas("canvas", "canvas", 800,800)
     #h.GetXaxis().SetTitle(varname)                                       
     hQCD.SetLineWidth(3)
-    leg = ROOT.TLegend(0.5,0.5,0.9,0.90)
+    leg = ROOT.TLegend(0.7,0.6,0.95,0.90)
     #leg.SetTextSize(0.037)
     leg.SetBorderSize(0)
     leg.SetLineStyle(0)
     leg.SetTextSize(0.04)
     leg.SetFillColor(0)
-    hQCD.SetTitle("")
+    hQCD.SetTitle("%s distribution before QCD cut, %s, %s" % (var, channel, jt))
+    hQCD.GetXaxis().SetTitle(var)
     hQCD.Scale(1/hQCD.Integral())
     hQCD.SetAxisRange(0, 0.2, "Y")
+    if "dr" in var or "dphi" in var:
+        hQCD.SetAxisRange(0, 0.1, "Y")
     hQCD.Draw("hist")
     hData.Scale(1/hData.Integral())
     hData.SetMarkerStyle(20)
@@ -142,15 +147,15 @@ if __name__=="__main__":
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch()
     for channel in ["mu", "ele"]:
-        myvars = ["qcd_mva"]#, "met"]
+        #myvars = ["qcd_mva"]#, "met"]
         #if channel == "mu":
         #myvars.append("mtw")
-        added = "Mar5" ##Nov_reproc"
+        added = "May30" ##Nov_reproc"
     	for varname in myvars:
             for jt in ["2j1t"]:#, "2j0t", "3j1t", "3j2t"]:
-                for cut in ["nocut", "reversecut"]:#, "qcdcut"]:
+                for cut in ["nocut"]:#, "reversecut"]:#, "qcdcut"]:
                     histos = get_histos("input_histos/%s/%s.root" % (added, channel), channel)  
-                    #print "OUTFILE", "templates/"+varname+"__"+jt+"__"+channel+"__"+cut+"__"+added+".root"
+                    print "OUTFILE", "templates/"+varname+"__"+jt+"__"+channel+"__"+cut+"__"+added+".root"
                     (hData, hQCD, others) = make_template_histos(histos, channel, varname, jt, cut, components)
                     plot_templates(channel, varname, jt, cut, hData, hQCD, others)    
                     

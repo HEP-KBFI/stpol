@@ -25,12 +25,22 @@ def get_cut(var, channel):
             return -0.15
         else:
             return 0.15
-    """if var == "qcd_mva_deltaR":
+    if var == "qcd_mva_nomet":
         if channel == "mu":
-            return -0.15
+            return -0.25
         else:
             return 0.15
-    """
+    if var == "bdt_qcd_dphis_withmet":
+        if channel == "mu":
+            return 0.00
+        else:
+            return 0.55
+    if var == "bdt_qcd_dphis_nomet":
+        if channel == "mu":
+            return 0.00
+        else:
+            return 0.55
+    
 
 def analyze_fit(fit_templates_file, qcd_result, other_results, priors, extra = {}):
     templates_file = fit_templates_file.replace("reversecut", "nocut").replace("qcdcut", "nocut")#.replace("__isovar_down","").replace("__isovar_up","")
