@@ -23,14 +23,23 @@ const defaults_func = {
     :cos_theta_lj_gen => () -> Histogram(infb(linspace(-1, 1, int(nb_reco) + 1))),
     :cos_theta_bl_gen => () -> Histogram(binnings[:cos_theta_lj][:gen]),
     :bdt_sig_bg => () -> Histogram(binnings[:bdt]),
+    :bdt_sig_bg_dr_nomet_nolpt => () -> Histogram(binnings[:bdt]),
+    :bdt_sig_bg_dr_nomet_lpt => () -> Histogram(binnings[:bdt]),
+    :bdt_sig_bg_dr_met_lpt => () -> Histogram(binnings[:bdt]),
+    :bdt_sig_bg_dr_met_nolpt => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_mixed => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_before_reproc => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_old => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_top_13_001 => () -> Histogram(infb(linspace(-1, 1, 21))),
     :bdt_qcd => () -> Histogram(infb(linspace(-1, 1.0, 31))),
+    :bdt_qcd_dphis_nomet => () -> Histogram(infb(linspace(-1, 1.0, 31))),
+    :bdt_qcd_dphis_withmet => () -> Histogram(infb(linspace(-1, 1.0, 31))),
     :bdt_qcd_mixed => () -> Histogram(infb(linspace(-1, 1.0, 31))),
     :bdt_qcd_before_reproc => () -> Histogram(infb(linspace(-1, 1.0, 31))),
     :bdt_qcd2 => () -> Histogram(infb(linspace(-1, 1.0, 31))),
+
+    :lepton_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :jet1_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
 
 
     :C => () -> Histogram(infb(linspace(0, 1, 31))),
@@ -60,6 +69,27 @@ const defaults_func = {
     :ljet_dr => () -> Histogram(infb(linspace(0, 2, 31))),
     :bjet_dr => () -> Histogram(infb(linspace(0, 2, 31))),
 
+    :ljet_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    :bjet_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    :sjet1_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    :sjet2_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    :jet1_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    :jet2_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    :lepton_met_dr => () -> Histogram(infb(linspace(0, 6, 61))),
+    
+    :ljet_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :bjet_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :jet1_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :jet2_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+
+    :ljet_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :bjet_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :sjet1_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :sjet2_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :jet1_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :jet2_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    :lepton_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
+    
     :mtw => () -> Histogram(infb(linspace(0, 200, 31))),
 
     :lepton_pt => () -> Histogram(infb(linspace(25, 200, 31))),
