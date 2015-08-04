@@ -8,12 +8,8 @@ from subprocess import call
 import time
 
 data_files = get_data_files()
-#pdfconfs = ["ct10", "nnpdf", "nnpdf_down", "nnpdf_up"] #,"mstw"]
-
-print data_files
 
 i = 0
-        
 for dataset, fileset in data_files.items():
         print
         print dataset
@@ -24,8 +20,7 @@ for dataset, fileset in data_files.items():
             batch_outfile = open(bf_name, "w")
             batch_outfile.write("#!/bin/bash\n")
             batch_outfile.write("source $STPOL_DIR/setenv.sh\n")
-            batch_outfile.write("python $STPOL_DIR/src/pdf_uncertainties/save_events.py " +dataset+ " " +str(counter)+" "+base_file+" " + added_file + "\n")
-            #print "python $STPOL_DIR/src/pdf_uncertainties/pdf_eventloop.py " +dataset+ " " +str(i)+" "+base_file+" " + added_file + "\n"
+            batch_outfile.write("python $STPOL_DIR/src/pdf_uncertainties/save_events.py %s %s %s %s\n" % (dataset, counter, base_file, added_file))
             batch_outfile.close()
             call(["chmod", "755", bf_name])
             suc = 1

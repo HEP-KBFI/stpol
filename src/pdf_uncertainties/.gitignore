@@ -1,3 +1,6 @@
 weightlists*/
 eventlists*/
 runconfs/
+cutoffs*
+*.tar
+compare_ids.py
