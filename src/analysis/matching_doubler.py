@@ -28,6 +28,7 @@ def matching_doubler(filename, path, outpath):
                 #ignore jt_var__DATA
                 #print hist
                 if not "DEBUG" in hist:
+                    if "lepton_iso" in hist and ("/ele" in outpath or "/combined" in outpath): continue
                     hists[hist] = f.Get(hist).Clone()
                     #if "wzjets_heavy" in hist:
                     #    hists[hist].Scale(1.5)
@@ -54,6 +55,10 @@ def matching_doubler(filename, path, outpath):
                         hists[hist].Scale(1.5)
                     elif "wjets_light" in hist and "scale__up" in hist:
                         hists[hist].Scale(1.25)
+                    if "2j0t" in hist:
+                        hists[hist].Scale(0.01)
+                    #if "3j2t" in hist:
+                    #    hists[hist].Scale(0.1)
                     #elif "wjets_light" in hist:
                     #    hists[hist].Scale(0.5) 
                     #if "2j0t" in hist and "bdt_sig_bg" in hist:
