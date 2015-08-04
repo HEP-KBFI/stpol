@@ -28,8 +28,8 @@ from parse_input import datasets, datasets_qcd, datasets_syst, datasets_data
 #mc/iso/nominal/
 
 channels = ["mu", "ele"]
-isos = ["antiiso"]
-systematics = ["nominal"]
+isos = ["iso", "antiiso"]
+systematics = ["nominal", "EnDown", "EnUp", "ResDown", "ResUp", "UnclusteredEnDown", "UnclusteredEnUp"]
 #, "SYST"
 infile_lists = {}
 
@@ -39,26 +39,29 @@ for iso in isos:
         infile_lists[iso][ds] = {}
         for syst in systematics:
             if iso == "antiiso" and not syst == "nominal": continue
-            infile_lists[iso][ds][syst] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Apr21_btags", "step2", "mc", iso, syst, "%s.files.txt" % ds)
-    
-    """
+            infile_lists[iso][ds][syst] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "May29_deltars", "step2", "mc", iso, syst, "%s.files.txt" % ds)
+    #""
+    #""
     for ds in datasets_qcd:
         infile_lists[iso][ds] = {}
-        infile_lists[iso][ds]["nominal"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Apr21_btags", "step2", "mc", iso, "nominal", "%s.files.txt" % ds)
+        infile_lists[iso][ds]["nominal"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "May29_deltars", "step2", "mc", iso, "nominal", "%s.files.txt" % ds)
+    
     """
-    """
+    #"""
     for ds in datasets_syst:
         if iso == "antiiso": continue
         infile_lists[iso][ds] = {}
-        infile_lists[iso][ds]["SYST"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Apr21_btags", "step2", "mc_syst", iso, "nominal", "%s.files.txt" % ds)
+        infile_lists[iso][ds]["SYST"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "May29_deltars", "step2", "mc_syst", iso, "nominal", "%s.files.txt" % ds)
+    
     """
-    """
+    
     for ds in datasets_data:
         infile_lists[iso][ds] = {}
-        infile_lists[iso][ds]["data"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "Jan22_fullData", "step2", "data", iso, "%s.files.txt" % ds)
+        infile_lists[iso][ds]["data"] = os.path.join("/home", "andres", "single_top", "stpol_pdf", "filelists", "May29_deltars", "step2", "data", iso, "%s.files.txt" % ds)
     """
+
 size = 1
-path = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags"
+path = "/home/andres/single_top/stpol_pdf/src/step3/output/May30_deltaRs"
 try:
     if not os.path.isdir(path): 
         os.makedirs(path)
@@ -77,6 +80,7 @@ for (iso, stuff) in infile_lists.items():
         if not os.path.isdir(path+"/"+iso):
             raise
     for (dataset, stuff2) in stuff.items():
+        if not "T_t_ToLeptons_scaledown" in dataset: continue
         print dataset
         #if not dataset in ["TTJets_MS_matchingdown", "TTJets_MS_mass175_5", "TTJets_MS_mass169_5"]: continue
         #if not ("Jets_exclusive" in dataset): continue
@@ -84,15 +88,18 @@ for (iso, stuff) in infile_lists.items():
         #if not (dataset in ["QCD_Pt_250_350_EMEnriched", "QCD_Pt_250_350_BCtoE", "QCD_Pt_30_80_EMEnriched", "GJets1", "GJets2", "QCD_Pt_350_EMEnriched", "QCD_Pt_170_250_EMEnriched", "QCD_Pt_20_30_EMEnriched"] and iso == "iso"): continue
         #if not (dataset in ["QCD_Pt_20_30_EMEnriched", "QCD_Pt_170_250_EMEnriched", "QCD_Pt_170_250_BCtoE", "QCD_Pt_350_BCtoE", "QCD_Pt_350_EMEnriched", "GJets1", "GJets2", "QCD_Pt_20_30_BCtoE", "QCD_Pt_250_350_BCtoE", "QCD_Pt_30_80_BCtoE", "QCD_Pt_250_350_EMEnriched"] and iso == "antiiso"): continue
         #if dataset == "SingleMu" and iso == "antiiso": continue
-        #if "TToLeptons_t-channel_aMCatNLO" not in dataset: continue
+        if "aMCatNLO" in dataset and "scale" in dataset: continue
         #if not ("WJets" in dataset or "Jets_exclusive" in dataset or "JetsToLNu" in dataset): continue
         #if not ("W2JetsToLNu_scaleup" in dataset): continue
         #if not ("TTJets_MS_scaleup" in dataset): continue
         #if (not "TTJets_FullLept" in dataset): continue
-        if "W2JetsToLNu_scaleup" in dataset: size = 4
-        elif "QCD" in dataset or "GJets" in dataset or "JetsTo" in dataset or "WJets" in dataset or "Jets_exclusive" in dataset or "Single" in dataset: size = 10
-        elif "_MS" in dataset: size=2
-        else: size = 1
+        if "JetsToLNu" in dataset or "WJets" in dataset or "Jets_exclusive" in dataset: size = 5 
+        elif "QCD" in dataset or "GJets" in dataset: size = 50
+        elif "Single" in dataset: size = 10
+        elif "TTJets" in dataset: size = 5
+        elif "T_t_ToLeptons" in dataset: size = 10        
+        elif "T_t" in dataset or "Tbar_t" in dataset: size=1
+        else: size = 10
         #if not "Single" in dataset:continue        
         #print infile_lists[iso]
         for (syst, file_list_file) in stuff2.items():
@@ -140,7 +147,7 @@ for (iso, stuff) in infile_lists.items():
                 suc = 1
                 while not suc == 0:
                     #suc = call(["sbatch", bf_name])
-                    suc = call(["sbatch", "-x comp-c-012", bf_name])
+                    suc = call(["sbatch", "-x comp-c-012 comp-c-013", bf_name])
                     print bf_name, suc
                     if not suc == 0:
                         print "XXX"
