@@ -1,12 +1,12 @@
 
-const nb_reco = 48
+const nb_reco = 20
 
 const binnings = {
     :cos_theta_lj => {
         :gen => infb(linspace(-1, 1, int(nb_reco/2) + 1)),
         :reco => infb(linspace(-1, 1, int(nb_reco) + 1)),
     },
-    :bdt => infb(linspace(-1, 1, 31)),
+    :bdt => infb(linspace(-1, 1, 21)),
 }
 
 #functions to make default histograms
@@ -31,12 +31,12 @@ const defaults_func = {
     :bdt_sig_bg_before_reproc => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_old => () -> Histogram(binnings[:bdt]),
     :bdt_sig_bg_top_13_001 => () -> Histogram(infb(linspace(-1, 1, 21))),
-    :bdt_qcd => () -> Histogram(infb(linspace(-1, 1.0, 31))),
-    :bdt_qcd_dphis_nomet => () -> Histogram(infb(linspace(-1, 1.0, 31))),
-    :bdt_qcd_dphis_withmet => () -> Histogram(infb(linspace(-1, 1.0, 31))),
-    :bdt_qcd_mixed => () -> Histogram(infb(linspace(-1, 1.0, 31))),
-    :bdt_qcd_before_reproc => () -> Histogram(infb(linspace(-1, 1.0, 31))),
-    :bdt_qcd2 => () -> Histogram(infb(linspace(-1, 1.0, 31))),
+    :bdt_qcd => () -> Histogram(infb(linspace(-1, 1.0, 21))),
+    :bdt_qcd_dphis_nomet => () -> Histogram(infb(linspace(-1, 1.0, 21))),
+    :bdt_qcd_dphis_withmet => () -> Histogram(infb(linspace(-1, 1.0, 21))),
+    :bdt_qcd_mixed => () -> Histogram(infb(linspace(-1, 1.0, 21))),
+    :bdt_qcd_before_reproc => () -> Histogram(infb(linspace(-1, 1.0, 21))),
+    :bdt_qcd2 => () -> Histogram(infb(linspace(-1, 1.0, 21))),
 
     :lepton_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
     :jet1_met_dphi => () -> Histogram(infb(linspace(-4, 4, 41))),
