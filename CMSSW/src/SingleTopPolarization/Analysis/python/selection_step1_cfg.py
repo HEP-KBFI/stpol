@@ -440,6 +440,9 @@ def SingleTopStep1(
                     #For flavour analyzer
                     'keep GenEventInfoProduct_generator__*',
 
+                    #For event weights (aMCatNLO)
+                    'keep LHEEventProduct_source__*',
+
                     #PU info
                     'keep PileupSummaryInfos_addPileupInfo__*',
 
