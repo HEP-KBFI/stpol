@@ -92,19 +92,12 @@ if grouping=="fit":
     final_groups = {
         "tchan":["tchan"],
         "ttjets": ["ttjets", "twchan", "schan"],
-        #"wzjets_heavy": ["wjets_heavy", "dyjets_heavy", "wjets_light", "dyjets_light", "diboson"],
         #"wzjets": ["wjets", "diboson", "dyjets"],# "gjets"],
-        #"wzjets_heavy": ["wjets_heavy", "dyjets_heavy", "wjets_wc", "dyjets_wc"],# "gjets"],
-        #"wzjets_c" : ["wjets_wc", "dyjets_wc"],
-        #"wzjets_light": ["wjets_light", "dyjets_light"],# "gjets"],
-        #"VV": ["diboson"],# "gjets"],
-        "wzjets": ["wjets_light", "wjets_charm", "wjets_heavy", "dyjets_light", "dyjets_charm", "dyjets_heavy", "diboson"],# "gjets"],
+        "wzjets": ["wjets_light", "wjets_charm", "dyjets_light", "dyjets_charm", "wjets_heavy", "dyjets_heavy", "diboson"],# "gjets"],
         #"wzjets_heavy": ["wjets_heavy", "dyjets_heavy"],
         #"wzjets_charm": ["wjets_charm", "dyjets_charm"],
         #"wzjets_light": ["wjets_light", "dyjets_light"],
         #"diboson": ["diboson"],
-        #"wjets_light": ["wjets_light"]
-        #"wjets_c": ["wjets_c"]
         "qcd": ["qcd"],
     }
 elif grouping=="plot":
@@ -118,11 +111,20 @@ elif grouping=="plot":
         "schan": ["schan"],
         "diboson": ["diboson"],
         #"gjets": ["gjets"],
-        "dyjets": ["dyjets"]
+        "dyjets": ["dyjets_light", "dyjets_charm", "dyjets_heavy"],
+        "qcd": ["qcd"]
 }
 
 lumi = int(from_json("../../metadata/lumis.json")[lepton])
-qcd_scale = float(from_json("../../metadata/qcd_sfs.json")[lepton][jet_tag]["qcd_mva"])
+discriminator = "qcd_mva"
+"""discriminator = "qcd_mva_loosecut"
+if jet_tag == "3j2t":
+    discriminator = "qcd_mva"
+""if lepton == "mu":
+    discriminator = "mtw"
+elif lepton == "ele":
+    discriminator = "met"""
+qcd_scale = float(from_json("../../metadata/qcd_sfs.json")[lepton][jet_tag][discriminator])
 final_groups["DATA"] = ["data_%s"%lepton]
 
 hl = [k.GetName() for k in f.GetListOfKeys()]
@@ -195,6 +197,7 @@ def get_hists(sample, syst, di, iso):
                 print "using nominal", d, "instead of", syst, di
                 hks.append(k)
 
+    
     #get t-channel nominal template, but reset
     if len(hks)==0:
         if sample=="tchan" and syst=="nominal" and di=="none" and iso=="iso":
@@ -215,6 +218,8 @@ def sum_hists(newname, hists):
     f = hists[0].Clone(newname)
     itot += f.Integral()
     ntot += f.GetEntries()
+    #for h in hists:
+    #    print h, newname, h.GetName(), h.GetNbinsX()
     for h in hists[1:]:
         itot += h.Integral()
         ntot += h.GetEntries()
@@ -338,23 +343,28 @@ hantiiso_mc.Scale(lumi)
 hantiiso_data.Write("", ROOT.TObject.kOverwrite)
 hantiiso_mc.Write("", ROOT.TObject.kOverwrite)
 hmc = hantiiso_mc
-print "hmc", hmc.GetName(), hmc.Integral(), hmc.GetEntries()
+#print "hADATA", hantiiso_data.GetName(), hantiiso_data.GetEntries(), hantiiso_data.Integral()
+#print "hAmc", hmc.GetName(), hmc.Integral(), hmc.GetEntries()
 
 hqcd = hantiiso_data.Clone("%s__qcd" % varname)
 hqcd.Add(hantiiso_mc, -1.0)
+#print "INTEGRAL_noscale", hqcd.Integral()
 hqcd.Scale(qcd_scale)
+#print "INTEGRAL_nozero", hqcd.Integral()
 set_zero_if_neg(hqcd)
+#print "INTEGRAL", hqcd.Integral()
 
-"""if lepton == "ele" and jet_tag == "2j1t" and "bdt_sig_bg" in sys.argv[1]:
-    print "QCD+", lepton, jet_tag, sys.argv[1]
+"""
+Scaling the QCD template
+if lepton == "ele" and jet_tag == "2j1t" and "bdt_sig_bg" in sys.argv[1]:
+    print "QCD", lepton, jet_tag, sys.argv[1]
     bin0 = 1.147 / 0.839
     binmax = 0.506 / 0.839
     for bin in range(hqcd.GetNbinsX()+1):
         scale_bin = bin0 - (bin0 - binmax) * bin / hqcd.GetNbinsX()
         hqcd.SetBinContent(bin, hqcd.GetBinContent(bin) * scale_bin)
         print "QCD+", bin, scale_bin
-"""   
-    
+"""    
 
 hqcd.Write("", ROOT.TObject.kOverwrite)
 hqcd_up = hqcd.Clone(hqcd.GetName() + "__qcd_yield__up")
@@ -379,7 +389,7 @@ for sd in ["up", "down"]:
         sum([get_hists(gr, "qcd_antiiso", sd, "antiiso") for gr in ["tchan", "ttjets", "wjets", "diboson", "dyjets", "twchan", "schan"]], [])
     )
     hmc.Scale(lumi)
-    print "hmc", hmc.GetName(), hmc.Integral(), hmc.GetEntries()
+    
     hdata.Write("", ROOT.TObject.kOverwrite)
     hmc.Write("", ROOT.TObject.kOverwrite)
     hqcd = hdata.Clone("%s__qcd__qcd_antiiso__%s" % (varname, sd))
