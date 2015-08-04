@@ -4,6 +4,7 @@
 
 echo "Setting up stpol env..."
 
+export SCRAM_ARCH=slc5_amd64_gcc472
 CURRENT_DIR=`pwd`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export STPOL_DIR=$SCRIPT_DIR
