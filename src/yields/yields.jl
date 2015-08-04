@@ -16,7 +16,7 @@ chd2 = TreeDataFrame(map(postfix_added, files));
 chd = MultiColumnDataFrame(AbstractDataFrame[chd1, chd2]);
 println("opened $(nrow(chd)) events")
 
-X = chd1[[:hlt_mu, :hlt_ele, :n_signal_mu, :n_veto_mu, :n_signal_ele, :n_veto_ele, :njets, :ntags, :met, :mtw, :ljet_rms, :ljet_dr, :bjet_dr, :ljet_eta, :bjet_eta, :cos_theta_lj]];
+X = chd1[[:hlt_mu, :hlt_ele, :n_signal_mu, :n_veto_mu, :n_signal_ele, :n_veto_ele, :njets, :ntags, :met, :mtw, :ljet_rms, :ljet_dr, :bjet_dr, :ljet_eta, :bjet_eta, :cos_theta_lj, :lepton_charge]];
 
 qcdkey = :bdt_qcd
 if :bdt_qcd_before_reproc in names(chd2)
@@ -52,8 +52,8 @@ nona!(jet)
 tag = X[:ntags].==ntags
 nona!(tag)
 #
-rms = X[:ljet_rms] .< 0.025
-nona!(rms)
+#rms = X[:ljet_rms] .< 0.025
+#nona!(rms)
 #
 #dr = (X[:ljet_dr] .> 0.3) .* (X[:bjet_dr] .> 0.3);
 #nona!(dr)
@@ -87,6 +87,9 @@ nona!(bdtold_mu)
 bdtold_ele = X[:bdt_sig_bg_top_13_001].>0.13
 nona!(bdtold_ele)
 
+is_top = X[:lepton_charge] .== int32(1)
+is_antitop = X[:lepton_charge] .== int32(-1)
+
 cuts = {
     :mu=>{
         #:old => {dr, mu, jet, rms, tag, mtw, jet_eta, bdtold_mu},
@@ -101,6 +104,12 @@ cuts = {
         :new => {ele, jet, tag, qcd015, bdt},
     }
 };
+
+cuts = {
+    :combined => {mu, mu, jet, tag, qcd_015, bdt},
+    :top => {mu, is_top, jet, tag, qcd_015, bdt},
+    :antitop => {mu, is_antitop, jet, tag, qcd_015, bdt}
+}
 
 x = X[ mu .* qcd_015 .* jet .* tag .* jet_eta .* bdt, :cos_theta_lj]
 println("selected ", length(x), " cos_theta calculated for ", sum(!isna(x)))
@@ -137,15 +146,21 @@ if SAMPLE==:data_mu || SAMPLE==:data_ele
     d = {
         #:mu=>{:new=>cutflow_data(cuts[:mu][:new]), :old=>cutflow_data(cuts[:mu][:old])},
         #:ele=>{:new=>cutflow_data(cuts[:ele][:new]), :old=>cutflow_data(cuts[:ele][:old])}
-        :mu=>{:new=>cutflow_data(cuts[:mu][:new])},
-        :ele=>{:new=>cutflow_data(cuts[:ele][:new])}
+        #:mu=>{:new=>cutflow_data(cuts[:mu][:new])},
+        #:ele=>{:new=>cutflow_data(cuts[:ele][:new])}
+        :combined=>{:new=>cutflow_data(cuts[:combined])},
+        :top=>{:new=>cutflow_data(cuts[:top])},
+        :antitop=>{:new=>cutflow_data(cuts[:antitop])}
     }
 else
     d = {
         #:mu=>{:new=>cutflow(cuts[:mu][:new], true, :w_new), :old=>cutflow(cuts[:mu][:old], true, :w_new)},
         #:ele=>{:new=>cutflow(cuts[:ele][:new], true, :w_new), :old=>cutflow(cuts[:ele][:old], true, :w_new)}
-        :mu=>{:new=>cutflow(cuts[:mu][:new], true, :w_new)},
-        :ele=>{:new=>cutflow(cuts[:ele][:new], true, :w_new)}
+        #:mu=>{:new=>cutflow(cuts[:mu][:new], true, :w_new)},
+        #:ele=>{:new=>cutflow(cuts[:ele][:new], true, :w_new)}
+        :combined=>{:new=>cutflow(cuts[:combined], true, :w_new)},
+        :top=>{:new=>cutflow(cuts[:top], true, :w_new)},
+        :antitop=>{:new=>cutflow(cuts[:antitop], true, :w_new)}
     }
 end
 println(d)
@@ -156,6 +171,7 @@ df = similar(
         sample=Symbol[],
         #dr=Int64[],
         lepton=Int64[],
+        charge=Int64[],
         jet=Int64[],
         #rms=Int64[],
         tag=Int64[],
@@ -166,22 +182,24 @@ df = similar(
         bdt_w=Int64[],
         #bdt_w06=Int64[],
         fit=Int64[],
-    ), 2#4
+    ), 3#4
 );
 
 j = 0
-for lep in [:mu, :ele]
+for lep in [:combined, :top, :antitop]
     #for cut in [:old, :new]
     for cut in [:new]
+        println("J ",j)
         j += 1
         df[j, :flavour] = lep
         df[j, :sample] = SAMPLE
         if SAMPLE in [:data_mu, :data_ele]
             l = 1.0
         else
-            l = Reweight.lumis[lep]
+            #l = Reweight.lumis[lep]
+            l = Reweight.lumis[:mu]
         end
-        for i=1:5
+        for i=1:6
             println(i)
             df[j, i + 2] = int(round(l * float(d[lep][cut][2][i])) )
         end
@@ -197,7 +215,8 @@ for lep in [:mu, :ele]
             sf = 1.0
         end
         println("FFF")
-        df[j, :fit] = round(l * float(d[lep][cut][2][5]) * sf)|>int
+        df[j, :fit] = round(l * float(d[lep][cut][2][6]) * sf)|>int
+        println("III")
         #df[j, 7] = round(df[j, 6] * sf)|>int
     end
 end
