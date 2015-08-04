@@ -15,10 +15,10 @@ data_files = get_data_files()
 
 total_jobs = 0
 #time.sleep(10000)
-for select in ["top", "antitop"]:
+for select in ["top", "antitop", "nominal"]:
     for channel in ["mu"]:#, "ele"]:
         for dataset, fileset in data_files.items():
-            #if not dataset in ["T_t_ToLeptons", "Tbar_t_ToLeptons", "TTJets_FullLept", "W2Jets_exclusive","W4Jets_exclusive"]:continue
+            #if not dataset in ["W4Jets_exclusive"]:continue
             for p in pdfs:
                 call(["mkdir", "-p", dataset])
                 savedPath = os.getcwd()

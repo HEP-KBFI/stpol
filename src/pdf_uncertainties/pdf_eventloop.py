@@ -20,7 +20,8 @@ import math
 
 
 from get_weights import *
-from utils import sizes, pdfs
+from utils import sizes
+from utils import pdfs_minset as pdfs
 #from src.qcd_mva.utils import *
 #from src.qcd_mva.mva_variables import *
 #from Dataset import *
@@ -38,12 +39,15 @@ select = sys.argv[7]
 
 ROOT.TH1.AddDirectory(False)
 
-variables = ["bdt_sig_bg", "cos_theta", "pdfweight"]
+variables = ["bdt_sig_bg", "cos_theta", "bdt_qcd", "pdfweight"]
 variables.extend(["scale", "id1", "id2", "x1", "x2"])
 
 ranges = {}
-ranges["bdt_sig_bg"] = (30, -1, 1)
-ranges["cos_theta"] = (48, -1, 1)
+#ranges["bdt_sig_bg"] = (30, -1, 1)
+#ranges["cos_theta"] = (48, -1, 1)
+ranges["bdt_sig_bg"] = (20, -1, 1)
+ranges["cos_theta"] = (20, -1, 1)
+ranges["bdt_qcd"] = (20, -1, 1)
 ranges["pdfweight"] = (100, -200, 200)
 ranges["scale"] = (100, 150, 500)
 ranges["id1"] = (13, -6.5, 6.5)
@@ -64,7 +68,7 @@ events2 = infile2.Get('dataframe')
 colnames = ["bdt_qcd", "bdt_sig_bg", "xsweight", "wjets_ct_shape_weight", "wjets_fl_yield_weight", "wjets_pt_weight"]
 extra_data = {}
 
-(pdf_weights, average_weights, pdf_input) = get_weights(dataset, thispdf, channel, counter)
+(pdf_weights, average_weights, pdf_input) = get_weights(dataset, thispdf, channel, counter, -1)
 maxscale = 200
 minscale = 170
 maxid = 0
@@ -72,17 +76,7 @@ minid = 0
 maxx = 0.
 minx = 0.
 
-#outfilename = "pdftest.root"
-#outfile = TFile(outfilename, "RECREATE")
-
-#pdfs = ["MSTW2008nlo68cl", "NNPDF21", "cteq66", "CT10"]
-#pdfs = ["NNPDF21", "CT10"]
-
-#"MSTW2008CPdeutnlo68cl"]
-
 histograms = dict()
-
-c = channel
 
 c = channel
 #luminosity  = 19764
@@ -102,12 +96,13 @@ bdt_cuts = ["-0.20000",  "-0.10000", "0.00000", "0.06000",  "0.10000", "0.13000"
 binned_weights = {}
 binned_weights["cos_theta"] = []
 binned_weights["bdt_sig_bg"] = []
+binned_weights["bdt_qcd"] = []
 
 histograms[c] = dict()
+pdfs = [thispdf]
 for p in pdfs:
-        if not (thispdf == p or (p == 'NNPDF23' and thispdf == "NNPDF23nloas0119LHgrid")): continue
-        print "midagi"
         histograms[c][p] = dict()
+        if not (thispdf == p or (p == 'NNPDF23' and thispdf == "NNPDF23nloas0119LHgrid")): continue
         for var in variables:
             histograms[c][p][var] = dict()
             histograms[c][p]["id1id2"] = dict()
@@ -123,22 +118,12 @@ for p in pdfs:
                             histograms[c][p][var][jt]["nominal_cut_%s" % bdtcut].Sumw2()
                             histograms[c][p][var][jt]["weighted_cut_%s" % bdtcut] = []
                     else:
-                        histograms[c][p][var][jt]["nominal"] = TH1D(name+"_nominal", name+"_nominal", ranges[var][0], ranges[var][1], ranges[var][2])
-                        histograms[c][p][var][jt]["nominal"].SetDirectory(0)
-                        histograms[c][p][var][jt]["nominal"].Sumw2()
-                        histograms[c][p][var][jt]["weighted"] = []
-                    #print name, histograms[c][p][var][jt]["nominal"].Integral()
-                if var == "pdfweight":
-                    for mybin in range(ranges["cos_theta"][0]):
-                        histograms[c][p]["pdfweight"][jt]["nominal_bin"+str(mybin)] = TH1D(name+"_nominal_bin"+str(mybin), name+"_nominal_bin"+str(mybin), ranges["pdfweight"][0], ranges["pdfweight"][1], ranges["pdfweight"][2])
-                        histograms[c][p]["pdfweight"][jt]["nominal_bin"+str(mybin)].SetDirectory(0)
-                        histograms[c][p]["pdfweight"][jt]["nominal_bin"+str(mybin)].Sumw2()
-                        for mybin in range(ranges["cos_theta"][0]):
-                            binned_weights["cos_theta"].append([])
+                        for selection in ["preqcd", "preselection"]:
+                            histograms[c][p][var][jt]["nominal_%s" % selection] = TH1D(name+"_nominal_%s" % selection, name+"_nominal_%s" % selection, ranges[var][0], ranges[var][1], ranges[var][2])
+                            histograms[c][p][var][jt]["nominal_%s" % selection].SetDirectory(0)
+                            histograms[c][p][var][jt]["nominal_%s" % selection].Sumw2()
+                            histograms[c][p][var][jt]["weighted_%s" % selection] = []
 
-                    for mybin in range(ranges["bdt_sig_bg"][0]):
-                        binned_weights["bdt_sig_bg"].append([])
-                                        
                 for i in range(sizes[p]):
                     if var == "pdfweight": continue
                     if var in ["scale", "id1", "id2", "x1", "x2"]: continue
@@ -149,23 +134,20 @@ for p in pdfs:
                             histograms[c][p][var][jt]["weighted_cut_%s" % bdtcut][i].SetDirectory(0)
                             histograms[c][p][var][jt]["weighted_cut_%s" % bdtcut][i].Sumw2()
                     else:
-                        histograms[c][p][var][jt]["weighted"].append(TH1D(thisname, thisname, ranges[var][0], ranges[var][1], ranges[var][2]))
-                        #print c, p, var, jt, i, len(histograms[c][p][var][jt]["weighted"]), histograms[c][p][var][jt]["weighted"][i]
-                        #print histograms[c][p][var][jt]["weighted"][i].GetEntries()
-                        histograms[c][p][var][jt]["weighted"][i].SetDirectory(0)
-                        histograms[c][p][var][jt]["weighted"][i].Sumw2()
+                        for selection in ["preqcd", "preselection"]:
+                            thisname = "%s_weighted_%s_%d" % (name, selection, i)
+                            histograms[c][p][var][jt]["weighted_%s" % selection].append(TH1D(thisname, thisname, ranges[var][0], ranges[var][1], ranges[var][2]))
+                            #print c, p, var, jt, i, len(histograms[c][p][var][jt]["weighted"]), histograms[c][p][var][jt]["weighted"][i]
+                            #print histograms[c][p][var][jt]["weighted"][i].GetEntries()
+                            histograms[c][p][var][jt]["weighted_%s" % selection][i].SetDirectory(0)
+                            histograms[c][p][var][jt]["weighted_%s" % selection][i].Sumw2()
                 if var in ["scale", "id1", "id2", "x1", "x2"]:
                     histograms[c][p][var][jt]["nobdtcut"] = TH1D(name, name, ranges[var][0], ranges[var][1], ranges[var][2])
                     histograms[c][p][var][jt]["final"] = TH1D(name+"_final", name+"_final", ranges[var][0], ranges[var][1], ranges[var][2]) 
                     
 
-                name = "pdf__%s_%s__%s__%s" % (jt, "id1id2", dataset, p)
-                histograms[c][p]["id1id2"][jt]["nobdtcut"] = TH2D(name, name, ranges["id1"][0], ranges["id1"][1], ranges["id1"][2], ranges["id1"][0], ranges["id1"][1], ranges["id1"][2])
-                histograms[c][p]["id1id2"][jt]["final"] = TH2D(name+"_final", name+"_final", ranges["id1"][0], ranges["id1"][1], ranges["id1"][2], ranges["id1"][0], ranges["id1"][1], ranges["id1"][2])
-                
-
 path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "eventlists")
-picklename = "%s/events_%s_%s_%s.pkl" % (path, channel, dataset, counter)
+picklename = "%s/events_%s_%s.pkl" % (path, dataset, counter)
 with open(picklename, 'rb') as f:
     outdata = pickle.load(f)
     outdatai = pickle.load(f)
@@ -180,7 +162,7 @@ with open(picklename, 'rb') as f:
 i=-1
 for event in events2:
     i+=1
-    if event.bdt_qcd <= -0.15: continue
+    #if event.bdt_qcd <= -0.15: continue
     extra_data[i] = [event.bdt_qcd, event.bdt_sig_bg, event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight, event.wjets_pt_weight]
 
 i=-1
@@ -196,10 +178,10 @@ for event in events:
     lumi = event.lumi
     eventid = event.event    
 
-    if not run in outdata[channel]: continue
-    if not lumi in outdata[channel][run]: continue
-    if not eventid in outdata[channel][run][lumi]: continue
-    if not outdata[channel][run][lumi][eventid] == True: continue
+    if not run in outdata["preqcd"][channel]: continue
+    if not lumi in outdata["preqcd"][channel][run]: continue
+    if not eventid in outdata["preqcd"][channel][run][lumi]: continue
+    if not outdata["preqcd"][channel][run][lumi][eventid] == True: continue
 
     jt = "%sj%st" % (event.njets, event.ntags)
     if select == "top":
@@ -210,21 +192,10 @@ for event in events:
     #if channel == "ele" and not (abs(event.lepton_id) == 11): continue
     qw += 1
     
-    #if vetomuons > 0 or vetoeles > 0: continue
-
-    #if event.bjet_pt < 40 or event.ljet_pt < 40: continue
-    #if abs(event.bjet_eta) > 4.5 or abs(event.ljet_eta) > 4.5: continue
-    #if channel == "mu" and event.lepton_pt < 26: continue
-    #if channel == "ele" and event.lepton_pt < 30: continue
-    #if channel == "mu" and event.hlt_mu != 1: continue
-    #if channel == "ele" and event.hlt_ele != 1: continue
-    #qcd_mva_cut = 0.4
-    #if channel == "ele":
-    #    qcd_mva_cut = 0.55
     
     asd += 1
     
-    #qcd_bdt = extra_data[i][0]
+    qcd_bdt = extra_data[i][0]
     #if qcd_bdt < qcd_mva_cut: continue    
     bdt = extra_data[i][1]
     xsweight = extra_data[i][2]
@@ -267,78 +238,48 @@ for event in events:
         if p not in pdfs: continue
         #print "here"
             
-        if math.isnan(histograms[channel][p]["bdt_sig_bg"][jt]["nominal"].Integral()): ghts
-        """if p == "CT10LHgrid" and channel == "mu" and jt == "2j1t":
-            print "eventid", eventid
-            if total_weight > 0:
-               print "pos_event_id", eventid
-            if not (math.isnan(bdt) or math.isnan(total_weight)):
-               print "notnan_event_id", eventid
-            if (total_weight > 0 and not (math.isnan(bdt) or math.isnan(total_weight))):
-                print "allfine_event_id", eventid
-        """    
-        histograms[channel][p]["bdt_sig_bg"][jt]["nominal"].Fill(bdt, total_weight)
-        #print run, lumi, eventid
-        strange = False
-        strangePlus=False
-        strangeMinus=False
-        for j in range(len(w)):      
-            if abs(w[j] - 1) > 1:
-                strange = True
-            if w[j] > 2:
-                strangePlus = True
-            if w[j] < 0:
-                strangeMinus = True
-        ok = True
-        """for j in range(len(w)):      
-            if abs(w[j]-1) > 0:
-                ok = False
-                break
-        if not ok: continue"""
+        if math.isnan(histograms[channel][p]["bdt_sig_bg"][jt]["nominal_preqcd"].Integral()): ghts
+        
+        histograms[channel][p]["bdt_qcd"][jt]["nominal_preqcd"].Fill(qcd_bdt, total_weight)
+        histograms[channel][p]["bdt_sig_bg"][jt]["nominal_preqcd"].Fill(bdt, total_weight)
+
         if not "NNPDF" in p:
             for j in range(len(w)):
-                for mybin in range(ranges["bdt_sig_bg"][0]):
-                    lowedge = -1 + mybin * (2. / ranges["bdt_sig_bg"][0])
-                    highedge = -1 + (mybin + 1) * (2. / ranges["bdt_sig_bg"][0])
-                    if bdt >= lowedge and bdt <= highedge:  
-                        binned_weights["bdt_sig_bg"][mybin].append(w[j])
                 this_weight = total_weight * w[j]
-                #if abs(w[j]) > 10: w[j] = 1.
-                #print "weight!", run, lumi, eventid, j, w[j]
-                #print "weight", j, total_weight, w[j]
-                #print event.top_weight, event.pu_weight, event.lepton_weight__id, event.lepton_weight__iso, event.lepton_weight__trigger, event.b_weight, wjets_shape, wjets_yield , xsweight
                 if (dataset.startswith("T_t") and not dataset.startswith("T_tW")) or (dataset.startswith("Tbar_t") and not dataset.startswith("Tbar_tW")):
                     this_weight /= average_weights[p][j]
-                histograms[channel][p]["bdt_sig_bg"][jt]["weighted"][j].Fill(bdt, this_weight)
-                histograms[channel][p]["pdfweight"][jt]["nominal"].Fill(w[j])
+                histograms[channel][p]["bdt_qcd"][jt]["weighted_preqcd"][j].Fill(qcd_bdt, this_weight)
+                histograms[channel][p]["bdt_sig_bg"][jt]["weighted_preqcd"][j].Fill(bdt, this_weight)
+        
+
+        if not run in outdata["preselection"][channel]: continue
+        if not lumi in outdata["preselection"][channel][run]: continue
+        if not eventid in outdata["preselection"][channel][run][lumi]: continue
+        if not outdata["preselection"][channel][run][lumi][eventid] == True: continue
+
+        histograms[channel][p]["bdt_sig_bg"][jt]["nominal_preselection"].Fill(bdt, total_weight)
+        #histograms[channel][p]["cos_theta_lj"][jt]["nominal_preselection"].Fill(bdt, total_weight)
+        
+        if not "NNPDF" in p:
+            for j in range(len(w)):
+                this_weight = total_weight * w[j]
+                if (dataset.startswith("T_t") and not dataset.startswith("T_tW")) or (dataset.startswith("Tbar_t") and not dataset.startswith("Tbar_tW")):
+                    this_weight /= average_weights[p][j]
+                histograms[channel][p]["bdt_sig_bg"][jt]["weighted_preselection"][j].Fill(bdt, this_weight)
+                #histograms[channel][p]["pdfweight"][jt]["nominal"].Fill(w[j])
                 
-                #if abs(w[j]) > 50:
-                #    print "weight!", run, lumi, eventid, j, w[j]
         for cut_val in bdt_cuts:
             if bdt < float(cut_val): continue
             
-            #print "event_bdtid", eventid
-            #for mybin in range(ranges["cos_theta"][0]):
-            #if event.cos_theta_lj >= -0.5833333333 and event.cos_theta_lj < -0.5:  
             histograms[channel][p]["cos_theta"][jt]["nominal_cut_%s" % cut_val].Fill(event.cos_theta_lj, total_weight)
             
             if not "NNPDF" in p:
                 for j in range(len(w)):
-                    for mybin in range(ranges["cos_theta"][0]):
-                        lowedge = -1 + mybin * (2. / ranges["cos_theta"][0])
-                        highedge = -1 + (mybin + 1) * (2. / ranges["cos_theta"][0])
-                        if event.cos_theta_lj >= lowedge and event.cos_theta_lj <= highedge:  
-                            histograms[channel][p]["pdfweight"][jt]["nominal_bin"+str(mybin)].Fill(w[j])
-                            binned_weights["cos_theta"][mybin].append(w[j])
-
                     this_weight = total_weight * w[j]
                     if (dataset.startswith("T_t") and not dataset.startswith("T_tW")) or (dataset.startswith("Tbar_t") and not dataset.startswith("Tbar_tW")):
                         this_weight /= average_weights[p][j]
                     histograms[channel][p]["cos_theta"][jt]["weighted_cut_%s" % cut_val][j].Fill(event.cos_theta_lj, this_weight)
-                    desc = "."
-                    if abs(w[j])>2: desc = "strange"
-                    #ef.write("%d %d %d %s %f %f %d %f %f %f %d %d %f %s\n" % (run, lumi, eventid, p, bdt, event.cos_theta_lj, j, other_stuff["scale"], other_stuff["x1"], other_stuff["x2"], other_stuff["id1"], other_stuff["id2"], w[j], desc))
-        
+                            
 
 print "writing"
 #path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "output_removestrange")
@@ -354,7 +295,7 @@ outfilename = "%s/pdftest_%s_%s_%s_%s.root" % (path, channel, dataset, thispdf, 
 outfile = TFile(outfilename, "RECREATE")
 for p in histograms[channel]:
         for var in variables:
-            if var in ["scale", "id1", "id2", "x1", "x2"]: continue
+            if var in ["scale", "id1", "id2", "x1", "x2", "pdfweight"]: continue
             for jt in jettag:
                 print p, var, jt
                 if var == "cos_theta":
@@ -365,28 +306,14 @@ for p in histograms[channel]:
                             print h.Integral()
                             h.Write()
                 else:
-                    print histograms[channel][p][var][jt]["nominal"].GetEntries(), histograms[channel][p][var][jt]["nominal"].Integral()
-                    histograms[channel][p][var][jt]["nominal"].Write()
-                    for h in histograms[channel][p][var][jt]["weighted"]:
-                        print h.Integral()
-                        h.Write()
-"""for p in histograms[channel]:
-    for jt in jettag:
-        if thispdf == "CT10LHgrid":
-            histograms[channel][p]["cos_theta"][jt]["nominal"].Write()
-            histograms[channel][p]["bdt_sig_bg"][jt]["nominal"].Write()
-        for mybin in range(ranges["cos_theta"][0]):
-            histograms[channel][p]["pdfweight"][jt]["nominal_bin"+str(mybin)].Write()
-        maxbin = ranges[var][0]
-        print "UNDER/OVERFLOW", var, "bin11", histograms[channel][p]["pdfweight"][jt]["nominal_bin11"].GetBinContent(0), histograms[channel][p]["pdfweight"][jt]["nominal_bin11"].GetBinContent(maxbin)
-        print "UNDER/OVERFLOW", var, "bin12", histograms[channel][p]["pdfweight"][jt]["nominal_bin12"].GetBinContent(0), histograms[channel][p]["pdfweight"][jt]["nominal_bin12"].GetBinContent(maxbin)
-        
-        for var in ["scale", "id1", "id2", "x1", "x2"]:
-            for h in histograms[channel][p][var][jt]:
-                histograms[channel][p][var][jt][h].Write()
-            
-        for h in histograms[channel][p]["id1id2"][jt]:
-            histograms[channel][p]["id1id2"][jt][h].Write()"""
+                    for selection in ["preqcd", "preselection"]:
+                        print histograms[channel][p][var][jt]["nominal_%s" % selection].GetEntries(), histograms[channel][p][var][jt]["nominal_%s" % selection].Integral()
+                        histograms[channel][p][var][jt]["nominal_%s" % selection].Write()
+                        for h in histograms[channel][p][var][jt]["weighted_%s" % selection]:
+                            print h.Integral()
+                            h.Write()
+
+
 #ef.close()
 outfile.Write()
 outfile.Close()

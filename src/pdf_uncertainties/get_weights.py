@@ -25,8 +25,10 @@ import numpy
 
 def get_file_list(file_list_file, i):
     lines = ["/hdfs/cms/"+line.strip() for line in open(file_list_file)]
-    return lines[i*10: i*10+9]
-    #return lines
+    if i == -1:
+        return lines
+    else:
+        return lines[i*10: i*10+9]
 
 def get_weights(dataset, thispdf, channel, filecounter, counter_w, dont_skim = False):
     maxscale = 200
@@ -70,7 +72,7 @@ def get_weights(dataset, thispdf, channel, filecounter, counter_w, dont_skim = F
     PROC = "STPOLPDF"
 
     path = os.path.join(os.environ["STPOL_DIR"], "src", "pdf_uncertainties", "eventlists")
-    picklename = "%s/events_%s_%s_%s.pkl" % (path, channel, dataset, filecounter)
+    picklename = "%s/events_%s_%s.pkl" % (path, dataset, filecounter)
     print picklename
     with open(picklename, 'rb') as f:
          outdata = pickle.load(f)
@@ -87,10 +89,10 @@ def get_weights(dataset, thispdf, channel, filecounter, counter_w, dont_skim = F
             eventid = event._event.eventAuxiliary().id().event()
             
             if not dont_skim:
-                if not run in outdata[channel]: continue
-                if not lumi in outdata[channel][run]: continue
-                if not eventid in outdata[channel][run][lumi]: continue
-                if not outdata[channel][run][lumi][eventid] == True: continue
+                if not run in outdata["preqcd"][channel]: continue
+                if not lumi in outdata["preqcd"][channel][run]: continue
+                if not eventid in outdata["preqcd"][channel][run][lumi]: continue
+                if not outdata["preqcd"][channel][run][lumi][eventid] == True: continue
 
             if first:
                 if run not in weights:
@@ -103,7 +105,7 @@ def get_weights(dataset, thispdf, channel, filecounter, counter_w, dont_skim = F
                 others[run][lumi][eventid] = dict()
                 n_events += 1
 
-            event.getByLabel(label, 'scalePDF', PROC, flhandle)
+            """event.getByLabel(label, 'scalePDF', PROC, flhandle)
             scale = flhandle.product()
             scale = numpy.frombuffer(scale, "float32", 1)[0]
             event.getByLabel(label, 'x1', PROC, flhandle)
@@ -134,7 +136,7 @@ def get_weights(dataset, thispdf, channel, filecounter, counter_w, dont_skim = F
             if max(x1, x2) > maxx:
                 maxx = max(x1, x2)
             if min(x1, x2) < minx:
-                minx = min(x1, x2)
+                minx = min(x1, x2)"""
             #print others  
             for i in range(len(pdfs[p])):
                 event.getByLabel(label, 'weights'+pdfs[p][i], PROC, handles[pdfs[p][i]])

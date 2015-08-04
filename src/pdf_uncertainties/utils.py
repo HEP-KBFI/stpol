@@ -3,7 +3,7 @@ pdfs = ["CT10LHgrid", "CT10asLHgrid", "NNPDF23nloas0119LHgrid", "NNPDF23nloas011
 #pdfs = ["NNPDF23nloas0119LHgrid", "NNPDF22nlo100LHgrid", "NNPDF21100LHgrid"]
 #pdfs = ["NNPDF30nloas0118LHgrid"]
 #pdfs = ["CT10LHgrid", "CT10asLHgrid", "NNPDF23nlo", "MSTW2008CPdeutnlo68clLHgrid"]
-
+pdfs_minset = ["CT10LHgrid", "CT10asLHgrid", "NNPDF23nloas0119LHgrid", "MSTW2008CPdeutnlo68clLHgrid"]
 
 sizes = {}
 sizes["MSTW2008nlo68cl"] = 40
