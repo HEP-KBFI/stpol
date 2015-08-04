@@ -136,7 +136,10 @@ groups = {
 #base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc/"
 #base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Oct28_reproc_size1_renames/"
 #base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Jan11_deltaR_v1/"
-base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags/"
+#base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_btags/"
+base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/May6_nomet/"
+base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/Apr21_Matthias/Apr21/output/Apr21_btags/"
+base_dir = "/home/andres/single_top/stpol_pdf/src/step3/output/May30_deltaRs/"
 
 def get_data_files(iso, channel, qcdmva = False):
     data_files = dict()
@@ -204,7 +207,7 @@ def get_data_files_reproc(iso, channel, qcdmva = False):
                 data_files[ds].append((root+'/'+f, root+'/'+f+".added"))
                 #data_files[ds.replace("ToLNu2", "ToLNu")].append((root+'/'+f, root+'/'+f+".added"))
                 
-    if not qcdmva:
+    """if not qcdmva:
         for ds in datasets_qcd:
             if channel == "mu" and not ds == "QCDMu": continue
             if channel == "ele" and ds == "QCDMu": continue
@@ -215,7 +218,7 @@ def get_data_files_reproc(iso, channel, qcdmva = False):
                 #assert len(base_file) <= 1
                 #assert len(added_file) <= 1
                 for f in base_files:
-                    data_files[ds].append((root+'/'+f, root+'/'+f+".added"))
+                    data_files[ds].append((root+'/'+f, root+'/'+f+".added"))"""
     if not qcdmva or iso == "antiiso":    
         for ds in datasets_data:
             if channel == "mu" and not ds.startswith("SingleMu"): continue
@@ -267,3 +270,23 @@ def get_data_files_mva_old(iso):
                 if len(base_file) == 1 and len(added_file) == 1:
                     data_files[ds].append((root+'/'+base_file[0], root+'/'+added_file[0]))
     return data_files        
+
+
+def get_data_files_sig():
+    data_files = dict()
+    for ds in ["Tbar_t_ToLeptons", "T_t_ToLeptons"]:
+        data_files[ds] = []
+        for root, dir, files in os.walk(base_dir+"iso/nominal/"+ds):
+            base_files = fnmatch.filter(files, "*.root")
+            for f in base_files:
+                data_files[ds].append((root+'/'+f, root+'/'+f+".added"))
+    
+    for ds in ["TToBENu_t-channel", "TToBMuNu_t-channel", "TToBTauNu_t-channel", "TToLeptons_tchannel_aMCatNLO"]:
+        data_files[ds] = []
+        for root, dir, files in os.walk(base_dir+"iso/SYST/"+ds):
+            base_files = fnmatch.filter(files, "*.root")
+            for f in base_files:
+                data_files[ds].append((root+'/'+f, root+'/'+f+".added"))
+                
+
+    return data_files

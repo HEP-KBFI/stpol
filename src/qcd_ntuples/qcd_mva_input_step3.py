@@ -46,6 +46,7 @@ variables = ["lepton_pt", "lepton_eta", "lepton_iso", "lepton_phi",
     "n_good_vertices",
     "pu_weight", "lepton_weight__id", "lepton_weight__iso", "lepton_weight__trigger", "gen_weight",
     "top_weight", "b_weight",
+    "lepton_met_dr", "ljet_met_dr", "bjet_met_dr", "sjet1_met_dr", "sjet2_met_dr", "lepton_met_dphi", "ljet_dphi", "bjet_dphi", "jet1_met_dphi", "jet2_met_dphi", "ljet_met_dphi", "bjet_met_dphi",
     #"run", "lumi", "event", 
     "xs"
 ]
@@ -104,6 +105,8 @@ for event in events:
             val = 1.
         if "Single" in dataset and var in ["pu_weight", "lepton_weight__id", "lepton_weight__iso", "lepton_weight__trigger", "b_weight", "xs"]:
             val = 1.
+        if "phi" in var or "eta" in var:
+            val = abs(val) 
         line += str(val) + " "
     line += "\n"
     c4 += 1    

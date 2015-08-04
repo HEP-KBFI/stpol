@@ -37,7 +37,7 @@ for iso in ["iso", "antiiso"]:
                     suc = call(["sbatch", "-x comp-d-058", bf_name])
                     print bf_name, suc
                     if not suc == 0:
-                        print "XXX"
+                        print "not submitted"
                         time.sleep(2)
                 i+=1
-                time.sleep(0.2)
+                time.sleep(0.001)

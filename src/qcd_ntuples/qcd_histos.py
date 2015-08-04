@@ -16,7 +16,7 @@ from PhysicsTools.PythonAnalysis import *
 from DataFormats.FWLite import Events, Handle, Lumis
 
 from utils import *
-from mva_variables import *
+#from mva_variables import *
 from Dataset import *
 
 

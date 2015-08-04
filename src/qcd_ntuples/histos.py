@@ -12,7 +12,7 @@ import os
 from array import array
 from time import gmtime, strftime
 import math
-from mva_variables import *
+#from mva_variables import *
 from cuts import *
 
 print "args", sys.argv
@@ -32,13 +32,13 @@ variables = ["met", "mtw",
     "sjet1_pt", "sjet1_eta", "sjet1_bd", "sjet2_pt", "sjet2_eta", "sjet2_bd", "cos_theta_lj", "cos_theta_bl", "cos_theta_whel_lj", 
     "met_phi", "C", "D", "circularity", "sphericity", "isotropy", "aplanarity", "thrust", "C_with_nu", "top_mass", "top_pt",
     "top_eta", "top_phi", "w_mass", "w_pt", "w_eta", "w_phi", "jet_cls", "hadronic_pt", "hadronic_eta", "hadronic_phi", "hadronic_mass",
-    "shat_pt", "shat_eta", "shat_phi", "shat_mass", "shat", "ht"
+    "shat_pt", "shat_eta", "shat_phi", "shat_mass", "shat", "ht", "lepton_met_dr", "ljet_met_dr", "bjet_met_dr", "sjet1_met_dr", "sjet2_met_dr", "lepton_met_dphi", "ljet_dphi", "bjet_dphi", "jet1_met_dphi", "jet2_met_dphi", "ljet_met_dphi", "bjet_met_dphi"
 ]
 
 #variables = ["mtw", "cos_theta_lj"] 
 
 
-ROOT.TMVA.Tools.Instance()
+"""ROOT.TMVA.Tools.Instance()
 reader = ROOT.TMVA.Reader( "Color:!Silent" )
 reader_old = ROOT.TMVA.Reader( "Color:!Silent" )
 
@@ -68,11 +68,11 @@ reader.BookMVA( "MVA_BDT", dirname+prefix_old+"_final2_"+channel+".weights.xml" 
 #reader.BookMVA( "MVA_BDT", dirname+prefix+"_final2_"+channel+".weights.xml" )
 #reader2.BookMVA( "BDT_from_AN", dirname+prefix2+"_"+channel+".weights.xml" )
 #reader.BookMVA( "MVA_BDT", dirname+prefix+"_qcdBDT_"+channel+".weights.xml" )
-
-qcd_mva_cut = 0.4
+"""
+qcd_mva_cut = -0.15
 #qcd_mva_cut = 0.10
 if channel == "ele":
-    qcd_mva_cut = 0.55
+    qcd_mva_cut = 0.15
     #qcd_mva_cut = 0.25
 
 ###
@@ -146,6 +146,20 @@ ranges["shat_phi"] = (40,-3.14,3.14)
 ranges["shat_mass"] = (40,0,1200)  
 ranges["shat"] = (40,0,1500) 
 ranges["ht"] = (40,0,600) 
+ranges["lepton_met_dr"] = (60,0,6)
+ranges["bjet_met_dr"] = (60,0,6)
+ranges["ljet_met_dr"] = (60,0,6)
+ranges["sjet1_met_dr"] = (60,0,6)
+ranges["sjet2_met_dr"] = (60,0,6)
+
+ranges["lepton_met_dphi"] = (40, -4, 4)
+ranges["jet1_met_dphi"] = (40, -4, 4)
+ranges["jet2_met_dphi"] = (40, -4, 4)
+ranges["ljet_met_dphi"] = (40, -4, 4)
+ranges["bjet_met_dphi"] = (40, -4, 4)
+ranges["ljet_dphi"] = (40, -4, 4)
+ranges["bjet_dphi"] = (40, -4, 4)
+
 
 
 jettag = ["2j1t", "2j0t", "3j1t", "3j2t"]
@@ -162,14 +176,10 @@ histograms = dict()
 
 c = channel
 
-#luminosity  = 19764
-luminosity = 15311
-if iso == "antiiso":
-    luminosity = 15339
+luminosity = 19670
 if channel == "ele":
-    #luminosity = 19820
-    luminosity = 16934
-    if iso == "antiiso": luminosity=16965
+    luminosity = 19637
+#luminosity = 19700
 
 for var in ranges.keys():
     #if var not in variables and "qcd_mva" not in var and "bdt" not in var: continue
@@ -192,7 +202,7 @@ for event in events2:
     i+=1
     #extra_data[i] = [event.bdt_qcd, event.bdt_sig_bg, event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight]
     try:
-        extra_data[i] = [event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight, event.bdt_sig_bg, event.bdt_qcd]
+        extra_data[i] = [event.xsweight, event.wjets_ct_shape_weight, event.wjets_fl_yield_weight, event.bdt_sig_bg, event.bdt_qcd, event.wjets_pt_weight]
     except AttributeError:
         if i>0:
             print "Error"
@@ -200,7 +210,10 @@ for event in events2:
 
 i=-1
 missing = 0
+nan_events = 0
+total_events = 0
 for event in events:
+    total_events += 1
     i+=1
     #if i not in extra_data: continue
     if not passes_cuts(event, channel): continue
@@ -215,27 +228,37 @@ for event in events:
     xsweight = extra_data[i][0]
     wjets_shape_weight = extra_data[i][1]
     wjets_yield_weight = extra_data[i][2]
+    wjets_pt_weight = extra_data[i][5]
 
     jt = "%sj%st" % (event.njets, event.ntags)
     
+
     #if math.isnan(event.b_weight): 
     #    event.b_weight = 1
-    total_weight = event.pu_weight * wjets_shape_weight * wjets_yield_weight * xsweight
-    #total_weight = event.pu_weight * event.lepton_weight__id * event.lepton_weight__iso * event.lepton_weight__trigger \
-    #         * wjets_shape * wjets_yield * xsweight
-
+    #total_weight = event.pu_weight * wjets_shape_weight * xsweight
+    total_weight = event.pu_weight * event.lepton_weight__id * event.lepton_weight__iso * event.lepton_weight__trigger \
+             * wjets_shape_weight * xsweight
+    if math.isnan(event.b_weight * event.top_weight * event.pu_weight * event.lepton_weight__id * event.lepton_weight__iso * event.lepton_weight__trigger * wjets_shape_weight * xsweight):
+        print "NAN", dataset, event.b_weight, event.top_weight, event.pu_weight, event.lepton_weight__id, event.lepton_weight__iso, event.lepton_weight__trigger, wjets_shape_weight, xsweight
+        nan_events += 1
     if event.top_weight > 0:
         total_weight *= event.top_weight
     #if not math.isnan(event.b_weight):
-    #    total_weight *= event.b_weight
-    
+    total_weight *= event.b_weight
+    total_weight *= wjets_pt_weight
     total_weight *= luminosity
+
+    if math.isnan(total_weight): continue
     
+    
+    #if total_weight == 0:
+    #    continue
+
     if "Single" in dataset:
         total_weight = 1
 
-    for bdtvar in bdt_vars:
-        bdt_vars[bdtvar][0] = val = getattr(event, bdtvar.replace("mu_mtw", "mtw"))
+    #for bdtvar in bdt_vars:
+    #    bdt_vars[bdtvar][0] = val = getattr(event, bdtvar.replace("mu_mtw", "mtw"))
 
     event_vars = {}
     #event_vars["qcd_mva"] = reader.EvaluateMVA("MVA_BDT")
@@ -253,7 +276,7 @@ for event in events:
         histograms[c+v+jt+"nocut"].Fill(event_vars[v], total_weight)
         if event_vars["qcd_mva"] > cut_points["qcd_mva"]:
             histograms[channel+v+jt+"qcdcut"].Fill(event_vars[v], total_weight)
-            if event_vars["bdt_sig_bg"] > 0.6:
+            if event_vars["bdt_sig_bg"] > 0.45:
                 histograms[channel+v+jt+"bdtcut"].Fill(event_vars[v], total_weight)
             #if event_vars["bdt_sig_bg_old"] > 0.6:
             #    histograms[channel+v+jt+"bdtcut_old"].Fill(event_vars[v], total_weight)
@@ -264,7 +287,7 @@ for event in events:
         
 
 print "writing"
-
+print "total events:", total_events, " nans:", nan_events
 outfilename = os.path.join(os.environ["STPOL_DIR"], "src/qcd_ntuples/var_histos/",  channel , "histos_%s_%s_%s_%s.root" % (dataset, channel, iso, counter))
 
 #outfilename = os.path.join("/scratch/andres/qcd/histos",  channel , "histos_%s_%s_%s_%s.root" % (dataset, channel, iso, counter))

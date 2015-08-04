@@ -16,17 +16,20 @@ def passes_cuts(event, channel, iso="iso", iso_var=None):
     #if not event.njets == 2: return False
     #if not event.ntags == 1: return False
     
-    if event.n_signal_mu == 1 and abs(event.lepton_type) == 13:
+    if event.n_signal_mu == 1 and event.n_signal_ele == 0:# and abs(event.lepton_type) == 13:
         ch = "mu"
-    elif event.n_signal_ele == 1 and abs(event.lepton_type) == 11:
+    elif event.n_signal_ele == 1 and event.n_signal_mu == 0:# and abs(event.lepton_type) == 11:
         ch = "ele"
+    elif event.n_signal_ele == 1 and event.n_signal_mu == 1: 
+        print "UUU"
+        return False
     else: return False
     if not ch == channel: return False
 
     if event.n_veto_mu > 0 or event.n_veto_ele > 0: return False
     
-    if event.bjet_pt <= 40 or event.ljet_pt <= 40: return False
-    if abs(event.bjet_eta) >= 4.5 or abs(event.ljet_eta) >= 4.5: return False
+    #if event.bjet_pt <= 40 or event.ljet_pt <= 40: return False
+    #if abs(event.bjet_eta) >= 4.5 or abs(event.ljet_eta) >= 4.5: return False
     
     #if channel == "mu" and event.lepton_pt <= 26: return False  #no effect on top of step3
     #if channel == "ele" and event.lepton_pt <= 30: return False #no effect on top of step3
@@ -40,10 +43,10 @@ def passes_cuts(event, channel, iso="iso", iso_var=None):
     lumi = event.lumi
     eventid = event.event    
     
-    if math.isnan(event.lepton_weight__id): return False
-    if math.isnan(event.lepton_weight__iso): return False
-    if math.isnan(event.lepton_weight__trigger): return False
-    if math.isnan(event.b_weight): return False
+    #if math.isnan(event.lepton_weight__id): return False
+    #if math.isnan(event.lepton_weight__iso): return False
+    #if math.isnan(event.lepton_weight__trigger): return False
+    #if math.isnan(event.b_weight): return False
     
     if iso == "antiiso":
         if iso_var == "down":
