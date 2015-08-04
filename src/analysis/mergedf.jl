@@ -128,7 +128,6 @@ for fi in inf
         added_df[j, :ngen] = ngen
         if subsample == "SingleMu" || subsample == "SingleEle"
             added_df[j, :xsweight] = 1.0
-            println("Data weight")
         else
             added_df[j, :xsweight] = haskey(cross_sections, subsample) ? cross_sections[subsample] / ngen : 1
         end
