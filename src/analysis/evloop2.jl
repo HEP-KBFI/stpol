@@ -1,4 +1,5 @@
 using JSON
+using ROOT, Histograms
 
 const VERBOSE = bool(int(get(ENV, "VERBOSE", 0)))
 const outfile = ARGS[1]
@@ -19,15 +20,131 @@ const BDT_VAR = symbol(PARS["bdt_var"])
 #const BDT_CUTS = [-0.2, -0.10, 0.0, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]
 const BDT_CUTS = [-0.2, 0.45]
 #const BDT_REVERSE_CUTS = [-0.2, -0.10, 0.0, 0.06, 0.10, 0.13, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80]
-const BDT_REVERSE_CUTS = [0.6]
+const BDT_REVERSE_CUTS = [0.0]
 const VARS_TO_USE = symbol(PARS["vars_to_use"])
 
+
+import ROOT.to_root
+function to_root_z(h::NHistogram, name="hist")
+    length(size(h))==2 || error("to_root not defined for nd=$(length(size(h)))")
+
+    nbins_x = nbins(h, 1)
+    nbins_y = nbins(h, 2)
+
+    conts, errs = contents(h), errors(h)
+
+    #remove overflow bins
+    e1 = convert(Vector{Float64}, h.edges[1][2:end-1])
+    e2 = convert(Vector{Float64}, h.edges[2][2:end-1])
+
+    hi = TH2D(name, name, int32(nbins_x - 3), pointer(e1), int32(nbins_y - 3), pointer(e2))
+    for i=0:nbins_x-1
+        for j=0:nbins_y-1
+            SetBinContent(hi, int32(i), int32(j), conts[i + 1, j + 1])
+            SetBinError(hi, int32(i), int32(j), errs[i + 1, j + 1])
+        end
+    end
+    SetEntries(hi, sum(entries(h)))
+    return hi
+end
+
+function to_root_z(h::Histogram, name="hist")
+    edges = copy(h.bin_edges)
+
+    #remove underflow low and overflow high
+    edges = h.bin_edges[2:end-1]
+    hi = TH1D(name, name, int32(nbins(h) - 3), pointer(edges))
+    for i=0:GetNbinsX(hi)+1
+        SetBinContent(hi, int32(i), contents(h)[i + 1])
+        SetBinError(hi, int32(i), errors(h)[i + 1])
+    end
+    SetEntries(hi, sum(entries(h)))
+
+    # println(h)
+    # Print(hi, "ALL")
+    conts, errs, ents, edges = get_hist_bins_z(hi)
+
+    if !all(conts .==  contents(h))
+        warn("mismatch in contents: \n", hcat(conts, contents(h))|>string, "\n")
+    end
+    if !all(errs .==  errors(h))
+        warn("mismatch in errors: \n", hcat(errs, errors(h))|>string, "\n")
+    end
+    # if !all(ents .==  entries(h))
+    #     warn("mismatch in entries: \n", hcat(ents, entries(h))|>string, "\n")
+    # end
+    if !all(edges .==  h.bin_edges)
+        warn("mismatch in edges: \n", hcat(edges, h.bin_edges)|>string, "\n")
+    end
+    return hi
+end
+
+function get_hist_bins_z(h::Union(TH1D, TH1A, TH1); error_type=:contents)
+    nb = int64(GetNbinsX(h))
+    nb>0 || error("nbins = $nb")
+
+    #+3 = underflow, overflow, superfluous extra bin
+    conts = zeros(Float64, nb+3)
+    errs = zeros(Float64, nb+3)
+    ents = zeros(Float64, nb+3)
+
+    #underflow low, overflow low, overflow high
+    edges = zeros(Float64, nb+3)
+    for n=0:nb+1
+        conts[n+1] = GetBinContent(h, int32(n))
+        errs[n+1] = GetBinError(h, int32(n))
+        #entries[n+1] = GetEntries(h) * conts[n+1]
+        edges[n+1] = GetBinLowEdge(h, int32(n))
+    end
+
+    #this work for histograms for which the bin errors have been manually set
+    #to non-Poisson, GetEntries is meaningless
+    if error_type == :errors
+        ents = (conts ./ errs).^2
+        ents[isnan(ents)] = 0
+        ents[ents .== Inf] = 1
+        #println(hcat(conts, errs, ents, conts./sqrt(ents)))
+    end
+    #this works for Poisson bin errors
+    if error_type == :contents
+        ents = conts ./ sum(conts) .* GetEntries(h)
+        ents[isnan(ents)] = 0
+    end
+    #ents = int(round(ents))
+    edges[1] = -Inf
+    edges[nb+2] = edges[nb+1] + GetBinWidth(h, int32(nb))
+    edges[nb+3] = Inf
+
+    if error_type != :errors
+        if GetEntries(h)>0 && Integral(h)>0
+            @assert abs(sum(ents) - GetEntries(h))/sum(ents)<0.0001 string("entries unequal ", sum(ents), "!=", GetEntries(h))
+        end
+    end
+    if Integral(h)>0
+        @assert abs(sum(conts) - Integral(h, int32(0), int32(nb+1)))/sum(conts)<0.0001 string("contents unequal ", sum(conts), "!=", Integral(h, int32(0), int32(nb+1)))
+    end
+    # if (abs(sum(conts) - Integral(h)) > 100000 * eps(Float64))
+    #     warn(
+    #         GetName(h)|>bytestring,
+    #         " integral mismatch: $(sum(conts)) != $(Integral(h))"
+    #     )
+    # end
+    return conts, errs, ents, edges
+end
+
+function load_with_errors(f::TDirectoryA, k::ASCIIString; kwargs...)
+    th = root_cast(TH1, Get(f, k))
+    #println(th)
+    conts, errs, ents, edgs = get_hist_bins(th; kwargs...)
+    h = Histogram(ents, conts, edgs)
+    return h
+end
 
 const IS_TOP = false
 const IS_ANTITOP = false
 
 const IS_CT_BIN = false
-const WHICH_BIN = 0
+const WHICH_BIN = 6
 
 #const BDT_CUTS = [0.0, 0.06, 0.13, 0.2, 0.4, 0.6, 0.8, 0.9]
 
@@ -154,6 +271,15 @@ elseif VARS_TO_USE == :analysis
         :C,
         :bjet_bd_b,
         :ljet_bd_b,
+        :lepton_met_dphi,
+        :jet1_met_dphi,
+        :bdt_qcd,
+        #:bdt_qcd_dphis_nomet,
+        #:bdt_qcd_dphis_withmet,
+        #:bdt_sig_bg_dr_nomet_nolpt,
+        #:bdt_sig_bg_dr_nomet_lpt,
+        #:bdt_sig_bg_dr_met_nolpt,
+        #:bdt_sig_bg_dr_met_lpt,
 #        :ljet_eta,
         (:abs_ljet_eta, row::DataFrameRow -> abs(row[:ljet_eta])),
         (:abs_ljet_eta_16, row::DataFrameRow -> abs(row[:ljet_eta])),
@@ -288,7 +414,7 @@ function fill_histogram(
                 ev_cls == cls || continue
 
                 ev_cls = jet_cls_bcl(ev_cls)
-                println(symbol("$(sample)_$(ev_cls)"))
+                #println(symbol("$(sample)_$(ev_cls)"))
                 const kk = HistKey(
                     hname,
                     symbol("$(sample)_$(ev_cls)"),
@@ -420,6 +546,7 @@ function process_df(rows::AbstractVector{Int64})
             true_lep = row[:lepton_id]
         end
         #VERBOSE && println("row $cur_row $sample $subsample $systematic $iso genlep=$true_lep")
+        # println("row $cur_row $sample $subsample $systematic $iso genlep=$true_lep")
 
         const isdata = ((sample == :data_mu) || (sample == :data_ele))
         if !isdata && HISTS_NOMINAL_ONLY
@@ -443,6 +570,7 @@ function process_df(rows::AbstractVector{Int64})
 
            const x = row[:cos_theta_lj_gen]::Union(Float32, NAtype)
            const y = row[:cos_theta_lj]::Union(Float32, NAtype)
+           #println("X & Y ", x, " ", y)
            const ny_ = searchsortedfirst(TM.edges[2], y)
 
            #can get gen-level index here
@@ -472,15 +600,19 @@ function process_df(rows::AbstractVector{Int64})
                    reco = reco && Cuts.ljet_rms(row)
                end
                VERBOSE && println("$reco $x $y")
-
+               #println("RECO $reco $x $y $reco_lep")
+               
                const lep_symb = symbol("gen_$(get(LEPTON_SYMBOLS, true_lep, NA))__reco_$(reco_lep)")
+               
                for (scen_name::(Symbol, Symbol), scen::Scenario) in scens_gr[systematic]
+                   #println(scen_name, " ", scen.weight(nw, row)::Float64)
+                   
                    (TM_NOMINAL_ONLY && scen_name[1]!=:nominal) && continue
                    const w = scen.weight(nw, row)::Float64
                    (isnan(w) || isna(w)) && error("$k2: w=$w $(df[row.row, :])")
 
                    const _prebdtcut_reco = reco
-
+                   #println("RECO1 ", reco)
                    #assumes BDT cut points are sorted ascending
                    for bdt_cut::Float64 in BDT_CUTS::Vector{Float64}
                        const _reco = reco &&
@@ -489,7 +621,8 @@ function process_df(rows::AbstractVector{Int64})
                        #if scen_name[1] == :nominal
                        #    transfer_matrix_reco[reco_lep][bdt_cut] = reco
                        #end
-
+                       #println("siin! ",reco," ", _reco, " ", BDT_VAR, " ",Cuts.bdt(row, bdt_cut, BDT_VAR))
+                       
                        #need to get the reco-axis index here, it will depend on passing the BDT cut
                        #unreconstructed events are put to underflow bin
                        const ny = (isna(y)||isnan(y)||!_reco) ? 1 : ny_ - 1
@@ -513,13 +646,17 @@ function process_df(rows::AbstractVector{Int64})
                        )
 
                        const h = getr(ret, k2, :transfer_matrix)::NHistogram
-
                        h.baseh.bin_contents[linind] += w
                        h.baseh.bin_entries[linind] += 1.0
+                       
+                       # println("Adding $nx,$ny $x,$y $scen_name $w $bdt_cut")
+                       # println("$cur_row ", sum(entries(h.baseh)), " ", integral(h.baseh))
+                       
                    end
-
+                   
                    reco = _prebdtcut_reco
-
+                   #println("RECO2 ", reco)
+                   
                    #cut-based selection
                    for (cut_major, cut_minor, cutfn) in {
                            (:cutbased, :etajprime_topmass_default, Cuts.cutbased_etajprime),
@@ -549,6 +686,8 @@ function process_df(rows::AbstractVector{Int64})
                        h.baseh.bin_contents[linind] += w
                        h.baseh.bin_entries[linind] += 1.0
                    end
+                   #println("RECO3 ", reco)
+                   
                end
            end
         end
@@ -594,6 +733,7 @@ function process_df(rows::AbstractVector{Int64})
            for var in [
                :bdt_qcd,
                :mtw, :met,
+               :bdt_sig_bg
           #     :met_phi
            ]
                fill_histogram(
@@ -828,7 +968,7 @@ for (k, v) in ret
     #)
     #isa(v, Histogram) && println(v)
 
-    hi = to_root(v, tostr(k))
+    hi = to_root_z(v, tostr(k))
     #hi = to_root(v, string(k.sample))
 end
 
