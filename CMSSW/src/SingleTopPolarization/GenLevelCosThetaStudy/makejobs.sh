@@ -1,5 +1,5 @@
 #!/bin/bash
-CFG=$STPOL_DIR/CMSSW_5_3_11/src/SingleTopPolarization/GenLevelCosThetaStudy/geninfoproducer_cfg.py
+CFG=$STPOL_DIR/CMSSW/src/SingleTopPolarization/GenLevelCosThetaStudy/geninfoproducer_cfg.py
 JOBNAME=`basename $1`
 JOBNAME="${JOBNAME%.*}"
 JOBNAME="WD_"$JOBNAME

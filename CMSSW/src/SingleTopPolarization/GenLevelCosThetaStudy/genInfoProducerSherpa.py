@@ -8,15 +8,36 @@ from PhysicsTools.JetMCAlgos.IC5CaloJetsMCFlavour_cff import *
 from PhysicsTools.JetMCAlgos.AK5CaloJetsMCFlavour_cff import *
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000000)
+    input = cms.untracked.int32(-1)
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.source = cms.Source("PoolSource",
-    #fileNames = cms.untracked.vstring("file:/hdfs/cms/store/user/dkonst/sherpa_mass/gen_907_18677.root")
-    fileNames = cms.untracked.vstring("file:/hdfs/cms/store/mc/Summer12_DR53X/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S10_START53_V7A-v1/0000/0022F532-C2CE-E111-B33F-003048D476A6.root")
+    fileNames = cms.untracked.vstring([
+        "file:./converted/converted_hepmc_100_120_140_160.root",
+        "file:./converted/converted_hepmc_25_30_35_40.root",
+        "file:./converted/converted_hepmc_45_54_63_72.root",
+        "file:./converted/converted_hepmc_60_72_84_96.root",
+        "file:./converted/converted_hepmc_80_96_112_128.root",
+        "file:./converted/converted_hepmc_10_12_14_16.root",
+        "file:./converted/converted_hepmc_30_36_42_48.root",
+        "file:./converted/converted_hepmc_50_60_70_80.root",
+        "file:./converted/converted_hepmc_65_78_91_104.root",
+        "file:./converted/converted_hepmc_85_102_119_136.root",
+        "file:./converted/converted_hepmc_15_18_21_24.root",
+        "file:./converted/converted_hepmc_35_42_49_56.root",
+        "file:./converted/converted_hepmc_55_66_77_88.root",
+        "file:./converted/converted_hepmc_70_84_98_112.root",
+        "file:./converted/converted_hepmc_90_108_126_144.root",
+        "file:./converted/converted_hepmc_20_24_28_32.root",
+        "file:./converted/converted_hepmc_40_48_56_64.root",
+        "file:./converted/converted_hepmc_5_6_7_8.root",
+        "file:./converted/converted_hepmc_75_90_105_120.root",
+        "file:./converted/converted_hepmc_95_114_133_152.root"
+    ]
+)
 )
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
@@ -39,7 +60,7 @@ process.flavourByVal = cms.EDProducer("JetFlavourIdentifier",
  )
 
 #Select 1 lepton, 2J topology events
-process.particleSelector = cms.EDFilter('GenInfoProducer',
+process.particleSelector = cms.EDFilter('GenInfoProducerWithCuts',
     srcSelectedPartons = cms.InputTag("myPartons"),
     srcByValue = cms.InputTag("flavourByVal")
 )
@@ -75,9 +96,10 @@ process.cosTheta = cms.EDProducer('CosThetaProducer',
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('myOutputFile.root'),
     outputCommands=cms.untracked.vstring(
-        'drop *',
+        #'drop *',
         'keep *_cosTheta_*_*',
         'keep double_particleSelector_*_*',
+        'keep *_particleSelector_*_*',
         'keep floats_*_*_*'
     ),
     dropMetaData=cms.untracked.string("DROPPED"),
