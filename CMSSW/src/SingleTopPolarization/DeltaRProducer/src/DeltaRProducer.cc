@@ -32,7 +32,7 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
-
+#include "DataFormats/PatCandidates/interface/MET.h"
 #include <DataFormats/PatCandidates/interface/Muon.h>
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include <TMath.h>
@@ -61,6 +61,7 @@ class DeltaRProducer : public edm::EDProducer {
 
       // ----------member data ---------------------------
       const edm::InputTag jetSrc;
+      const edm::InputTag metSrc;
       const edm::InputTag leptonSrc;
       //std::string result_;
 };
@@ -80,6 +81,7 @@ class DeltaRProducer : public edm::EDProducer {
 DeltaRProducer::DeltaRProducer(const edm::ParameterSet& iConfig)
 : jetSrc(iConfig.getParameter<edm::InputTag>("jetSrc"))
 , leptonSrc(iConfig.getParameter<edm::InputTag>("leptonSrc"))
+, metSrc(iConfig.getParameter<edm::InputTag>("metSrc"))
 {
    //produces<edm::ValueMap<double> >().setBranchAlias("deltaR")
    //produces<std::vector<pat::Muon> >();
@@ -110,24 +112,38 @@ DeltaRProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    Handle<View<reco::Candidate> > leptons;
    Handle<std::vector<pat::Jet> > jets;
+   Handle<std::vector<pat::MET> > mets;
    iEvent.getByLabel(leptonSrc, leptons);   
    iEvent.getByLabel(jetSrc, jets);
+   iEvent.getByLabel(metSrc, mets);
 
    std::auto_ptr<std::vector<pat::Jet> > outJets(new std::vector<pat::Jet>());
    for ( uint i = 0; i < jets->size(); ++i ) {
       const pat::Jet& jet = jets->at(i);
 
-      float deltaR;
+      float deltaR, deltaRMET, deltaPhi, deltaPhiMET;
       if (leptons->size()==1){
          const reco::Candidate& lepton = leptons->at(0);
 
          deltaR =  ROOT::Math::VectorUtil::DeltaR(lepton.p4(), jet.p4());
+         deltaPhi =  ROOT::Math::VectorUtil::DeltaPhi(lepton.p4(), jet.p4());
          outJets->push_back(jet);
 
          pat::Jet& jet = outJets->back();
          jet.addUserFloat("deltaR", deltaR); 
+         jet.addUserFloat("deltaPhi", deltaPhi); 
+         if(mets->size() > 0){
+            const pat::MET& met = mets->at(0);
+            deltaRMET = ROOT::Math::VectorUtil::DeltaR(met.p4(), jet.p4());
+            deltaPhiMET = ROOT::Math::VectorUtil::DeltaPhi(met.p4(), jet.p4());
+            jet.addUserFloat("deltaRMET", deltaRMET); 
+            jet.addUserFloat("deltaPhiMET", deltaPhiMET); 
+            //std::cout << "DeltaRMETJET: " << deltaR << std::endl;
+         }   
+         //std::cout << "DeltaR: " << deltaR << std::endl;
       }
    }
+   
    iEvent.put(outJets);
 }
 
