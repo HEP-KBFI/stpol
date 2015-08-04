@@ -195,7 +195,7 @@ def select_hists(histname, lepton, selection_major, selection_minor, njets, ntag
                 
             elif ("cos_theta" in k):# and ("JetsToLNu" in k or "Jets_exclusive" in k or "WJets" in k):
                 #elif "cos_theta" in k:
-                if h.GetNbinsX() == 96:
+                if h.GetNbinsX() == 96 or h.GetNbinsX() == 80:
                     h.Rebin(2)  
             
             
@@ -300,7 +300,8 @@ def select_transfermatrix(gen_lepton, reco_lepton, selection_major, selection_mi
 
         #x = "tm__pdgid_g%d_r%d__%s" % (pdgid_map[gen_lepton], pdgid_map[reco_lepton], x)
         x = "tm__%s" % (x)
-        x = x.replace("scale", "tchan_scale")
+        x = x.replace("_scale", "_tchan_scale")
+        x = x.replace("qscale", "tchan_qscale")
         h = keylist[k].ReadObj()
 
         if hd.has_key(x):
@@ -440,7 +441,7 @@ def merge_hists(vname, hd):
 
     return out
 
-output_dir = "output_temp"
+output_dir = "output_plots/"
 print("preqcd")
 for lep in ["mu", "ele"]:
     for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
@@ -451,6 +452,7 @@ for lep in ["mu", "ele"]:
 
         for variable in [
                 "bdt_qcd",
+                #"bdt_sig_bg",
                 "met", "mtw",
                 ]:
             print variable
@@ -476,15 +478,23 @@ for lep in ["mu", "ele"]:
                 "C",
 #                "met", "mtw", "shat", "ht",
                 "cos_theta_lj",
-                "bjet_bd_b",
-                "ljet_bd_b",
+                #"bjet_bd_b",
+                #"ljet_bd_b",
+                #"lepton_met_dphi",
+                #"jet1_met_dphi",
+                "bdt_qcd",
+                #"bdt_qcd_dphis_withmet",
+                #"bdt_sig_bg_dr_nomet_nolpt",
+                #"bdt_sig_bg_dr_nomet_lpt",
+                #"bdt_sig_bg_dr_met_nolpt",
+                #"bdt_sig_bg_dr_met_lpt",
                 ]:
             x = select_hists(variable, lep, "preselection", "nothing", nj, nt)
             write_hists("%s/%s.root" % (d, variable), x)
     
 print("reverse BDT cut for fit")
 #for bdt_cut in [-0.20, -0.15, -0.10, -0.05, 0.0, 0.05, 0.06, 0.10, 0.13, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.50, 0.55, 0.6, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]:
-for bdt_cut in [0.60]:
+for bdt_cut in [0.00]:
     bdts = "%.5f" % bdt_cut
     for lep in ["mu", "ele"]:
         for (nj, nt) in [(2,1), (3,1), (3,2), (2,0)]:
@@ -495,6 +505,7 @@ for bdt_cut in [0.60]:
 
             for variable in [
                     "bdt_sig_bg",
+                    "bdt_qcd",
                     #"bdt_sig_bg_top_13_001",
                     #"bdt_sig_bg_before_reproc",
                     #"ljet_eta",
