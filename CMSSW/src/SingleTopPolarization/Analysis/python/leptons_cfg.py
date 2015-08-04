@@ -104,8 +104,8 @@ def LeptonSetup(process, conf):
     )
 
     #Make a new named collection that contains the ONLY isolated(or anti-isolated) electron(muon)
-    process.singleIsoEle = cms.EDFilter("CandViewSelector", src=cms.InputTag("goodSignalElectrons"), cut=cms.string(""))
-    process.singleIsoMu = cms.EDFilter("CandViewSelector", src=cms.InputTag("goodSignalMuons"), cut=cms.string(""))
+    process.singleIsoEle = cms.EDFilter("CandViewSelector", src=cms.InputTag("patMETDeltaRProducer", "electrons"), cut=cms.string(""))
+    process.singleIsoMu = cms.EDFilter("CandViewSelector", src=cms.InputTag("patMETDeltaRProducer", "muons"), cut=cms.string(""))
 
     #Combine the found electron/muon to a single collection
     process.inLeptons = cms.EDProducer(
@@ -142,6 +142,7 @@ def LeptonSetup(process, conf):
         process.muonCount *
         process.goodSignalElectrons *
         process.electronCount *
+        process.patMETDeltaRProducer *
         process.singleIsoEle *
         process.singleIsoMu *
         process.goodSignalLeptons *

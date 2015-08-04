@@ -370,9 +370,17 @@ def SingleTopStep2():
     process.trueTopNTupleProducer = process.recoTopNTupleProducer.clone(
         src=cms.InputTag("genParticleSelector", "trueTop", "STPOLSEL2"),
     )
+
+    process.patMETDeltaRProducer = cms.EDProducer("DeltaRProducerMET",
+        muonSrc=cms.InputTag("goodSignalMuons"),
+        electronSrc=cms.InputTag("goodSignalElectrons"),
+        metSrc=cms.InputTag(Config.metSource)
+    )
+
+
     process.patMETNTupleProducer = cms.EDProducer(
         "CandViewNtpProducer2",
-        src = cms.InputTag("goodMETs"),
+        src = cms.InputTag(Config.metSource),
         lazyParser = cms.untracked.bool(True),
         prefix = cms.untracked.string(""),
         variables = ntupleCollection(
@@ -403,7 +411,7 @@ def SingleTopStep2():
 
     process.goodSignalMuonsNTupleProducer = cms.EDProducer(
         "CandViewNtpProducer2",
-        src = cms.InputTag("goodSignalMuons"),
+        src = cms.InputTag("patMETDeltaRProducer", "muons"),
         lazyParser = cms.untracked.bool(True),
         prefix = cms.untracked.string(""),
         #eventInfo = cms.untracked.bool(True),
@@ -424,6 +432,9 @@ def SingleTopStep2():
                 ["dz", userfloat("dz")],
                 ["numberOfMatchedStations", "numberOfMatchedStations"],
                 ["triggerMatch", "? triggerObjectMatchesByPath('{0}').size()==1 ? triggerObjectMatchByPath('{0}').hasPathLastFilterAccepted() : {1}".format(Config.Muons.triggerPath, nanval)],
+                ["deltaRMET", userfloat('deltaRMET')],
+                ["deltaPhiMET", userfloat('deltaPhiMET')],
+                
             ]
       )
     )
@@ -438,7 +449,7 @@ def SingleTopStep2():
 
     process.goodSignalElectronsNTupleProducer = cms.EDProducer(
         "CandViewNtpProducer2",
-        src = cms.InputTag("goodSignalElectrons"),
+        src = cms.InputTag("patMETDeltaRProducer", "electrons"),
         lazyParser = cms.untracked.bool(True),
         prefix = cms.untracked.string(""),
         #eventInfo = cms.untracked.bool(True),
@@ -456,6 +467,8 @@ def SingleTopStep2():
                     ["triggerMatch", "? triggerObjectMatchesByPath('{0}').size()==1 ? triggerObjectMatchByPath('{0}').hasPathLastFilterAccepted() : {1}".format(Config.Electrons.triggerPath, nanval)],
                     ["genPdgId", "? genParticlesSize() > 0 ? genParticle(0).pdgId() : {0}".format(nanval)],
                     ["motherGenPdgId", "? genParticlesSize() > 0 ? genParticle(0).mother(0).pdgId() : {0}".format(nanval)],
+                    ["deltaRMET", userfloat('deltaRMET')],
+                    ["deltaPhiMET", userfloat('deltaPhiMET')],
                 ]
       )
     )
@@ -493,6 +506,7 @@ def SingleTopStep2():
 
                     #["genJetFlavour", "? genJet()>0 ? (genJet()->pdgId()) : 0"], #FIXME
                     ["deltaR", userfloat('deltaR')],
+                    ["deltaPhi", userfloat('deltaPhi')],
 
                     ["numberOfDaughters", "numberOfDaughters"],
                     ["neutralHadronEnergy", "neutralHadronEnergy"],
@@ -505,6 +519,8 @@ def SingleTopStep2():
                     ["puMva", userfloat('mva')],
                     ["nCharged", userfloat('nCharged')],
                     ["nNeutral", userfloat('nNeutral')],
+                    ["deltaRMET", userfloat('deltaRMET')],
+                    ["deltaPhiMET", userfloat('deltaPhiMET')],
                 ]
         )
     )
@@ -600,6 +616,10 @@ def SingleTopStep2():
     if Config.isMC:
         process.genWeightProducer = cms.EDProducer("GenWeightProducer")
         process.eventVarsPath += process.genWeightProducer
+        if Config.isAMCatNLO:
+            process.lheWeightProducer = cms.EDProducer("LHEWeightProducer")
+            process.eventVarsPath += process.lheWeightProducer
+            
 
     if Config.doWJetsFlavour:
         process.treePath += process.flavourAnalyzer

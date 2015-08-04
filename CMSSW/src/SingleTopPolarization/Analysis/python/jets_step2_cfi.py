@@ -33,7 +33,8 @@ def JetSetup(process, conf):
 
     process.deltaRJets = cms.EDProducer("DeltaRProducer",
         leptonSrc=cms.InputTag("goodSignalLeptons"),
-        jetSrc=cms.InputTag("noPUJets")
+        jetSrc=cms.InputTag("noPUJets"),
+        metSrc=cms.InputTag(conf.metSource)
         #jetSrc=cms.InputTag(conf.Jets.source)
     )
 

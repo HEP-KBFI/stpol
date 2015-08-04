@@ -125,7 +125,6 @@ def MuonPath(process, conf):
         process.nJets *
         #Select mu and MET invariant transverse mass OR the MET
         process.muMetSequence *
-
         process.mBTags *
         #Reconstruct the neutrino, the top quark and calculate the cosTheta* variable
         process.topRecoSequenceMu
